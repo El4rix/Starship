@@ -35,6 +35,8 @@ Scene sNoOvl_Logo[1] = {
         /* 0xF */ ROM_SEGMENT(ast_logo) } },
 };
 
+//Test Test Test deez nuts
+
 Scene sOvlending_Ending[6] = {
     { OVERLAY_OFFSETS(ovl_ending),
       { /* 0x1 */ NO_SEGMENT,
