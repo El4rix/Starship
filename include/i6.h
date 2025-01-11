@@ -12,6 +12,8 @@ extern f32 D_Andross_801A7F60;
 extern f32 D_Andross_801A7F68;
 extern f32 D_Andross_801A7F70;
 extern f32 D_Andross_801A7F78;
+extern f32 D_i6_801A6B80;
+extern f32 D_i6_801A6B90;
 
 void Andross_80187530(Actor*);
 void Andross_80193C4C(Player*);

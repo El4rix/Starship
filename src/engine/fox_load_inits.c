@@ -35,11 +35,6 @@ Scene sNoOvl_Logo[1] = {
         /* 0xF */ ROM_SEGMENT(ast_logo) } },
 };
 
-//Test Test Test deez nuts
-//Now test deez nuts
-//Pigma balls
-//I'm goin down
-
 Scene sOvlending_Ending[6] = {
     { OVERLAY_OFFSETS(ovl_ending),
       { /* 0x1 */ NO_SEGMENT,
@@ -529,7 +524,7 @@ Scene sOvli6_SectorY[1] = {
         /* 0xB */ NO_SEGMENT,
         /* 0xC */ NO_SEGMENT,
         /* 0xD */ NO_SEGMENT,
-        /* 0xE */ NO_SEGMENT,
+        /* 0xE */ ROM_SEGMENT(ast_great_fox),
         /* 0xF */ NO_SEGMENT } },
 };
 

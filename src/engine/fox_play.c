@@ -23,6 +23,8 @@
 #include "assets/ast_zoness.h"
 #include "port/hooks/Events.h"
 
+//void Actor_Load(Actor* actor, ObjectInit* objInit);
+
 extern float gCurrentScreenWidth;
 extern float gCurrentScreenHeight;
 extern Vtx D_SO_6001C50_copy[];
@@ -2816,6 +2818,14 @@ void Player_InitVersus(void) {
     Play_ClearObjectData();
 }
 
+/* void Turret_AnchorActor(Actor* this) {
+    gPlayer[0].vel.z = this->vel.z = -this->fwork[1];
+    this->obj.pos.x = gPlayer[0].xPath;
+    this->obj.pos.y = gPlayer[0].yPath;
+    this->obj.pos.y = D_i6_801A6B80; // += ?
+    this->obj.pos.x = D_i6_801A6B90;
+} */
+
 void Play_Init(void) {
     s32 i;
 
@@ -2949,6 +2959,20 @@ void Play_Init(void) {
         gControllerRumbleTimers[i] = 0;
         gPlayerScores[i] = 0;
     }
+
+    /* if (gLevelMode == LEVELMODE_TURRET) {
+        ObjectInit objInit = { 100.0f, 0, 0, 0, {0, 180, 0}, OBJ_ACTOR_ZO_DODORA_WP_COUNT };
+
+        Actor_Load(&gActors[59], &objInit);
+        //gActors[59].fwork[1] = (gCurrentLevel == LEVEL_SECTOR_Y) ? 40.0f : 20.0f;
+        gActors[59].fwork[1] = (gCurrentLevel != LEVEL_UNK_15) ? 40.0f : 20.0f;
+
+        gActors[59].info.action = Turret_AnchorActor;
+        gActors[59].info.draw = NULL;
+
+        gPlayer[0].turretActor = 59;
+
+    } */
 
     if (gLevelMode == LEVELMODE_ALL_RANGE) {
         MEM_ARRAY_ALLOCATE(gScenery360, 200);
@@ -4631,6 +4655,10 @@ void Player_Setup(Player* playerx) {
     player->baseSpeed = gArwingSpeed;
     player->pos.y = 350.0f;
 
+    if (gTurretModeEnabled) {
+        player->unk_180 = 180.0f;
+    }
+
     switch (gCurrentLevel) {
         case LEVEL_MACBETH:
         case LEVEL_TITANIA:
@@ -4814,7 +4842,7 @@ void Player_Setup(Player* playerx) {
 
         switch (gCurrentLevel) {
             case LEVEL_CORNERIA:
-                player->state = PLAYERSTATE_LEVEL_INTRO;
+                player->state = PLAYERSTATE_ACTIVE;
                 player->wingPosition = 1;
                 gGroundSurface = gSavedGroundSurface = SURFACE_WATER;
                 Play_dummy_MuteSfx();
@@ -4836,10 +4864,10 @@ void Player_Setup(Player* playerx) {
             case LEVEL_KATINA:
             case LEVEL_SECTOR_Z:
             case LEVEL_VENOM_2:
-                player->state = PLAYERSTATE_LEVEL_INTRO;
+                player->state = PLAYERSTATE_ACTIVE;
                 break;
             case LEVEL_METEO:
-                player->state = PLAYERSTATE_LEVEL_INTRO;
+                player->state = PLAYERSTATE_ACTIVE;
                 break;
         }
     } else {
@@ -5587,7 +5615,7 @@ void Player_UpdateEffects(Player* player) {
             player->xShake = 0.0f;
         }
 
-        if ((gLevelMode != LEVELMODE_TURRET) &&
+        if ((!gTurretModeEnabled) &&
             ((player->knockback.x != 0.f) || (player->knockback.y != 0.f) || (player->knockback.z != 0.f)) &&
             ((player->dmgType >= 40) || (player->dmgType == 21))) {
             player->boostCooldown = true;
@@ -5875,6 +5903,9 @@ void Player_Update(Player* player) {
     Vec3f sp58[30];
     s32 pad;
     CALL_EVENT(PlayerPreUpdateEvent, player);
+
+    gTurretModeEnabled = true;
+
     if (gVersusMode) {
         gInputHold = &gControllerHold[player->num];
         gInputPress = &gControllerPress[player->num];
@@ -5949,7 +5980,7 @@ void Player_Update(Player* player) {
             player->arwing.drawFace = false;
             D_hud_80161704 = 255;
 
-            if ((!gVersusMode || gVsMatchStart) && !player->somersault && (gInputPress->button & U_CBUTTONS) &&
+            if ((!gVersusMode || gVsMatchStart) && !player->somersault && (gInputPress->button & U_CBUTTONS) && !gTurretModeEnabled &&
                 ((player->form == FORM_ARWING) || (gVersusMode && (player->form == FORM_LANDMASTER)))) {
                 if (player->alternateView = 1 - player->alternateView) {
                     AUDIO_PLAY_SFX(NA_SE_VIEW_MOVE_IN, gDefaultSfxSource, 4);
@@ -5965,14 +5996,24 @@ void Player_Update(Player* player) {
             switch (gLevelMode) {
                 case LEVELMODE_ON_RAILS:
                     gLoadLevelObjects = true;
-                    Player_UpdateOnRails(player);
-                    player->draw = true;
+                    if (gTurretModeEnabled) {
+                        Turret_UpdateRails(player);
+                        player->draw = false;
+                    } else {
+                        Player_UpdateOnRails(player);
+                        player->draw = true;
+                    }
                     break;
 
                 case LEVELMODE_ALL_RANGE:
                     if (!gVersusMode) {
-                        Player_Update360(player);
-                        player->draw = true;
+                        if (gTurretModeEnabled) {
+                            Turret_Update360(player);
+                            player->draw = false;
+                        } else {
+                            Player_Update360(player);
+                            player->draw = true;
+                        }
                     } else if (gVsMatchStart) {
                         if (gPlayerInactive[player->num] == true) {
                             do {
@@ -6002,7 +6043,7 @@ void Player_Update(Player* player) {
 
                 case LEVELMODE_TURRET:
                     gLoadLevelObjects = true;
-                    Turret_Update(player);
+                    Turret_UpdateRails(player);
                     Player_CollisionCheck(player);
                     break;
             }
@@ -6611,7 +6652,7 @@ void Camera_SetStarfieldPos(f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 
     tempf = sqrtf(SQ(zEye - zAt) + SQ(xEye - xAt));
     pitch = -Math_Atan2F(yEye - yAt, tempf);
 
-    // Adjust yaw to stay within the range [-π/2, π/2]
+    // Adjust yaw to stay within the range [-??/2, ??/2]
     if (yaw >= M_PI / 2) {
         yaw -= M_PI;
     }
@@ -6663,11 +6704,13 @@ void Camera_Update(Player* player) {
         case PLAYERSTATE_ACTIVE:
             switch (gLevelMode) {
                 case LEVELMODE_ON_RAILS:
-                    if (player->form == FORM_ARWING) {
-                        if (!player->alternateView) {
-                            Camera_UpdateArwingOnRails(player);
-                        } else {
+                    if ((player->form == FORM_ARWING) || gTurretModeEnabled) {
+                        if (player->alternateView) {
                             Camera_UpdateCockpitOnRails(player, 0);
+                        } else if (gTurretModeEnabled) {
+                            Turret_UpdateRailsCamera(player);
+                        } else {
+                            Camera_UpdateArwingOnRails(player);
                         }
                     } else if (player->form == FORM_LANDMASTER) {
                         Player_UpdateTankCamOnRails(player);
@@ -6677,11 +6720,15 @@ void Camera_Update(Player* player) {
                     break;
 
                 case LEVELMODE_ALL_RANGE:
-                    Camera_Update360(player, false);
+                    if (gTurretModeEnabled) {
+                        Turret_Update360Camera(player);
+                    } else {
+                        Camera_Update360(player, false);
+                    }
                     break;
 
                 case LEVELMODE_TURRET:
-                    Turret_UpdateCamera(player);
+                    Turret_UpdateRailsCamera(player);
                     break;
             }
             break;

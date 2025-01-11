@@ -17,6 +17,7 @@ extern OptionState gOptionMenuStatus;
 extern s32 gPlayState;
 extern s32 D_ctx_80177868;
 extern LevelMode gLevelMode;
+extern bool gTurretModeEnabled;
 extern DrawMode gDrawMode;
 extern s32 gPlayerNum;
 extern s32 gCamCount;
