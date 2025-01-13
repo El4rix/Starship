@@ -2479,14 +2479,20 @@ void Audio_PlayBombExplodeSfx(u8 playerId, f32* sfxSource) {
 
 void Audio_StartEngineNoise(f32* sfxSource) {
     u32 sfxId = (gPlayer[0].sfx.levelType == LEVELTYPE_SPACE) ? NA_SE_ARWING_ENGINE_FS : NA_SE_ARWING_ENGINE_FG;
-
-    AUDIO_PLAY_SFX(sfxId, sfxSource, 0);
+    if (gTurretModeEnabled) {
+        AUDIO_PLAY_SFX(NA_SE_GREATFOX_ENGINE, sfxSource, 0);
+    } else {
+        AUDIO_PLAY_SFX(sfxId, sfxSource, 0);
+    }
 }
 
 void Audio_StopEngineNoise(f32* sfxSource) {
     u32 sfxId = (gPlayer[0].sfx.levelType == LEVELTYPE_SPACE) ? NA_SE_ARWING_ENGINE_FS : NA_SE_ARWING_ENGINE_FG;
-
-    Audio_KillSfxBySourceAndId(sfxSource, sfxId);
+    if (gTurretModeEnabled) {
+        Audio_KillSfxBySourceAndId(sfxSource, NA_SE_GREATFOX_ENGINE);
+    } else {
+        Audio_KillSfxBySourceAndId(sfxSource, sfxId);
+    }
 }
 
 void Audio_SetSfxSpeedModulation(f32 vel) {

@@ -932,7 +932,7 @@ bool Player_CheckAllGoldRings(void) {
 }
 
 void Player_DamageWings(Player* player, s32 side, s32 damage) {
-    if ((player->form == FORM_ARWING) && (gShieldAlpha[player->num] < 1.0f)) {
+    if ((player->form == FORM_ARWING) && (gShieldAlpha[player->num] < 1.0f) && !gTurretModeEnabled) {
         if (side == 1) {
             gRightWingFlashTimer[player->num] = 30;
             if (player->arwing.rightWingState == WINGSTATE_INTACT) {
@@ -2818,14 +2818,6 @@ void Player_InitVersus(void) {
     Play_ClearObjectData();
 }
 
-/* void Turret_AnchorActor(Actor* this) {
-    gPlayer[0].vel.z = this->vel.z = -this->fwork[1];
-    this->obj.pos.x = gPlayer[0].xPath;
-    this->obj.pos.y = gPlayer[0].yPath;
-    this->obj.pos.y = D_i6_801A6B80; // += ?
-    this->obj.pos.x = D_i6_801A6B90;
-} */
-
 void Play_Init(void) {
     s32 i;
 
@@ -2959,20 +2951,6 @@ void Play_Init(void) {
         gControllerRumbleTimers[i] = 0;
         gPlayerScores[i] = 0;
     }
-
-    /* if (gLevelMode == LEVELMODE_TURRET) {
-        ObjectInit objInit = { 100.0f, 0, 0, 0, {0, 180, 0}, OBJ_ACTOR_ZO_DODORA_WP_COUNT };
-
-        Actor_Load(&gActors[59], &objInit);
-        //gActors[59].fwork[1] = (gCurrentLevel == LEVEL_SECTOR_Y) ? 40.0f : 20.0f;
-        gActors[59].fwork[1] = (gCurrentLevel != LEVEL_UNK_15) ? 40.0f : 20.0f;
-
-        gActors[59].info.action = Turret_AnchorActor;
-        gActors[59].info.draw = NULL;
-
-        gPlayer[0].turretActor = 59;
-
-    } */
 
     if (gLevelMode == LEVELMODE_ALL_RANGE) {
         MEM_ARRAY_ALLOCATE(gScenery360, 200);
@@ -4655,10 +4633,6 @@ void Player_Setup(Player* playerx) {
     player->baseSpeed = gArwingSpeed;
     player->pos.y = 350.0f;
 
-    if (gTurretModeEnabled) {
-        player->unk_180 = 180.0f;
-    }
-
     switch (gCurrentLevel) {
         case LEVEL_MACBETH:
         case LEVEL_TITANIA:
@@ -4675,6 +4649,9 @@ void Player_Setup(Player* playerx) {
                 player->pos.y = 150.0f;
             } else {
                 player->pos.y = 0.0f;
+            }
+            if (gTurretModeEnabled) {
+                player->pathFloor = 40.0f;
             }
             break;
 
@@ -4828,6 +4805,12 @@ void Player_Setup(Player* playerx) {
     } else {
         player->unk_014 = 1.0f;
         player->unk_018 = 1.0f;
+    }
+
+    if (gTurretModeEnabled) {
+        player->unk_180 = 180.0f;
+        player->pos.y = ((player->pathHeight + player->pathFloor)/2);
+        Audio_StartEngineNoise();
     }
 
     if (D_ctx_8017782C && (gSavedObjectLoadIndex == 0)) {

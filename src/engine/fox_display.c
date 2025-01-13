@@ -2000,7 +2000,7 @@ void Display_Update(void) {
         }
     }
 
-    if ((gLevelMode == LEVELMODE_TURRET) && (gPlayer[0].state == PLAYERSTATE_ACTIVE)) {
+    if ((gTurretModeEnabled /* gLevelMode == LEVELMODE_TURRET */) && (gPlayer[0].state == PLAYERSTATE_ACTIVE)) {
         Turret_Draw(gPlayer);
     }
 

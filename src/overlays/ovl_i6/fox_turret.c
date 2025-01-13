@@ -1,5 +1,6 @@
 #include "global.h"
 #include "assets/ast_great_fox.h"
+#include "port/hooks/Events.h"
 
 f32 D_i6_801A6B80 = 50.0f;
 f32 D_i6_801A6B90 = 0.0f;
@@ -100,9 +101,9 @@ Gfx Guns_GF_GUNS_mesh_mesh_tri_0[] = {
 
 Gfx mat_Guns_f3dlite_material_058[] = {
 	gsDPPipeSync(),
-	gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0, 0, 0, 0, SHADE, TEXEL0, 0, SHADE, 0, 0, 0, 0, SHADE),
+	//gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0, 0, 0, 0, SHADE, TEXEL0, 0, SHADE, 0, 0, 0, 0, SHADE),
 	gsSPTexture(65535, 65535, 0, 0, 1),
-	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b_LOAD_BLOCK, 1, Guns_D_GREAT_FOX_E00B4B0_rgba16_png_019_rgba16),
+	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b_LOAD_BLOCK, 1, D_GREAT_FOX_E00B4B0 /* Guns_D_GREAT_FOX_E00B4B0_rgba16_png_019_rgba16 */),
 	gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b_LOAD_BLOCK, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
 	gsDPLoadBlock(7, 0, 0, 63, 1024),
 	gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b, 2, 0, 0, 0, G_TX_CLAMP | G_TX_NOMIRROR, 3, 0, G_TX_CLAMP | G_TX_NOMIRROR, 3, 0),
@@ -111,16 +112,16 @@ Gfx mat_Guns_f3dlite_material_058[] = {
 };
 
 Gfx Guns_GF_GUNS_mesh_mesh[] = {
-	gsSPClearGeometryMode(G_LIGHTING),
+	//gsSPClearGeometryMode(G_LIGHTING),
 	gsSPVertex(Guns_GF_GUNS_mesh_mesh_vtx_cull + 0, 8, 0),
-	gsSPSetGeometryMode(G_LIGHTING),
+	//gsSPSetGeometryMode(G_LIGHTING),
 	gsSPCullDisplayList(0, 7),
 	gsSPDisplayList(mat_Guns_f3dlite_material_058),
 	gsSPDisplayList(Guns_GF_GUNS_mesh_mesh_tri_0),
 	gsDPPipeSync(),
-	gsSPSetGeometryMode(G_LIGHTING),
-	gsSPClearGeometryMode(G_TEXTURE_GEN),
-	gsDPSetCombineLERP(0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT, 0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT),
+	//gsSPSetGeometryMode(G_LIGHTING),
+	//gsSPClearGeometryMode(G_TEXTURE_GEN),
+	//gsDPSetCombineLERP(0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT, 0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT),
 	gsSPTexture(65535, 65535, 0, 0, 0),
 	gsSPEndDisplayList(),
 };
@@ -237,7 +238,8 @@ void Turret_GreatFoxLaser(Player* player, f32 xOffset) {
     for (i = 0; i < ARRAY_COUNT(gPlayerShots); i++) {
         if (gPlayerShots[i].obj.status == SHOT_FREE) {
             Turret_SetupShot(player, &gPlayerShots[i], xOffset, -100.0f, 200.0f, PLAYERSHOT_GFOX_LASER, 100.0f);
-            Play_PlaySfxFirstPlayer(gPlayerShots[i].sfxSource, NA_SE_GREATFOX_SHOT_DEMO); //NA_SE_TURRET_SHOT
+            //Play_PlaySfxFirstPlayer(gPlayerShots[i].sfxSource, NA_SE_GREATFOX_SHOT_DEMO); //NA_SE_TURRET_SHOT
+            AUDIO_PLAY_SFX(NA_SE_GREATFOX_SHOT_DEMO, gPlayerShots[i].sfxSource, 4);
             break;
         }
     }
@@ -270,6 +272,7 @@ void Turret_Shoot(Player* player) {
     // Fires the lock on attack? The code is missing if so
     if (gControllerPress[player->num].button & R_TRIG) {
         player->turretLockOnCount = 0;
+        AUDIO_PLAY_SFX(NA_SE_EN_A6BOSS_CHARGE, gDefaultSfxSource, 4);
     }
 
     // Draws a textured line to each Event Actor in sequence as R is held. Some sort of charged lock on attack?
@@ -301,9 +304,14 @@ void Turret_Shoot(Player* player) {
             player->turretLockOnCount = ARRAY_COUNT(gActors);
         } else {
             player->turretLockOnCount = player->turretLockOnCount;
+            if (gControllerPress[player->num].button & A_BUTTON) {
+                Player_SetupArwingShot(player, &gPlayerShots[ARRAY_COUNT(gPlayerShots) - 1], 0.0f, 0.0f, PLAYERSHOT_BOMB,
+                                   180.0f);
+            }
         }
     } else {
         player->turretLockOnCount = 0;
+        Audio_KillSfxBySourceAndId(gDefaultSfxSource, NA_SE_EN_A6BOSS_CHARGE);
     }
 }
 
@@ -333,7 +341,7 @@ void Turret_UpdateRails(Player* player) {
         gInputHold->button = gBoostButton[player->num];
         player->boostMeter = 1.0f;
     }
-    //Player_MoveArwingOnRails(player);
+    // Player_MoveArwingOnRails(player);
     Player_UpdatePath(player);
     Turret_Shoot(player);
     Player_CollisionCheck(player);
@@ -341,6 +349,8 @@ void Turret_UpdateRails(Player* player) {
     Player_WaterEffects(player);
     Player_FloorCheck(player);
     Player_LowHealthAlarm(player);
+
+    // Kill
     if ((player->shields <= 0) && (player->radioDamageTimer != 0)) {
         Player_Down(player);
         player->vel.x *= 0.2f;
@@ -411,6 +421,7 @@ void Turret_UpdateRails(Player* player) {
     }
     player->flags_228 = 0;
 
+    //Encourage not looking back
     if (player->unk_008 > 30.0f) {
         player->flags_228 |= PFLAG_228_0;
     }
@@ -435,20 +446,19 @@ void Turret_UpdateRails(Player* player) {
     
     // Resets position
     if (gControllerHold[player->num].button & B_BUTTON) {
-        
-        if (D_i6_801A6B80 > 550.0f){
+        if (D_i6_801A6B80 > ((player->pathHeight + player->pathFloor)/2) + player->yPath + 50){
             D_i6_801A6B80 -= 100.0f;
         }
 
-        else if (D_i6_801A6B80 < 450.0f){
+        else if (D_i6_801A6B80 < ((player->pathHeight + player->pathFloor)/2) + player->yPath - 50){
             D_i6_801A6B80 += 100.0f;
         }
 
-        if (D_i6_801A6B90 > 50.0f){
+        if (D_i6_801A6B90 > player->xPath + 50.0f){
             D_i6_801A6B90 -= 100.0f;
         }
 
-        else if (D_i6_801A6B90 < -50.0f){
+        else if (D_i6_801A6B90 < player->xPath - 50.0f){
             D_i6_801A6B90 += 100.0f;
         }
     }
@@ -508,36 +518,66 @@ void Turret_UpdateRails(Player* player) {
 
     Matrix_MultVec3fNoTranslate(gCalcMatrix, &sp68, &sp50);
 
-    player->vel.x = (sp5C.x + sp50.x) * player->unk_150;
-    player->vel.y = (sp5C.y + sp50.y) * player->unk_150;
-    player->vel.z = sp5C.z + sp50.z;
-
+    // Keep up with Andross
     if (gCurrentLevel == LEVEL_VENOM_ANDROSS) {
         player->vel.z += D_Andross_801A7F58;
     }
+
+    // Stay within path boundaries
+    /* if (player->pos.x > (player->pathWidth + player->xPath)) {
+        player->pos.x = player->pathWidth + player->xPath;
+        player->vel.x = 0.0f;
+        player->knockback.x = 0.0f;
+    }
+    if (player->pos.x < (player->xPath - player->pathWidth)) {
+        player->pos.x = player->xPath - player->pathWidth;
+        player->vel.x = 0.0f;
+        player->knockback.x = 0.0f;
+    }
+    if (player->pos.y > (player->pathHeight + player->yPath)) {
+        player->pos.y = player->pathHeight + player->yPath;
+        player->vel.y = 0.0f;
+        player->knockback.y = 0.0f;
+    } */
+    if (player->pos.y < (player->pathFloor + player->yPath + 40.0f)) {
+        player->pos.y = player->pathFloor + player->yPath + 40.0f;
+        //player->vel.y = 0.0f;
+        //player->knockback.y = 0.0f;
+    }
+
+    player->vel.x = (sp5C.x + sp50.x) * player->unk_150;
+    player->vel.y = (sp5C.y + sp50.y) * player->unk_150;
+    player->vel.z = sp5C.z + sp50.z;
     
     player->pos.z += player->vel.z;
 
     // Move Around
     if ((gControllerHold[player->num].button & U_JPAD) || (gControllerHold[player->num].button & U_CBUTTONS)) {
-        D_i6_801A6B80 += 20.0f;
+        if (player->pos.y < (player->pathHeight + player->yPath)) {
+            D_i6_801A6B80 += 20.0f;
+        }        
     }
     if ((gControllerHold[player->num].button & D_JPAD) || (gControllerHold[player->num].button & D_CBUTTONS)) {
-        D_i6_801A6B80 -= 20.0f;
+        if (player->pos.y > (player->pathFloor + player->yPath + 40)) {
+            D_i6_801A6B80 -= 20.0f;
+        }
     }
 
     if ((gControllerHold[player->num].button & R_JPAD) || (gControllerHold[player->num].button & R_CBUTTONS)) {
-        D_i6_801A6B90 += 20.0f;
+        if (player->pos.x < (player->xPath + player->pathWidth)) {
+            D_i6_801A6B90 += 20.0f;
+        }
     }
     if ((gControllerHold[player->num].button & L_JPAD) || (gControllerHold[player->num].button & L_CBUTTONS)) {
-        D_i6_801A6B90 -= 20.0f;
+        if (player->pos.x > (player->xPath - player->pathWidth)) {
+            D_i6_801A6B90 -= 20.0f;
+        }
     }
 
     //player->pos.x = D_i6_801A6B90;
     //player->pos.y = D_i6_801A6B80;
-
-    Math_SmoothStepToF(&player->pos.x, D_i6_801A6B90, 0.5f, 10.0f, 0.001f);
-    Math_SmoothStepToF(&player->pos.y, D_i6_801A6B80, 0.5f, 10.0f, 0.001f);
+    Math_SmoothStepToF(&player->pos.x, D_i6_801A6B90, 0.5f, 15.0f, 0.00001f);
+    Math_SmoothStepToF(&player->pos.y, D_i6_801A6B80, 0.5f, 15.0f, 0.00001f);
     
     Math_SmoothStepToF(&player->unk_180, -player->unk_008 + 180, 0.5f, 3.0f, 0.00001f);
     Math_SmoothStepToF(&player->unk_17C, -player->unk_00C, 0.5f, 3.0f, 0.00001f);
@@ -750,10 +790,12 @@ void Turret_Draw(Player* player) {
 
     // Draws turret guns. They are 100 units to the left and right of the player and 100 units below
     RCP_SetupDL_27();
-    if ((player->turretRecoil > 20) && (player->turretState >= 2)) {
-        gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 200, 0, 100, 255);
+    if ((player->turretRecoil > 21) && (player->turretState >= 2)) {
+        gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 125, 255);
+    } else if ((player->turretRecoil > 13) && (player->turretState >= 2)) {
+        gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 125, 255, 255);
     } else {
-        gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 255);
+        gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 155, 155, 155, 255);
     }
     Matrix_Push(&gGfxMatrix);
     Matrix_Translate(gGfxMatrix, -100.0f, -100.0f, -200.0f + player->turretRecoil, MTXF_APPLY);
@@ -783,20 +825,20 @@ void Turret_Draw(Player* player) {
         RCP_SetupDL_64();
         gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 128);
         Matrix_Push(&gGfxMatrix);
-        Matrix_Translate(gGfxMatrix, -100.0f, -100.0f, -200.0f + player->turretRecoil, MTXF_APPLY);
+        Matrix_Translate(gGfxMatrix, -150.0f, -90.0f, -300.0f + player->turretRecoil, MTXF_APPLY);
         Matrix_RotateY(gGfxMatrix, player->rot.y * M_DTOR, MTXF_APPLY);
         Matrix_RotateX(gGfxMatrix, -player->rot.x * M_DTOR, MTXF_APPLY);
         Matrix_Translate(gGfxMatrix, 0.0f, 0.0f, -188.0f, MTXF_APPLY);
-        Matrix_Scale(gGfxMatrix, 2.0f, 2.0f, 2.0f, MTXF_APPLY);
+        Matrix_Scale(gGfxMatrix, 2.5f, 2.5f, 2.5f, MTXF_APPLY);
         Matrix_SetGfxMtx(&gMasterDisp);
         gSPDisplayList(gMasterDisp++, aOrbDL); // was D_1024AC0
         Matrix_Pop(&gGfxMatrix);
         Matrix_Push(&gGfxMatrix);
-        Matrix_Translate(gGfxMatrix, 100.0f, -100.0f, -200.0f + player->turretRecoil, MTXF_APPLY);
+        Matrix_Translate(gGfxMatrix, 150.0f, -90.0f, -300.0f + player->turretRecoil, MTXF_APPLY);
         Matrix_RotateY(gGfxMatrix, player->rot.y * M_DTOR, MTXF_APPLY);
         Matrix_RotateX(gGfxMatrix, -player->rot.x * M_DTOR, MTXF_APPLY);
         Matrix_Translate(gGfxMatrix, 0.0f, 0.0f, -188.0f, MTXF_APPLY);
-        Matrix_Scale(gGfxMatrix, 2.0f, 2.0f, 2.0f, MTXF_APPLY);
+        Matrix_Scale(gGfxMatrix, 2.5f, 2.5f, 2.5f, MTXF_APPLY);
         Matrix_SetGfxMtx(&gMasterDisp);
         gSPDisplayList(gMasterDisp++, aOrbDL); // D_1024AC0
         Matrix_Pop(&gGfxMatrix);

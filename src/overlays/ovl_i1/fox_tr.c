@@ -32,7 +32,7 @@ void Training_ItemRing_Update(ItemTrainingRing* this) {
 
                 if (this->obj.pos.z > (gPlayer[0].trueZpos + var_fv0)) {
                     this->unk_44 = 1;
-                    PRINTF("â™ª:ãƒªãƒ³ã‚°æœªé€šéŽéŸ³\n"); // Ring not passed sound
+                    PRINTF("???:?????³ã?°æ???????????\n"); // Ring not passed sound
                     AUDIO_PLAY_SFX(NA_SE_RING_MISS, gDefaultSfxSource, 4);
                     gRingPassCount = 0;
                 }
@@ -43,7 +43,7 @@ void Training_ItemRing_Update(ItemTrainingRing* this) {
                 this->timer_48 = 50;
                 this->info.cullDistance = 10000.0f;
 
-                PRINTF("â™ª:ãƒªãƒ³ã‚°é€šéŽéŸ³\n"); // Ring passing sound
+                PRINTF("???:?????³ã?°é????????\n"); // Ring passing sound
                 AUDIO_PLAY_SFX(NA_SE_RING_PASS, gDefaultSfxSource, 4);
 
                 gRingPassCount++;
@@ -58,7 +58,7 @@ void Training_ItemRing_Update(ItemTrainingRing* this) {
             this->obj.pos.x += ((gPlayer[this->playerNum].pos.x - this->obj.pos.x) * 0.05f);
             this->obj.pos.y += ((gPlayer[this->playerNum].pos.y - this->obj.pos.y) * 0.05f);
 
-            if (gPlayer[0].alternateView) {
+            if (gPlayer[0].alternateView || gTurretModeEnabled) {
                 this->obj.pos.z += (gPlayer[this->playerNum].trueZpos - 300.0f - this->obj.pos.z) * 0.05f;
             } else {
                 this->obj.pos.z += ((gPlayer[this->playerNum].trueZpos - this->obj.pos.z) * 0.05f);

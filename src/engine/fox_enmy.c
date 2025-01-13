@@ -487,7 +487,13 @@ void Object_Load(ObjectInit* objInit, f32 xMax, f32 xMin, f32 yMax, f32 yMin) {
         }
         if ((objInit->id >= OBJ_ITEM_START) && (objInit->id < OBJ_ITEM_MAX)) {
             for (i = 0; i < ARRAY_COUNT(gItems); i++) {
-                if (gItems[i].obj.status == OBJ_FREE) {
+                if ((gItems[i].obj.status == OBJ_FREE)) {
+                    if (gTurretModeEnabled) {
+                        if ((objInit->id == OBJ_ITEM_LASERS) || (objInit->id == OBJ_ITEM_SILVER_RING) || (objInit->id == OBJ_ITEM_SILVER_STAR)
+                            || (objInit->id == OBJ_ITEM_BOMB) || (objInit->id == OBJ_ITEM_1UP) || (objInit->id == OBJ_ITEM_GOLD_RING) || (objInit->id == OBJ_ITEM_WING_REPAIR)) {
+                            break;
+                        }
+                    }
                     Item_Load(&gItems[i], objInit);
                     break;
                 }
@@ -2006,6 +2012,15 @@ void Item_CheckBounds(Item* this) {
         if (this->obj.pos.x < gPlayer[0].xPath - var_fa1) {
             Math_SmoothStepToF(&this->obj.pos.x, gPlayer[0].xPath - var_fa1, 0.1f, 10.0f, 0.01f);
         }
+        if ((gTurretModeEnabled) && this->obj.pos.z > gPlayer[0].trueZpos - 1500.0f) {
+            Math_SmoothStepToF(&this->obj.pos.x, gPlayer[0].pos.x, 0.1f, 10.0f, 0.01f);
+            Math_SmoothStepToF(&this->obj.pos.y, gPlayer[0].pos.y, 0.1f, 10.0f, 0.01f);
+        }
+        if ((gTurretModeEnabled) && (this->obj.pos.z > gPlayer[0].trueZpos)) {
+            this->obj.pos.z = gPlayer[0].trueZpos;
+            this->obj.pos.y = gPlayer[0].pos.y;
+            this->obj.pos.x = gPlayer[0].pos.x;
+        }
     }
     if (this->obj.pos.y > 650.0f) {
         Math_SmoothStepToF(&this->obj.pos.y, 650.0f, 0.1f, 10.0f, 0.01f);
@@ -2058,6 +2073,11 @@ void Item_SpinPickup(Item* this) {
     }
     this->obj.rot.y += this->unk_50;
     this->obj.rot.y = Math_ModF(this->obj.rot.y, 360.0f);
+
+    if (this->collected && gTurretModeEnabled) {
+        this->obj.pos.y = gPlayer[this->playerNum].pos.y + 50.0f;
+        this->obj.pos.z = gPlayer[this->playerNum].trueZpos - 250.0f;
+    }
 }
 
 void Actor_SetupDebris70(ActorDebris* this, f32 xPos, f32 yPos, f32 zPos, f32 xRot, f32 yRot, f32 xVel, f32 yVel,
@@ -2245,13 +2265,15 @@ void ItemPickup_Update(Item* this) {
         Math_SmoothStepToF(&this->width, 2.5f, 1.0f, 0.5f, 0.0f);
         this->obj.pos.x += (gPlayer[this->playerNum].pos.x - this->obj.pos.x) * 0.5f;
 
-        if (gPlayer[this->playerNum].form == FORM_LANDMASTER) {
+        if ((gPlayer[this->playerNum].form == FORM_LANDMASTER) && !gTurretModeEnabled) {
             this->obj.pos.y += ((gPlayer[this->playerNum].pos.y + 50.0f) - this->obj.pos.y) * 0.5f;
         } else {
             this->obj.pos.y += (gPlayer[this->playerNum].pos.y - this->obj.pos.y) * 0.5f;
         }
 
-        this->obj.pos.z += (gPlayer[this->playerNum].trueZpos - this->obj.pos.z) * 0.5f;
+        if (!gTurretModeEnabled) {
+            this->obj.pos.z += (gPlayer[this->playerNum].trueZpos - this->obj.pos.z) * 0.5f;
+        }
 
         if (this->timer_48 == 0) {
             Object_Kill(&this->obj, this->sfxSource);
@@ -2324,10 +2346,12 @@ void ItemSupplyRing_Update(Item* this) {
 
             if (gPlayer[this->playerNum].form == FORM_LANDMASTER) {
                 this->obj.pos.y += (gPlayer[this->playerNum].pos.y + 50.0f - this->obj.pos.y) * 0.5f;
+            } else if (gTurretModeEnabled) {
+                this->obj.pos.y = gPlayer[this->playerNum].pos.y;
             } else {
                 this->obj.pos.y += (gPlayer[this->playerNum].pos.y - this->obj.pos.y) * 0.5f;
             }
-            if (gPlayer[0].alternateView && (gLevelMode == LEVELMODE_ON_RAILS)) {
+            if (gPlayer[0].alternateView || gTurretModeEnabled) {
                 this->obj.pos.z += (gPlayer[this->playerNum].trueZpos - 300.0f - this->obj.pos.z) * 0.3f;
             } else {
                 this->obj.pos.z += (gPlayer[this->playerNum].trueZpos - this->obj.pos.z) * 0.5f;
@@ -2436,7 +2460,7 @@ void ItemCheckpoint_Update(ItemCheckpoint* this) {
         } else {
             this->obj.pos.y += (gPlayer[this->playerNum].pos.y - this->obj.pos.y) * 0.3f;
         }
-        if (gPlayer[0].alternateView) {
+        if (gPlayer[0].alternateView || gTurretModeEnabled) {
             this->obj.pos.z += (gPlayer[this->playerNum].trueZpos - 200.0f - this->obj.pos.z) * 0.3f;
         } else {
             this->obj.pos.z += (gPlayer[this->playerNum].trueZpos - 100.0f - this->obj.pos.z) * 0.3f;
