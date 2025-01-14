@@ -3019,8 +3019,12 @@ void Player_SetupArwingShot(Player* player, PlayerShot* shot, f32 arg2, f32 arg3
     PlayerShot_Initialize(shot);
 
     Matrix_RotateY(gCalcMatrix, (player->yRot_114 + player->rot.y + 180.0f) * M_DTOR, MTXF_NEW);
-    Matrix_RotateX(gCalcMatrix, -((player->xRot_120 + player->rot.x + player->aerobaticPitch) * M_DTOR), MTXF_APPLY);
     Matrix_RotateZ(gCalcMatrix, -((player->bankAngle + player->rockAngle) * M_DTOR), MTXF_APPLY);
+    if (gTurretModeEnabled) {
+        Matrix_RotateX(gCalcMatrix, (player->xRot_120 + player->rot.x + player->aerobaticPitch) * M_DTOR, MTXF_APPLY);
+    } else {
+        Matrix_RotateX(gCalcMatrix, -((player->xRot_120 + player->rot.x + player->aerobaticPitch) * M_DTOR), MTXF_APPLY);
+    }
 
     Matrix_Translate(gCalcMatrix, player->xShake, player->yBob, 0.0f, MTXF_APPLY);
 
@@ -3055,6 +3059,10 @@ void Player_SetupArwingShot(Player* player, PlayerShot* shot, f32 arg2, f32 arg3
         shot->obj.pos.y = player->pos.y + sp2C.y;
         shot->obj.pos.z = player->trueZpos + sp2C.z;
         shot->timer = 38;
+    } else if (gTurretModeEnabled) {
+        shot->obj.pos.x = player->pos.x + sp2C.x + (sp38.x * 1.2);
+        shot->obj.pos.y = player->pos.y + sp2C.y + (sp38.y * 1.2);
+        shot->obj.pos.z = player->trueZpos + sp2C.z + (sp38.z * 1.2f);
     } else {
         shot->obj.pos.x = player->pos.x + sp2C.x + (sp38.x * 1.2);
         shot->obj.pos.y = player->pos.y + sp2C.y + (sp38.y * 1.2);
@@ -3209,7 +3217,7 @@ void Player_ArwingLaser(Player* player) {
 void Player_SmartBomb(Player* player) {
 
     if ((gBombCount[player->num] != 0) && (gBombButton[player->num] & gInputPress->button) &&
-        (gPlayerShots[ARRAY_COUNT(gPlayerShots) - 1].obj.status == SHOT_FREE)) {
+        (gPlayerShots[ARRAY_COUNT(gPlayerShots) - 1].obj.status == SHOT_FREE) || gTurretModeEnabled) {
         CALL_CANCELLABLE_RETURN_EVENT(PlayerActionPreBombEvent, player);
 
         if (gVersusMode) {

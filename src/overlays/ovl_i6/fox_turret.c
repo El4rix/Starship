@@ -248,11 +248,11 @@ void Turret_GreatFoxLaser(Player* player, f32 xOffset) {
 void Turret_Shoot(Player* player) {
     s32 i;
 
-    if (gControllerPress[player->num].button & A_BUTTON) {
+    if ((gControllerPress[player->num].button & A_BUTTON) && !(gControllerHold[player->num].button & R_TRIG))  {
         player->shotTimer = 0;
     }
     // Fires two great fox lasers. Offsets match up with the possible guns in Draw.
-    if (gControllerHold[player->num].button & A_BUTTON) {
+    if ((gControllerHold[player->num].button & A_BUTTON) && !(gControllerHold[player->num].button & R_TRIG)) {
         if (player->shotTimer == 0) {
             Turret_GreatFoxLaser(player, -100.0f);
             Turret_GreatFoxLaser(player, 100.0f);
@@ -279,12 +279,12 @@ void Turret_Shoot(Player* player) {
     for (i = 1; i < player->turretLockOnCount; i++) {
         if ((gActors[i].obj.status == OBJ_ACTIVE) && (gActors[i].obj.id == OBJ_ACTOR_EVENT)) {
             gTexturedLines[i].mode = 3;
-            gTexturedLines[i].xyScale = 0.1f;
+            gTexturedLines[i].xyScale = 0.01f;
             gTexturedLines[i].zScale = 1.0f;
 
             gTexturedLines[i].posAA.x = player->pos.x;
-            gTexturedLines[i].posAA.y = player->pos.y - 25.0f; //0.0f
-            gTexturedLines[i].posAA.z = player->pos.z - 100.0f;
+            gTexturedLines[i].posAA.y = player->pos.y; //0.0f
+            gTexturedLines[i].posAA.z = player->pos.z - 10.0f; //100
 
             gTexturedLines[i].timer = 2;
 
@@ -299,20 +299,49 @@ void Turret_Shoot(Player* player) {
         }
     }
     if (gControllerHold[player->num].button & R_TRIG) {
+        Player_SetupArwingShot(player, &gPlayerShots[ARRAY_COUNT(gPlayerShots) - 1], 0.0f, 0.0f, PLAYERSHOT_BOMB,
+            180.0f);
+        //TurretLaserChargeSpawn();
         player->turretLockOnCount++;
         if (player->turretLockOnCount > ARRAY_COUNT(gActors)) {
             player->turretLockOnCount = ARRAY_COUNT(gActors);
+            //func_effect_80081BEC(player->pos.x, player->pos.y, player->trueZpos - 500.0f, 1.0f, 9);
+            AUDIO_PLAY_SFX(NA_SE_MISSILE_ALARM, gDefaultSfxSource, 4);
         } else {
             player->turretLockOnCount = player->turretLockOnCount;
-            if (gControllerPress[player->num].button & A_BUTTON) {
-                Player_SetupArwingShot(player, &gPlayerShots[ARRAY_COUNT(gPlayerShots) - 1], 0.0f, 0.0f, PLAYERSHOT_BOMB,
-                                   180.0f);
-            }
         }
+    } else if ((player->turretLockOnCount == ARRAY_COUNT(gActors)) && !(gControllerHold[player->num].button & R_TRIG)) {
+       player->turretLockOnCount = 0;
+       Player_SmartBomb(player);
     } else {
-        player->turretLockOnCount = 0;
-        Audio_KillSfxBySourceAndId(gDefaultSfxSource, NA_SE_EN_A6BOSS_CHARGE);
+       player->turretLockOnCount = 0;
+       Audio_KillSfxBySourceAndId(gDefaultSfxSource, NA_SE_EN_A6BOSS_CHARGE);
     }
+}
+
+void TurretLaserChargeSpawn(void) {
+    s32 i;
+
+    for (i = 0; i < ARRAY_COUNT(gEffects); i++) {
+        if (gEffects[i].obj.status == OBJ_FREE) {
+            TurretLaserChargeSetup(&gEffects[i]);
+            break;
+        }
+    }
+}
+
+void TurretLaserChargeSetup(Effect395* this) {
+    Effect_Initialize(this);
+    this->obj.status = OBJ_INIT;
+    this->obj.id = OBJ_EFFECT_395;
+
+    this->obj.pos.x = gPlayer[0].pos.x;
+    this->obj.pos.y = gPlayer[0].pos.y + 200;
+    this->obj.pos.z = gPlayer[0].trueZpos - 1500.0f;
+
+    this->state = 13;
+    this->scale2 = 1.0f;
+    Object_SetInfo(&this->info, this->obj.id);
 }
 
 void Turret_UpdateRails(Player* player) {

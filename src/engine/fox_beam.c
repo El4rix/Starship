@@ -51,6 +51,10 @@ void PlayerShot_ExplodeBomb(PlayerShot* shot) {
     f32 var_fv1;
     s32 var_v0;
 
+    if (gTurretModeEnabled) {
+        shot->obj.pos.z = gPlayer[0].trueZpos - 700.0f;
+    }
+
     if (shot->unk_5C == 0) {
         shot->vel.x = shot->vel.y = shot->vel.z = shot->obj.rot.x = shot->obj.rot.y = shot->obj.rot.z = 0.0f;
         shot->scale = 1.0f;
@@ -58,7 +62,7 @@ void PlayerShot_ExplodeBomb(PlayerShot* shot) {
         shot->timer = 30;
         shot->unk_58 = 150;
         Audio_PlayBombExplodeSfx(shot->sourceId, shot->sfxSource);
-        gScreenFlashTimer = 4;
+        //gScreenFlashTimer = 4;
         if (shot->obj.pos.y < (gGroundHeight + 450.0f)) {
             gCameraShake = 15;
             if (gGroundSurface == SURFACE_WATER) {
@@ -2030,6 +2034,12 @@ void PlayerShot_ApplyExplosionDamage(PlayerShot* shot, s32 damage) {
 void PlayerShot_UpdateBomb(PlayerShot* shot) {
     Vec3f test;
     f32 var_ft5;
+
+    if (gTurretModeEnabled) {
+        if (!(gControllerHold[0].button & R_TRIG)) {
+            PlayerShot_ExplodeBomb(shot);
+        }
+    }
 
     switch (shot->unk_5C) {
         case 0:

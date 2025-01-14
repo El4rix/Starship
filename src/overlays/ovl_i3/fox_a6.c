@@ -357,8 +357,8 @@ f32 D_i3_801BF494[12] = {
 
 void Area6_ActorMissileSeekPlayer_Setup(ActorMissileSeekPlayer* this, f32 xPos, f32 yPos, f32 zPos, f32 fwork6,
                                         f32 xRot, f32 yRot, s32 timer0BC, s32 unk0B4) {
-    PRINTF("おん\n"); // On
-    PRINTF("おふ\n"); // Off
+    PRINTF("??????\n"); // On
+    PRINTF("??????\n"); // Off
     Actor_Initialize(this);
     this->obj.status = OBJ_INIT;
     this->obj.id = OBJ_ACTOR_MISSILE_SEEK_PLAYER;

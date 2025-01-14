@@ -41,6 +41,8 @@ void SectorY_SyRobot_Draw(Actor*);
 void Turret_Update(Player*);
 void Turret_UpdateCamera(Player*);
 void Turret_Draw(Player *);
+void TurretLaserChargeSpawn(void);
+void TurretLaserChargeSetup(Effect395*);
 
 void Andross_ActorTeamArwing_Update(Actor*);
 void Andross_ActorTeamArwing_Draw(Actor*);
