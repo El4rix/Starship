@@ -3671,6 +3671,7 @@ void Player_UpdatePath(Player* player) {
         }
     }
 
+    // Change path (position)
     if (gCurrentLevel == LEVEL_UNK_15) {
         Math_SmoothStepToF(&player->pathStep, 10.0f, 0.1f, 0.5f, 0.0001f);
         player->pos.x += Math_SmoothStepToF(&player->xPath, player->xPathTarget, 0.1f, player->pathStep, 0.0001f);
@@ -3680,7 +3681,9 @@ void Player_UpdatePath(Player* player) {
         gPathVelX = Math_SmoothStepToF(&player->xPath, player->xPathTarget, 0.1f, player->pathStep, 0.0001f);
         gPathVelY = Math_SmoothStepToF(&player->yPath, player->yPathTarget, 0.1f, player->pathStep, 0.0001f);
     }
-    if (player->pathChangeTimer != 0) {
+
+    // Change path (rotation)
+    if ((player->pathChangeTimer != 0) && !gTurretModeEnabled) {
         player->pathChangeTimer--;
         Math_SmoothStepToF(&player->yRot_114, player->pathChangeYaw, 0.03f, 0.5f, 0.0001f);
         Math_SmoothStepToF(&player->xRot_120, player->pathChangePitch, 0.03f, 0.5f, 0.0001f);
@@ -4674,7 +4677,11 @@ void Player_Setup(Player* playerx) {
 
         case LEVEL_SOLAR:
         case LEVEL_ZONESS:
-            player->pathFloor = -450.0f;
+            if (gTurretModeEnabled) {
+                player->pathFloor = 40.0f;
+            } else {
+                player->pathFloor = -450.0f;
+            }
             break;
     }
 
@@ -4813,12 +4820,6 @@ void Player_Setup(Player* playerx) {
     } else {
         player->unk_014 = 1.0f;
         player->unk_018 = 1.0f;
-    }
-
-    if (gTurretModeEnabled) {
-        player->unk_180 = 180.0f;
-        player->pos.y = ((player->pathHeight + player->pathFloor)/2);
-        Audio_StartEngineNoise();
     }
 
     if (D_ctx_8017782C && (gSavedObjectLoadIndex == 0)) {
@@ -4985,6 +4986,13 @@ void Player_Setup(Player* playerx) {
         player->arwing.laserGunsYpos = -10.0f;
     }
     gPauseEnabled = false;
+
+    if (gTurretModeEnabled) {
+        player->unk_180 = 180.0f;
+        //player->pos.y = 350;
+        D_i6_801A6B80 = player->pos.y = ((player->pathHeight + player->pathFloor)/2);
+        Audio_StartEngineNoise();
+    }
 }
 
 void Player_UpdateArwingRoll(Player* player) {

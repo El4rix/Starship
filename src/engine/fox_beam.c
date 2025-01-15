@@ -687,7 +687,16 @@ void PlayerShot_ApplyDamageToActor(PlayerShot* shot, Actor* actor, s32 hitIndex)
         }
     }
     if (shot->obj.id == PLAYERSHOT_GFOX_LASER) {
-        actor->damage = 100;
+        if ((gTurretModeEnabled)) {
+            if ((actor->eventType == EVID_TEAMMATE) || (actor->obj.id == OBJ_ACTOR_TEAM_BOSS) || (actor->obj.id == OBJ_ACTOR_TEAM_ARWING)) {
+                actor->damage = 10;
+            } else {
+                actor->damage = 100;
+                actor->dmgType = DMG_EXPLOSION;
+            }
+        } else {
+            actor->damage = 100;
+        }
     } else if (shot->obj.id == PLAYERSHOT_LOCK_ON) {
         if (gCurrentLevel == LEVEL_AQUAS) {
             actor->damage = 31;
@@ -1497,10 +1506,16 @@ void PlayerShot_DrawShot(PlayerShot* shot) {
                 }
                 break;
             case PLAYERSHOT_GFOX_LASER:
-                Matrix_RotateY(gGfxMatrix, M_PI, MTXF_APPLY);
-                Matrix_Scale(gGfxMatrix, 3.0f, 3.0f, 20.0f, MTXF_APPLY);
+                if (gTurretModeEnabled) { //It was backwards some reason
+                    Matrix_RotateY(gGfxMatrix, M_PI*2, MTXF_APPLY);
+                    Matrix_Scale(gGfxMatrix, 6.0f, 6.0f, 20.0f, MTXF_APPLY);
+                    RCP_SetupDL_21();
+                } else {
+                    Matrix_RotateY(gGfxMatrix, M_PI, MTXF_APPLY);
+                    Matrix_Scale(gGfxMatrix, 3.0f, 3.0f, 20.0f, MTXF_APPLY);
+                    RCP_SetupDL_40();
+                }
                 Matrix_SetGfxMtx(&gMasterDisp);
-                RCP_SetupDL_40();
                 gSPDisplayList(gMasterDisp++, D_GREAT_FOX_E00DFB0);
                 break;
         }

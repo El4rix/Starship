@@ -237,7 +237,7 @@ void Turret_GreatFoxLaser(Player* player, f32 xOffset) {
 
     for (i = 0; i < ARRAY_COUNT(gPlayerShots); i++) {
         if (gPlayerShots[i].obj.status == SHOT_FREE) {
-            Turret_SetupShot(player, &gPlayerShots[i], xOffset, -100.0f, 200.0f, PLAYERSHOT_GFOX_LASER, 100.0f);
+            Turret_SetupShot(player, &gPlayerShots[i], xOffset, -130.0f, 250.0f, PLAYERSHOT_GFOX_LASER, 100.0f);
             //Play_PlaySfxFirstPlayer(gPlayerShots[i].sfxSource, NA_SE_GREATFOX_SHOT_DEMO); //NA_SE_TURRET_SHOT
             AUDIO_PLAY_SFX(NA_SE_GREATFOX_SHOT_DEMO, gPlayerShots[i].sfxSource, 4);
             break;
@@ -254,8 +254,8 @@ void Turret_Shoot(Player* player) {
     // Fires two great fox lasers. Offsets match up with the possible guns in Draw.
     if ((gControllerHold[player->num].button & A_BUTTON) && !(gControllerHold[player->num].button & R_TRIG)) {
         if (player->shotTimer == 0) {
-            Turret_GreatFoxLaser(player, -100.0f);
-            Turret_GreatFoxLaser(player, 100.0f);
+            Turret_GreatFoxLaser(player, -120.0f);
+            Turret_GreatFoxLaser(player, 120.0f);
             player->turretRecoil = 30;
         }
         player->shotTimer++;
@@ -468,26 +468,23 @@ void Turret_UpdateRails(Player* player) {
     if (gControllerPress[player->num].button & B_BUTTON) {
         player->unk_008 = 0.0f;
         player->unk_00C = 0.0f;
-        
-        /* D_i6_801A6B80 = 500.0f;
-        D_i6_801A6B90 = 0.0f; */
     }
     
     // Resets position
     if (gControllerHold[player->num].button & B_BUTTON) {
-        if (D_i6_801A6B80 > ((player->pathHeight + player->pathFloor)/2) + player->yPath + 50){
+        if (D_i6_801A6B80 > ((player->pathHeight + player->pathFloor)/2) + player->yPathTarget + 50){
             D_i6_801A6B80 -= 100.0f;
         }
 
-        else if (D_i6_801A6B80 < ((player->pathHeight + player->pathFloor)/2) + player->yPath - 50){
+        else if (D_i6_801A6B80 < ((player->pathHeight + player->pathFloor)/2) + player->yPathTarget - 50){
             D_i6_801A6B80 += 100.0f;
         }
 
-        if (D_i6_801A6B90 > player->xPath + 50.0f){
+        if (D_i6_801A6B90 > player->xPathTarget + 50.0f){
             D_i6_801A6B90 -= 100.0f;
         }
 
-        else if (D_i6_801A6B90 < player->xPath - 50.0f){
+        else if (D_i6_801A6B90 < player->xPathTarget - 50.0f){
             D_i6_801A6B90 += 100.0f;
         }
     }
@@ -552,26 +549,8 @@ void Turret_UpdateRails(Player* player) {
         player->vel.z += D_Andross_801A7F58;
     }
 
-    // Stay within path boundaries
-    /* if (player->pos.x > (player->pathWidth + player->xPath)) {
-        player->pos.x = player->pathWidth + player->xPath;
-        player->vel.x = 0.0f;
-        player->knockback.x = 0.0f;
-    }
-    if (player->pos.x < (player->xPath - player->pathWidth)) {
-        player->pos.x = player->xPath - player->pathWidth;
-        player->vel.x = 0.0f;
-        player->knockback.x = 0.0f;
-    }
-    if (player->pos.y > (player->pathHeight + player->yPath)) {
-        player->pos.y = player->pathHeight + player->yPath;
-        player->vel.y = 0.0f;
-        player->knockback.y = 0.0f;
-    } */
     if (player->pos.y < (player->pathFloor + player->yPath + 40.0f)) {
         player->pos.y = player->pathFloor + player->yPath + 40.0f;
-        //player->vel.y = 0.0f;
-        //player->knockback.y = 0.0f;
     }
 
     player->vel.x = (sp5C.x + sp50.x) * player->unk_150;
@@ -603,11 +582,21 @@ void Turret_UpdateRails(Player* player) {
         }
     }
 
-    //player->pos.x = D_i6_801A6B90;
-    //player->pos.y = D_i6_801A6B80;
-    Math_SmoothStepToF(&player->pos.x, D_i6_801A6B90, 0.5f, 15.0f, 0.00001f);
-    Math_SmoothStepToF(&player->pos.y, D_i6_801A6B80, 0.5f, 15.0f, 0.00001f);
+    //Additional path changing code
+    if ((player->pathChangeTimer != 0)) {
+        player->pathChangeTimer -= 2;
+        if (gCurrentLevel == LEVEL_SECTOR_Y) {
+            D_i6_801A6B80 = ((player->pathHeight + player->pathFloor)/2) + player->yPathTarget;
+        } else {
+            D_i6_801A6B90 = player->xPathTarget;
+        }
+    }
+
+    //Updates XY
+    Math_SmoothStepToF(&player->pos.x, D_i6_801A6B90, 0.5f, 25.0f, 0.00001f);
+    Math_SmoothStepToF(&player->pos.y, D_i6_801A6B80, 0.5f, 25.0f, 0.00001f);
     
+    //Updates rotation
     Math_SmoothStepToF(&player->unk_180, -player->unk_008 + 180, 0.5f, 3.0f, 0.00001f);
     Math_SmoothStepToF(&player->unk_17C, -player->unk_00C, 0.5f, 3.0f, 0.00001f);
     Turret_Shoot(player);
@@ -827,7 +816,7 @@ void Turret_Draw(Player* player) {
         gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 155, 155, 155, 255);
     }
     Matrix_Push(&gGfxMatrix);
-    Matrix_Translate(gGfxMatrix, -100.0f, -100.0f, -200.0f + player->turretRecoil, MTXF_APPLY);
+    Matrix_Translate(gGfxMatrix, -70.0f, -100.0f, -200.0f + player->turretRecoil, MTXF_APPLY);
     Matrix_RotateY(gGfxMatrix, player->rot.y * M_DTOR, MTXF_APPLY);
     Matrix_RotateX(gGfxMatrix, -player->rot.x * M_DTOR, MTXF_APPLY);
     Matrix_RotateZ(gGfxMatrix, M_PI, MTXF_APPLY);
@@ -838,7 +827,7 @@ void Turret_Draw(Player* player) {
     gSPDisplayList(gMasterDisp++, Guns_GF_GUNS_mesh_mesh);
     Matrix_Pop(&gGfxMatrix);
     Matrix_Push(&gGfxMatrix);
-    Matrix_Translate(gGfxMatrix, 100.0f, -100.0f, -200.0f + player->turretRecoil, MTXF_APPLY);
+    Matrix_Translate(gGfxMatrix, 70.0f, -100.0f, -200.0f + player->turretRecoil, MTXF_APPLY);
     Matrix_RotateY(gGfxMatrix, player->rot.y * M_DTOR, MTXF_APPLY);
     Matrix_RotateX(gGfxMatrix, -player->rot.x * M_DTOR, MTXF_APPLY);
     // Matrix_RotateZ(gGfxMatrix, M_PI, MTXF_APPLY);
