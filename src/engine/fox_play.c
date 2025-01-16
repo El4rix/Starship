@@ -23,8 +23,6 @@
 #include "assets/ast_zoness.h"
 #include "port/hooks/Events.h"
 
-//void Actor_Load(Actor* actor, ObjectInit* objInit);
-
 extern float gCurrentScreenWidth;
 extern float gCurrentScreenHeight;
 extern Vtx D_SO_6001C50_copy[];
@@ -3215,7 +3213,7 @@ void Player_ArwingLaser(Player* player) {
 }
 
 void Player_SmartBomb(Player* player) {
-
+    
     if ((gBombCount[player->num] != 0) && (gBombButton[player->num] & gInputPress->button) &&
         (gPlayerShots[ARRAY_COUNT(gPlayerShots) - 1].obj.status == SHOT_FREE) || gTurretModeEnabled) {
         CALL_CANCELLABLE_RETURN_EVENT(PlayerActionPreBombEvent, player);
@@ -4816,7 +4814,9 @@ void Player_Setup(Player* playerx) {
             player->yRot_114 = 188.0f;
             player->hideShadow = true;
         }
-        Camera_UpdateArwing360(player, true);
+        if (!gTurretModeEnabled) {
+            Camera_UpdateArwing360(player, true);
+        }
     } else {
         player->unk_014 = 1.0f;
         player->unk_018 = 1.0f;
@@ -4990,7 +4990,7 @@ void Player_Setup(Player* playerx) {
     if (gTurretModeEnabled) {
         player->unk_180 = 180.0f;
         //player->pos.y = 350;
-        D_i6_801A6B80 = player->pos.y = ((player->pathHeight + player->pathFloor)/2);
+        turretDestY = player->pos.y = ((player->pathHeight + player->pathFloor)/2);
         Audio_StartEngineNoise();
     }
 }

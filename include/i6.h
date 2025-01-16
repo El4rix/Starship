@@ -12,8 +12,12 @@ extern f32 D_Andross_801A7F60;
 extern f32 D_Andross_801A7F68;
 extern f32 D_Andross_801A7F70;
 extern f32 D_Andross_801A7F78;
-extern f32 D_i6_801A6B80;
-extern f32 D_i6_801A6B90;
+extern f32 turretDestY;
+extern f32 turretDestX;
+extern f32 turretDestZ;
+extern f32 turret360Radius;
+extern f32 turret360Speed;
+extern f32 turret360Height;
 
 void Andross_80187530(Actor*);
 void Andross_80193C4C(Player*);
@@ -41,8 +45,6 @@ void SectorY_SyRobot_Draw(Actor*);
 void Turret_Update(Player*);
 void Turret_UpdateCamera(Player*);
 void Turret_Draw(Player *);
-void TurretLaserChargeSpawn(void);
-void TurretLaserChargeSetup(Effect395*);
 
 void Andross_ActorTeamArwing_Update(Actor*);
 void Andross_ActorTeamArwing_Draw(Actor*);
