@@ -2819,6 +2819,8 @@ void Player_InitVersus(void) {
 void Play_Init(void) {
     s32 i;
 
+    gTurretModeEnabled = true;
+
     gArwingSpeed = 40.0f;
     for (i = 0; i < ARRAY_COUNT(gControllerRumbleEnabled); i++) {
         gControllerRumbleEnabled[i] = 0;
@@ -2958,7 +2960,7 @@ void Play_Init(void) {
 
         switch (gCurrentLevel) {
             case LEVEL_SECTOR_Z:
-                if (!D_ctx_8017782C) {
+                if ((!D_ctx_8017782C) || (gTurretModeEnabled)) {
                     SectorZ_LoadLevelObjects();
                     ActorAllRange_SpawnTeam();
                 }
@@ -2971,13 +2973,13 @@ void Play_Init(void) {
 
             case LEVEL_KATINA:
                 Katina_Init();
-                if (!D_ctx_8017782C) {
+                if ((!D_ctx_8017782C) || (gTurretModeEnabled)) {
                     ActorAllRange_SpawnTeam();
                 }
                 break;
 
             case LEVEL_BOLSE:
-                if (!D_ctx_8017782C) {
+                if ((!D_ctx_8017782C) || (gTurretModeEnabled)) {
                     Bolse_LoadLevelObjects();
                     ActorAllRange_SpawnTeam();
                 }
@@ -4834,7 +4836,7 @@ void Player_Setup(Player* playerx) {
 
         switch (gCurrentLevel) {
             case LEVEL_CORNERIA:
-                player->state = PLAYERSTATE_ACTIVE;
+                player->state = PLAYERSTATE_LEVEL_INTRO;
                 player->wingPosition = 1;
                 gGroundSurface = gSavedGroundSurface = SURFACE_WATER;
                 Play_dummy_MuteSfx();
@@ -4856,12 +4858,16 @@ void Player_Setup(Player* playerx) {
             case LEVEL_KATINA:
             case LEVEL_SECTOR_Z:
             case LEVEL_VENOM_2:
-                player->state = PLAYERSTATE_ACTIVE;
+                player->state = PLAYERSTATE_LEVEL_INTRO;
                 break;
             case LEVEL_METEO:
-                player->state = PLAYERSTATE_ACTIVE;
+                player->state = PLAYERSTATE_LEVEL_INTRO;
                 break;
         }
+        if ((gTurretModeEnabled) && (gCurrentLevel != LEVEL_MACBETH)) {
+                player->state = PLAYERSTATE_ACTIVE;
+                gDrawGround = true;
+            } 
     } else {
         if (!gVersusMode && !((gCurrentLevel == LEVEL_VENOM_2) && (gLevelPhase == 2))) {
             gLevelStartStatusScreenTimer = 80;
@@ -5902,8 +5908,6 @@ void Player_Update(Player* player) {
     Vec3f sp58[30];
     s32 pad;
     CALL_EVENT(PlayerPreUpdateEvent, player);
-
-    gTurretModeEnabled = true;
 
     if (gVersusMode) {
         gInputHold = &gControllerHold[player->num];

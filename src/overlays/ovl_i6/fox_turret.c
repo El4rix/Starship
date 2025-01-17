@@ -628,10 +628,10 @@ void Turret_Update360(Player* player) {
     // Moves the camera around unless locked in place with Z. Condition seems incorrect. 
     if (!(gControllerHold[player->num].button & Z_TRIG) && (sqrtf(SQ(sp2C) + SQ(sp28)) > 55.0f)) {
         if ((sp2C > 40.0f)) {
-            player->unk_008 += 2.0f;
+            player->unk_008 += 3.0f;
         }
         if ((sp2C < -40.0f)) {
-            player->unk_008 -= 2.0f;
+            player->unk_008 -= 3.0f;
         }
         if ((sp28 < -40.0f)) {
             player->unk_00C -= 2.0f;
@@ -642,19 +642,19 @@ void Turret_Update360(Player* player) {
     }
 
     //Prevent looking down or up
-    if (player->unk_00C > 30.0f) {
-        player->unk_00C = 30.0f;
+    if (player->unk_00C > 50.0f) {
+        player->unk_00C = 50.0f;
     }
-    if (player->unk_00C < -30.0f) {
-        player->unk_00C = -30.0f;
+    if (player->unk_00C < -50.0f) {
+        player->unk_00C = -50.0f;
     }
 
     //Encourage not looking down or up
     player->flags_228 = 0;
-    if (player->unk_00C > 20.0f) {
+    if (player->unk_00C > 25.0f) {
         player->flags_228 |= PFLAG_228_3;
     }
-    if (player->unk_00C < -20.0f) {
+    if (player->unk_00C < -25.0f) {
         player->flags_228 |= PFLAG_228_2;
     }
 

@@ -5555,6 +5555,20 @@ void Macbeth_LevelStart(Player* player) {
                 Object_Load(objInit, 4000.0f, -4000.0f, 4000.0f, -4000.0f);
             }
 
+            if (gTurretModeEnabled) {
+                AUDIO_PLAY_BGM(NA_BGM_STAGE_MA);
+                gLevelStartStatusScreenTimer = 50;
+                player->state = PLAYERSTATE_ACTIVE;
+                player->csState = player->csTimer = player->csEventTimer = player->hideShadow = 0;
+                player->gravity = 3.0f;
+                player->unk_014 = 0.0f;
+                D_ctx_8017782C = true;
+                Play_InitEnvironment();
+                D_ctx_8017782C = false;
+                gObjectLoadIndex = 40;
+                return;
+            }
+
             gFillScreenRed = gFillScreenGreen = gFillScreenBlue = gFillScreenAlpha = 255;
 
             player->zPath -= 800.0f;

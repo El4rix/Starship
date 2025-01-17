@@ -1977,7 +1977,12 @@ void HUD_RadarMarks_Setup(void) {
         }
         gRadarMarks[i].enabled = true;
         gRadarMarks[i].type = i;
-        gRadarMarks[i].yRot = gPlayer[i].yRot_114 + gPlayer[i].rot.y;
+        if (gTurretModeEnabled) {
+            gRadarMarks[i].yRot = gPlayer[i].unk_180 + gPlayer[i].unk_000 + 180;
+        } else {
+            gRadarMarks[i].yRot = gPlayer[i].yRot_114 + gPlayer[i].rot.y;
+        }
+        
         gRadarMarks[i].pos.z = gPlayer[i].trueZpos;
         gRadarMarks[i].pos.x = gPlayer[i].pos.x;
 
