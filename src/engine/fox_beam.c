@@ -51,8 +51,9 @@ void PlayerShot_ExplodeBomb(PlayerShot* shot) {
     f32 var_fv1;
     s32 var_v0;
 
-    if (gTurretModeEnabled) {
-        shot->obj.pos.z = gPlayer[0].trueZpos - 700.0f;
+    if (gTurretModeEnabled && gLevelMode != LEVELMODE_ALL_RANGE) {
+        shot->obj.pos.z = gPlayer[0].trueZpos - (1000.0f * COS_DEG(gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180));
+        shot->obj.pos.x = gPlayer[0].pos.x - (1000.0f * SIN_DEG(gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180));
     }
 
     if (shot->unk_5C == 0) {

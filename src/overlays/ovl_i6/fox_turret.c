@@ -283,12 +283,16 @@ void Turret_Shoot(Player* player) {
     for (i = 1; i < player->turretLockOnCount; i++) {
         if ((gActors[i].obj.status == OBJ_ACTIVE) && (gActors[i].obj.id == OBJ_ACTOR_EVENT)) {
             gTexturedLines[i].mode = 3;
-            gTexturedLines[i].xyScale = 0.01f;
+            gTexturedLines[i].xyScale = 0.2f;
             gTexturedLines[i].zScale = 1.0f;
 
-            gTexturedLines[i].posAA.x = player->pos.x;
+            /* gTexturedLines[i].posAA.x = player->pos.x;
             gTexturedLines[i].posAA.y = player->pos.y; //0.0f
-            gTexturedLines[i].posAA.z = player->pos.z - 10.0f; //100
+            gTexturedLines[i].posAA.z = player->pos.z - 10.0f; //100 */
+
+            gTexturedLines[i].posAA.z = player->trueZpos - (300.0f * COS_DEG(gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180));
+            gTexturedLines[i].posAA.x = player->pos.x - (300.0f * SIN_DEG(gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180));
+            gTexturedLines[i].posAA.y = player->pos.y; //0.0f
 
             gTexturedLines[i].timer = 2;
 
@@ -309,7 +313,7 @@ void Turret_Shoot(Player* player) {
             player->turretLockOnCount = ARRAY_COUNT(gActors);
             //func_effect_80081BEC(player->pos.x, player->pos.y, player->trueZpos - 500.0f, 1.0f, 9);
             Player_SetupArwingShot(player, &gPlayerShots[ARRAY_COUNT(gPlayerShots) - 1], 0.0f, 0.0f, PLAYERSHOT_BOMB,
-                                    180.0f);
+                                    0.0f);
             AUDIO_PLAY_SFX(NA_SE_MISSILE_ALARM, gDefaultSfxSource, 4);
         } else {
             player->turretLockOnCount = player->turretLockOnCount;
@@ -640,6 +644,22 @@ void Turret_Update360(Player* player) {
             player->unk_00C += 2.0f;
         }
     }
+
+    //Correct over-rotating
+    if (player->unk_008 > 180) {
+        player->unk_008 -= 360;
+        player->unk_180 += 360;
+    }
+    if (player->unk_008 < -180) {
+        player->unk_008 += 360;
+        player->unk_180 -= 360;
+    }
+    //player->unk_180 = -player->unk_008 + 180
+
+    /* 0 = 180
+    90 = 90
+    180 = 0
+    -180 = 360 */
 
     //Prevent looking down or up
     if (player->unk_00C > 50.0f) {

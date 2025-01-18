@@ -3060,18 +3060,25 @@ void Player_SetupArwingShot(Player* player, PlayerShot* shot, f32 arg2, f32 arg3
         shot->obj.pos.z = player->trueZpos + sp2C.z;
         shot->timer = 38;
     } else if (gTurretModeEnabled) {
-        shot->obj.pos.x = player->pos.x + sp2C.x + (sp38.x * 1.2);
-        shot->obj.pos.y = player->pos.y + sp2C.y + (sp38.y * 1.2);
-        shot->obj.pos.z = player->trueZpos + sp2C.z + (sp38.z * 1.2f);
+        if (gControllerHold[player->num].button & R_TRIG) {
+            shot->obj.pos.z = gPlayer[0].trueZpos - (300.0f * COS_DEG(gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180));
+            shot->obj.pos.x = gPlayer[0].pos.x - (300.0f * SIN_DEG(gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180));
+            shot->obj.rot.y += (gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180);
+            shot->obj.rot.y *= 10;
+        } else {
+            shot->obj.pos.z = gPlayer[0].trueZpos - (1200.0f * COS_DEG(gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180));
+            shot->obj.pos.x = gPlayer[0].pos.x - (1200.0f * SIN_DEG(gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180));
+        }
+        shot->obj.pos.y = gPlayer[0].pos.y;
     } else {
         shot->obj.pos.x = player->pos.x + sp2C.x + (sp38.x * 1.2);
         shot->obj.pos.y = player->pos.y + sp2C.y + (sp38.y * 1.2);
         shot->obj.pos.z = player->trueZpos + sp2C.z + (sp38.z * 1.2f);
-    }
 
-    shot->obj.rot.x = player->xRot_120 + player->rot.x + player->aerobaticPitch;
-    shot->obj.rot.y = player->rot.y + player->yRot_114;
-    shot->obj.rot.z = player->bankAngle;
+        shot->obj.rot.x = player->xRot_120 + player->rot.x + player->aerobaticPitch;
+        shot->obj.rot.y = player->rot.y + player->yRot_114;
+        shot->obj.rot.z = player->bankAngle;
+    }
 
     if (shotId == PLAYERSHOT_LOCK_ON) {
         if (gCurrentLevel == LEVEL_AQUAS) {
