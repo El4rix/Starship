@@ -56,7 +56,11 @@ void Fortuna_SpawnEnemies(ActorEvent* this) {
                     enemy->rot_0F4.y = sEnemySpawnAngle[this->counter_04E];
                     enemy->health = 24;
                     enemy->drawShadow = enemy->iwork[11] = 1;
-                    enemy->itemDrop = DROP_SILVER_RING_50p;
+                    if (gTurretModeEnabled) {
+                        enemy->itemDrop = DROP_SILVER_RING_10p;
+                    } else {
+                        enemy->itemDrop = DROP_SILVER_RING_50p;
+                    }
                     Object_SetInfo(&enemy->info, enemy->obj.id);
                     AUDIO_PLAY_SFX(NA_SE_EN_ENGINE_01, enemy->sfxSource, 4);
                     break;

@@ -414,7 +414,11 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
                 }
                 actor->health = 24;
                 actor->iwork[11] = 1;
-                actor->itemDrop = DROP_SILVER_RING_50p;
+                if (gTurretModeEnabled) {
+                        actor->itemDrop = DROP_SILVER_RING_10p;
+                    } else {
+                        actor->itemDrop = DROP_SILVER_RING_50p;
+                    }
                 actor->timer_0C2 = 30;
                 Object_SetInfo(&actor->info, actor->obj.id);
                 AUDIO_PLAY_SFX(NA_SE_EN_ENGINE_01, actor->sfxSource, 4);

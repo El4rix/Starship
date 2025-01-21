@@ -1471,7 +1471,7 @@ void Item_Draw(Item* this, s32 arg1) {
     Object_SetSfxSourceToView(this->sfxSource, &dest);
 
     if (!drawn && (gLevelMode == LEVELMODE_ALL_RANGE) && (gCamCount == 1) && (this->obj.id < OBJ_ITEM_GOLD_RING) &&
-        (gCurrentLevel != LEVEL_VENOM_ANDROSS)) {
+        (gCurrentLevel != LEVEL_VENOM_ANDROSS) && (!gTurretModeEnabled)) {
         Object_Kill(&this->obj, this->sfxSource);
     }
 }
@@ -2055,7 +2055,7 @@ void TexturedLine_Draw(void) {
     if (gCurrentLevel == LEVEL_MACBETH) {
         RCP_SetupDL(&gMasterDisp, SETUPDL_33);
         gSPClearGeometryMode(gMasterDisp++, G_CULL_BACK);
-    } else if ((gCurrentLevel == LEVEL_AQUAS) || (gCurrentLevel == LEVEL_VENOM_ANDROSS)) {
+    } else if ((gCurrentLevel == LEVEL_AQUAS) || (gCurrentLevel == LEVEL_VENOM_ANDROSS) || (gTurretModeEnabled)) {
         RCP_SetupDL(&gMasterDisp, SETUPDL_41);
     } else {
         RCP_SetupDL_14();
@@ -2075,11 +2075,11 @@ void TexturedLine_Draw(void) {
             Matrix_RotateZ(gGfxMatrix, texLine->yRot, MTXF_APPLY);
             Matrix_Scale(gGfxMatrix, texLine->xyScale, texLine->xyScale, texLine->zScale, MTXF_APPLY);
 
-            if ((gCurrentLevel == LEVEL_AQUAS) || (gCurrentLevel == LEVEL_VENOM_ANDROSS)) {
+            if ((gCurrentLevel == LEVEL_AQUAS) || (gCurrentLevel == LEVEL_VENOM_ANDROSS) || (gTurretModeEnabled)) {
                 s32 alpha = ((gGameFrameCount % 2) != 0) ? 180 : 50;
 
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, alpha);
-                if (gCurrentLevel == LEVEL_AQUAS) {
+                if ((gCurrentLevel == LEVEL_AQUAS) || (gTurretModeEnabled)) {
                     Matrix_Scale(gGfxMatrix, 0.01f, 0.3f, 0.0025f, MTXF_APPLY);
                     Matrix_Translate(gGfxMatrix, 0.0f, 0.0f, -200.0f, MTXF_APPLY);
                     Matrix_RotateZ(gGfxMatrix, gGameFrameCount * 5.0f * M_DTOR, MTXF_APPLY);

@@ -3060,8 +3060,13 @@ void Player_SetupArwingShot(Player* player, PlayerShot* shot, f32 arg2, f32 arg3
         shot->obj.pos.z = player->trueZpos + sp2C.z;
         shot->timer = 38;
     } else if (gTurretModeEnabled) {
-        if (gControllerHold[player->num].button & R_TRIG) {
+        if ((gControllerHold[player->num].button & R_TRIG) && (gCurrentLevel != LEVEL_ZONESS)) {
             shot->obj.pos.z = gPlayer[0].trueZpos - (300.0f * COS_DEG(gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180));
+            shot->obj.pos.x = gPlayer[0].pos.x - (300.0f * SIN_DEG(gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180));
+            shot->obj.rot.y += (gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180);
+            shot->obj.rot.y *= 10;
+        } else if ((gControllerHold[player->num].button & R_TRIG) && (gCurrentLevel == LEVEL_ZONESS) && (gBossActive)){
+            shot->obj.pos.z = gPlayer[0].trueZpos - (2250.0f * COS_DEG(gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180));
             shot->obj.pos.x = gPlayer[0].pos.x - (300.0f * SIN_DEG(gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180));
             shot->obj.rot.y += (gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180);
             shot->obj.rot.y *= 10;
@@ -4669,7 +4674,8 @@ void Player_Setup(Player* playerx) {
                 player->pos.y = 0.0f;
             }
             if (gTurretModeEnabled) {
-                player->pathFloor = 40.0f;
+                player->pathHeight = 650.0f;
+                player->pathFloor = 200.0f;
             }
             break;
 

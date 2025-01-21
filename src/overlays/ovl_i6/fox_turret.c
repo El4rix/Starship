@@ -252,11 +252,11 @@ void Turret_GreatFoxLaser(Player* player, f32 xOffset) {
 void Turret_Shoot(Player* player) {
     s32 i;
 
-    if ((gControllerPress[player->num].button & A_BUTTON) && !(gControllerHold[player->num].button & R_TRIG))  {
+    if ((gControllerPress[player->num].button & A_BUTTON) && !((gControllerHold[player->num].button & R_TRIG) && (player->turretLockOnCount == ARRAY_COUNT(gActors))))  {
         player->shotTimer = 0;
     }
     // Fires two great fox lasers. Offsets match up with the possible guns in Draw.
-    if ((gControllerHold[player->num].button & A_BUTTON) && !(gControllerHold[player->num].button & R_TRIG)) {
+    if ((gControllerHold[player->num].button & A_BUTTON) && !((gControllerHold[player->num].button & R_TRIG) && (player->turretLockOnCount == ARRAY_COUNT(gActors))))  {
         if (player->shotTimer == 0) {
             Turret_GreatFoxLaser(player, -120.0f);
             Turret_GreatFoxLaser(player, 120.0f);
@@ -318,9 +318,10 @@ void Turret_Shoot(Player* player) {
         } else {
             player->turretLockOnCount = player->turretLockOnCount;
         }
-    } else if ((player->turretLockOnCount == ARRAY_COUNT(gActors)) && !(gControllerHold[player->num].button & R_TRIG)) {
-       player->turretLockOnCount = 0;
-       Player_SmartBomb(player);
+        if ((player->turretLockOnCount == ARRAY_COUNT(gActors)) && (gControllerPress[player->num].button & A_BUTTON)) {
+            player->turretLockOnCount = 0;
+            Player_SmartBomb(player);
+        }
     } else {
        player->turretLockOnCount = 0;
        Audio_KillSfxBySourceAndId(gDefaultSfxSource, NA_SE_EN_A6BOSS_CHARGE);
@@ -454,7 +455,7 @@ void Turret_UpdateRails(Player* player) {
     }
     
     // Resets position
-    if (gControllerHold[player->num].button & B_BUTTON) {
+    if ((gControllerHold[player->num].button & B_BUTTON) && (gCurrentLevel != LEVEL_TITANIA) && (gCurrentLevel != LEVEL_MACBETH)) {
         if (turretDestY > ((player->pathHeight + player->pathFloor)/2) + player->yPathTarget + 50){
             turretDestY -= 100.0f;
         }
@@ -566,9 +567,9 @@ void Turret_UpdateRails(Player* player) {
     }
 
     //Additional path changing code
-    if ((player->pathChangeTimer != 0)) {
+    if ((player->pathChangeTimer > 0)) {
         player->pathChangeTimer -= 2;
-        if (gCurrentLevel == LEVEL_SECTOR_Y) {
+        if (gCurrentLevel == LEVEL_SECTOR_Y || LEVEL_MACBETH) {
             turretDestY = ((player->pathHeight + player->pathFloor)/2) + player->yPathTarget;
         } else {
             turretDestX = player->xPathTarget;
@@ -745,8 +746,8 @@ void Turret_Update360(Player* player) {
 
     //Updates XYZ
     Math_SmoothStepToF(&player->pos.y, turret360Height, 0.5f, 25.0f, 0.00001f);
-    player->trueZpos = player->pos.z = turret360Radius * COS_DEG(turret360Speed * gGameFrameCount);
-                       player->pos.x = turret360Radius * SIN_DEG(turret360Speed * gGameFrameCount);
+    player->trueZpos = player->pos.z = turret360Radius * COS_DEG(turret360Speed * 2 * player->unk_000);
+                       player->pos.x = turret360Radius * SIN_DEG(turret360Speed * 2 * player->unk_000);
 
     //Updates rotation
     Math_SmoothStepToF(&player->unk_180, -player->unk_008 + 180, 0.5f, 3.0f, 0.00001f);
@@ -807,6 +808,7 @@ void Turret_Update360Camera(Player* player) {
 
 
 void Turret_Draw(Player* player) {
+    FrameInterpolation_RecordOpenChild("Reticle", 0);
     Matrix_Push(&gGfxMatrix);
 
     // Targeting cursor. At start of level it moves away from player as guns appear
@@ -839,7 +841,7 @@ void Turret_Draw(Player* player) {
     Matrix_RotateX(gGfxMatrix, -player->rot.x * M_DTOR, MTXF_APPLY);
     Matrix_RotateZ(gGfxMatrix, M_PI, MTXF_APPLY);
     Matrix_RotateY(gGfxMatrix, M_PI / 2, MTXF_APPLY);
-    Matrix_Translate(gGfxMatrix, 150.0f /* D_i6_801A6B80 */, 0.0f, 0.0f, MTXF_APPLY);
+    Matrix_Translate(gGfxMatrix, 150.0f, 0.0f, 0.0f, MTXF_APPLY);
     Matrix_Scale(gGfxMatrix, 5.0f, 4.0f, 4.0f, MTXF_APPLY);
     Matrix_SetGfxMtx(&gMasterDisp);
     gSPDisplayList(gMasterDisp++, Guns_GF_GUNS_mesh_mesh);
@@ -850,11 +852,12 @@ void Turret_Draw(Player* player) {
     Matrix_RotateX(gGfxMatrix, -player->rot.x * M_DTOR, MTXF_APPLY);
     // Matrix_RotateZ(gGfxMatrix, M_PI, MTXF_APPLY);
     Matrix_RotateY(gGfxMatrix, M_PI / 2, MTXF_APPLY);
-    Matrix_Translate(gGfxMatrix, 150.0f /* D_i6_801A6B80 */, 0.0f, 0.0f, MTXF_APPLY);
+    Matrix_Translate(gGfxMatrix, 150.0f, 0.0f, 0.0f, MTXF_APPLY);
     Matrix_Scale(gGfxMatrix, 5.0f, 4.0f, 4.0f, MTXF_APPLY);
     Matrix_SetGfxMtx(&gMasterDisp);
     gSPDisplayList(gMasterDisp++, Guns_GF_GUNS_mesh_mesh);
     Matrix_Pop(&gGfxMatrix);
+    FrameInterpolation_RecordCloseChild();
 
     // Draws muzzle flashes. This suggests the guns were 188 long
     if ((player->turretRecoil > 20) && (player->turretState >= 2)) {

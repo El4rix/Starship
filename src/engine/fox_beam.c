@@ -52,8 +52,13 @@ void PlayerShot_ExplodeBomb(PlayerShot* shot) {
     s32 var_v0;
 
     if (gTurretModeEnabled && gLevelMode != LEVELMODE_ALL_RANGE) {
-        shot->obj.pos.z = gPlayer[0].trueZpos - (1000.0f * COS_DEG(gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180));
-        shot->obj.pos.x = gPlayer[0].pos.x - (1000.0f * SIN_DEG(gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180));
+        if (gCurrentLevel == LEVEL_ZONESS && gBossActive) {
+            shot->obj.pos.z = gPlayer[0].trueZpos - (2250.0f * COS_DEG(gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180));
+            shot->obj.pos.x = gPlayer[0].pos.x - (1000.0f * SIN_DEG(gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180));
+        } else {
+            shot->obj.pos.z = gPlayer[0].trueZpos - (1000.0f * COS_DEG(gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180));
+            shot->obj.pos.x = gPlayer[0].pos.x - (1000.0f * SIN_DEG(gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180));
+        }
     }
 
     if (shot->unk_5C == 0) {
@@ -691,9 +696,11 @@ void PlayerShot_ApplyDamageToActor(PlayerShot* shot, Actor* actor, s32 hitIndex)
         if ((gTurretModeEnabled)) {
             if ((actor->eventType == EVID_TEAMMATE) || (actor->obj.id == OBJ_ACTOR_TEAM_BOSS) || (actor->obj.id == OBJ_ACTOR_TEAM_ARWING)) {
                 actor->damage = 10;
-            } else {
-                actor->damage = 100;
+            } else if (gCurrentLevel == LEVEL_ZONESS) {
+                actor->damage = 30;
                 actor->dmgType = DMG_EXPLOSION;
+            } else {
+                actor->damage = 31;
             }
         } else {
             actor->damage = 100;
@@ -2052,9 +2059,9 @@ void PlayerShot_UpdateBomb(PlayerShot* shot) {
     f32 var_ft5;
 
     if (gTurretModeEnabled) {
-        if (!(gControllerHold[0].button & R_TRIG)) {
+        //if (gControllerPress[0].button & A_BUTTON) {
             PlayerShot_ExplodeBomb(shot);
-        }
+        //}
     }
 
     switch (shot->unk_5C) {

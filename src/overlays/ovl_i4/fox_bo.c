@@ -118,7 +118,11 @@ void Bolse_8018BD60(ActorEvent* this) {
                 actor->aiIndex = -1;
                 actor->health = 24;
                 actor->iwork[11] = 1;
-                actor->itemDrop = DROP_SILVER_RING_50p;
+                if (gTurretModeEnabled) {
+                    actor->itemDrop = DROP_SILVER_RING_10p;
+                } else {
+                    actor->itemDrop = DROP_SILVER_RING_50p;
+                }
                 actor->aiType = i;
                 Object_SetInfo(&actor->info, actor->obj.id);
                 AUDIO_PLAY_SFX(NA_SE_ARWING_ENGINE_FG, actor->sfxSource, 4);

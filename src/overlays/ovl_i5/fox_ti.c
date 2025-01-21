@@ -625,7 +625,16 @@ void Titania_TiLandmine_Update(TiLandmine* this) {
 
     switch (this->dmgType) {
         case 1:
-            AUDIO_PLAY_SFX(NA_SE_EN_MABOSS_REFLECT, this->sfxSource, 4);
+            if (gTurretModeEnabled) {
+                this->itemDrop = DROP_NONE;
+                Actor_Despawn(this);
+                this->info.bonus = 0;
+                func_effect_8007D2C8(this->obj.pos.x, this->obj.pos.y + 10.0f, this->obj.pos.z, 6.0f);
+                Effect_SpawnTimedSfxAtPos(&this->obj.pos, NA_SE_EN_EXPLOSION_M);
+                Object_Kill(&this->obj, this->sfxSource);
+            } else {
+                AUDIO_PLAY_SFX(NA_SE_EN_MABOSS_REFLECT, this->sfxSource, 4);
+            }
             break;
 
         case 2:
