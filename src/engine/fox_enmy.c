@@ -2024,7 +2024,7 @@ void Item_CheckBounds(Item* this) {
     }
     if (/* (gLevelMode == LEVELMODE_ALL_RANGE) &&  */(gTurretModeEnabled) && (gControllerHold[0].button & R_TRIG)) {
         Math_SmoothStepToF(&this->obj.pos.x, gPlayer[0].pos.x, 0.2f, 50.0f, 0.01f);
-        Math_SmoothStepToF(&this->obj.pos.y, gPlayer[0].pos.y, 0.2f, 20.0f, 0.01f);
+        Math_SmoothStepToF(&this->obj.pos.y, gPlayer[0].pos.y, 0.2f, 30.0f, 0.01f);
         Math_SmoothStepToF(&this->obj.pos.z, gPlayer[0].pos.z, 0.2f, 50.0f, 0.01f);
     }
 

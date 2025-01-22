@@ -2820,6 +2820,9 @@ void Play_Init(void) {
     s32 i;
 
     gTurretModeEnabled = true;
+    if (gTurretModeEnabled) {
+        gBrakeButton[0] = Z_TRIG;
+    }
 
     gArwingSpeed = 40.0f;
     for (i = 0; i < ARRAY_COUNT(gControllerRumbleEnabled); i++) {
@@ -5010,6 +5013,7 @@ void Player_Setup(Player* playerx) {
         player->unk_180 = 180.0f;
         //player->pos.y = 350;
         turretDestY = player->pos.y = ((player->pathHeight + player->pathFloor)/2);
+        turretDestX = player->pos.x = 0;
         Audio_StartEngineNoise();
     }
 }
@@ -5300,7 +5304,10 @@ void Player_ArwingBrake(Player* player) {
     f32 sp30;
     s32 stickY;
 
-    if (gLevelMode == LEVELMODE_ON_RAILS) {
+    if (gTurretModeEnabled) {
+        sp30 = 1.5f;
+        sp34 = 0.35f;
+    } else if (gLevelMode == LEVELMODE_ON_RAILS) {
         sp30 = 3.0f;
         sp34 = 0.5f;
     } else {
@@ -5340,6 +5347,7 @@ void Player_ArwingBrake(Player* player) {
 
     if ((gInputHold->button & gBrakeButton[player->num]) && !(gInputHold->button & gBoostButton[player->num]) &&
         (player->state != PLAYERSTATE_U_TURN) && !player->boostCooldown) {
+        AUDIO_PLAY_SFX(NA_SE_MISSILE_ALARM, gDefaultSfxSource, 4);
         CALL_CANCELLABLE_EVENT(PlayerActionBrakeEvent, player) {
             if (player->boostMeter == 0.0f) {
                 Player_PlaySfx(player->sfxSource, NA_SE_ARWING_BRAKE, player->num);

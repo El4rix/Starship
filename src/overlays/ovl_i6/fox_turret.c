@@ -257,13 +257,35 @@ void Turret_Shoot(Player* player) {
     }
     // Fires two great fox lasers. Offsets match up with the possible guns in Draw.
     if ((gControllerHold[player->num].button & A_BUTTON) && !((gControllerHold[player->num].button & R_TRIG) && (player->turretLockOnCount == ARRAY_COUNT(gActors))))  {
+
+        if (gLaserStrength[0] > 2) {
+            gLaserStrength[0] = 2;
+        }
+        if (gLaserStrength[0] < 0) {
+            gLaserStrength[0] = 0;
+        }
+        
         if (player->shotTimer == 0) {
             Turret_GreatFoxLaser(player, -120.0f);
             Turret_GreatFoxLaser(player, 120.0f);
             player->turretRecoil = 30;
         }
-        player->shotTimer++;
-        if (player->shotTimer >= 4) {
+
+        switch (gLaserStrength[0]) {
+            case LASERS_SINGLE:
+                player->shotTimer++;
+                break;
+
+            case LASERS_TWIN:
+                player->shotTimer += 2;
+                break;
+
+            case LASERS_HYPER:
+                player->shotTimer += 3;
+                break;
+        }
+
+        if (player->shotTimer >= 12) {
             player->shotTimer = 0;
         }
     }
@@ -281,7 +303,7 @@ void Turret_Shoot(Player* player) {
 
     // Draws a textured line to each Event Actor in sequence as R is held. Some sort of charged lock on attack?
     for (i = 1; i < player->turretLockOnCount; i++) {
-        if ((gActors[i].obj.status == OBJ_ACTIVE) && (gActors[i].obj.id == OBJ_ACTOR_EVENT)) {
+        if ((gActors[i].obj.status == OBJ_ACTIVE) /* && (gActors[i].obj.id == OBJ_ACTOR_EVENT) */) {
             gTexturedLines[i].mode = 3;
             gTexturedLines[i].xyScale = 0.2f;
             gTexturedLines[i].zScale = 1.0f;
@@ -306,19 +328,20 @@ void Turret_Shoot(Player* player) {
             gTexturedLines[i].posBB.z = gActors[i].obj.pos.z;
         }
     }
-    if (gControllerHold[player->num].button & R_TRIG) {
+    if ((gControllerHold[player->num].button & R_TRIG)) {
         //TurretLaserChargeSpawn();
         player->turretLockOnCount++;
         if (player->turretLockOnCount > ARRAY_COUNT(gActors)) {
             player->turretLockOnCount = ARRAY_COUNT(gActors);
             //func_effect_80081BEC(player->pos.x, player->pos.y, player->trueZpos - 500.0f, 1.0f, 9);
-            Player_SetupArwingShot(player, &gPlayerShots[ARRAY_COUNT(gPlayerShots) - 1], 0.0f, 0.0f, PLAYERSHOT_BOMB,
-                                    0.0f);
-            AUDIO_PLAY_SFX(NA_SE_MISSILE_ALARM, gDefaultSfxSource, 4);
+            if (gBombCount[0] > 0) {
+                Player_SetupArwingShot(player, &gPlayerShots[ARRAY_COUNT(gPlayerShots) - 1], 0.0f, 0.0f, PLAYERSHOT_BOMB, 0.0f);
+                AUDIO_PLAY_SFX(NA_SE_MISSILE_ALARM, gDefaultSfxSource, 4);
+            }
         } else {
             player->turretLockOnCount = player->turretLockOnCount;
         }
-        if ((player->turretLockOnCount == ARRAY_COUNT(gActors)) && (gControllerPress[player->num].button & A_BUTTON)) {
+        if ((player->turretLockOnCount == ARRAY_COUNT(gActors)) && (gControllerPress[player->num].button & A_BUTTON) && (gBombCount[0] > 0)) {
             player->turretLockOnCount = 0;
             Player_SmartBomb(player);
         }
@@ -356,6 +379,7 @@ void Turret_UpdateRails(Player* player) {
     }
     // Player_MoveArwingOnRails(player);
     Player_UpdatePath(player);
+    Player_ArwingBrake(player);
     Turret_Shoot(player);
     Player_CollisionCheck(player);
     Player_DamageEffects(player);
@@ -569,7 +593,7 @@ void Turret_UpdateRails(Player* player) {
     //Additional path changing code
     if ((player->pathChangeTimer > 0)) {
         player->pathChangeTimer -= 2;
-        if (gCurrentLevel == LEVEL_SECTOR_Y || LEVEL_MACBETH) {
+        if ((gCurrentLevel == LEVEL_SECTOR_Y) || (gCurrentLevel == LEVEL_MACBETH)) {
             turretDestY = ((player->pathHeight + player->pathFloor)/2) + player->yPathTarget;
         } else {
             turretDestX = player->xPathTarget;
@@ -804,6 +828,7 @@ void Turret_Update360Camera(Player* player) {
     player->cam.eye.x = player->pos.x;
     player->cam.eye.y = player->pos.y;
     player->cam.eye.z = player->pos.z + gPathProgress;
+    player->camRoll = 0;
 }
 
 

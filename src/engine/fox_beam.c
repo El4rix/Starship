@@ -696,9 +696,11 @@ void PlayerShot_ApplyDamageToActor(PlayerShot* shot, Actor* actor, s32 hitIndex)
         if ((gTurretModeEnabled)) {
             if ((actor->eventType == EVID_TEAMMATE) || (actor->obj.id == OBJ_ACTOR_TEAM_BOSS) || (actor->obj.id == OBJ_ACTOR_TEAM_ARWING)) {
                 actor->damage = 10;
-            } else if (gCurrentLevel == LEVEL_ZONESS) {
-                actor->damage = 30;
+            } else if ((gCurrentLevel == LEVEL_ZONESS) || (gCurrentLevel == LEVEL_FORTUNA) || (gCurrentLevel == LEVEL_BOLSE) || (gCurrentLevel == LEVEL_KATINA)) {
+                actor->damage = 10;
                 actor->dmgType = DMG_EXPLOSION;
+            } else if (gCurrentLevel == LEVEL_VENOM_2) {
+                actor->damage = 10;
             } else {
                 actor->damage = 31;
             }
