@@ -147,5 +147,6 @@ void Aquas_Boss301_Draw(Boss*);
 void Aquas_Actor188_Update(Actor*);
 void Aquas_Actor188_Draw(Actor*);
 void Aquas_Update360(Player*);
+void Aquas_801A99D4(Player*);
 
 #endif

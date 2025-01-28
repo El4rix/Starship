@@ -642,20 +642,57 @@ void Andross_AndBossTimer_Update(AndBossTimer* this) {
 void Andross_AndRadio_Update(AndRadio* this) {
     if (gAllRangeCheckpoint == 0) {
         this->counter_04E++;
-        switch (this->counter_04E) {
-            case 200:
-                Radio_PlayMessage(gMsg_ID_8250, RCID_ANDROSS_RED);
-                return;
-            case 400:
-                Radio_PlayMessage(gMsg_ID_8255, RCID_ANDROSS_RED);
-                return;
-            case 600:
-                Radio_PlayMessage(gMsg_ID_8260, RCID_ANDROSS_RED);
-                return;
-            case 800:
-                Radio_PlayMessage(gMsg_ID_19325, RCID_ANDROSS_RED);
-                break;
+        if (gTurretModeEnabled) {
+            SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_FANFARE, 1);
+            SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 1);
+            switch (this->counter_04E) {
+                case 50:
+                    gStartAndrossFightTimer = 50;
+                    AUDIO_PLAY_SFX(NA_SE_VO_ANDROSS_LAUGH, this->sfxSource, 4);
+                    AUDIO_PLAY_SFX(NA_SE_EN_HEARTBEAT, this->sfxSource, 4);
+                    return;
+                case 200:
+                    Radio_PlayMessage(gMsg_ID_8250, RCID_ANDROSS_RED);
+                    return;
+                case 350:
+                    AUDIO_PLAY_SFX(NA_SE_VO_ANDROSS_CHOKE, this->sfxSource, 4);
+                    return;
+                case 500:
+                    Radio_PlayMessage(gMsg_ID_8255, RCID_ANDROSS_RED);
+                    return;
+                case 650:
+                    AUDIO_PLAY_SFX(NA_SE_VO_ANDROSS_EXCITE, this->sfxSource, 4);
+                    return;
+                case 800:
+                    Radio_PlayMessage(gMsg_ID_8260, RCID_ANDROSS_RED);
+                    return;
+                case 950:
+                    AUDIO_PLAY_SFX(NA_SE_VO_ANDROSS_WHAND, this->sfxSource, 4);
+                    return;
+                case 1100:
+                    Radio_PlayMessage(gMsg_ID_19325, RCID_ANDROSS_RED);
+                    break;
+                case 1225:
+                    gStartAndrossFightTimer = 50;
+                    break;
+            }
+        } else {
+            switch (this->counter_04E) {
+                case 200:
+                    Radio_PlayMessage(gMsg_ID_8250, RCID_ANDROSS_RED);
+                    return;
+                case 400:
+                    Radio_PlayMessage(gMsg_ID_8255, RCID_ANDROSS_RED);
+                    return;
+                case 600:
+                    Radio_PlayMessage(gMsg_ID_8260, RCID_ANDROSS_RED);
+                    return;
+                case 800:
+                    Radio_PlayMessage(gMsg_ID_19325, RCID_ANDROSS_RED);
+                    break;
+            } 
         }
+        
     }
 }
 
@@ -1069,39 +1106,79 @@ void Andross_AndBrain_Update(AndBrain* this) {
                     break;
 
                 case 600:
-                    gDrawBackdrop = 5;
-                    gFogRed = 129;
-                    gFogGreen = 27;
-                    gFogBlue = 0;
-                    gFogNear = 996;
-                    gFogFar = 1007;
-                    gBgColor = 0x4081; // 64, 16, 0
-                    gProjectFar = 30000.0f;
-                    gGroundHeight = -50.0f;
-                    gPlayer[0].pos.x = -25995.0f;
-                    gPlayer[0].pos.y = 300.0f;
-                    gPlayer[0].pos.z = -11140.0f;
-                    gPlayer[0].camDist = 0.0f;
-                    gPlayer[0].yRot_114 = 271.0f;
-                    gPlayer[0].boostSpeed = gPlayer[0].aerobaticPitch = gPlayer[0].rot.y = gPlayer[0].rot.x =
+                    if (gTurretModeEnabled) {
+                        SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 20);
+                        SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_FANFARE, 20);
+                        Audio_KillSfxById(NA_SE_OB_ROUTE_EXPLOSION1);
+                        Audio_SetEnvSfxReverb(0);
+                        gGroundHeight = -50.0f;
+                        gCurrentLevel = LEVEL_VENOM_2;
+                        gLevelPhase = 1;
+                        gVenomHardClear = 1;
+                        gPlayer[0].state = PLAYERSTATE_LEVEL_COMPLETE;
+                        gPlayer[0].csState = 3;
+                        gPlayer[0].zPath = gPathProgress = 0.0f;
+                        gDrawBackdrop = gDrawGround = true;
+                        gPlayer[0].cam.eye.x = 1200.0f;
+                        gPlayer[0].cam.eye.z = 1200.0f;
+                        gPlayer[0].cam.eye.y = 1800.0f;
+                        gCsCamAtX = 0.0f;
+                        gCsCamAtY = 620.0f;
+                        gCsCamAtZ = 0.0f;
+                        gPlayer[0].draw = false;
+                        gPlayer[0].camRoll = 0.0f;
+                        D_ctx_80177A48[0] = 1.0f;
+                        Play_ClearObjectData();
+
+                        for (i = 0; i < 200; i++) {
+                            gScenery360[i].obj.status = OBJ_FREE;
+                        }
+
+                        Andross_80193710();
+                        D_ctx_8017782C = true;
+                        Play_InitEnvironment();
+                        gFillScreenRed = gFillScreenGreen = gFillScreenBlue = 0;
+                        gFillScreenAlpha = gFillScreenAlphaTarget = 255;
+                        gPlayerGlareAlphas[0] = gPlayerGlareReds[0] = gPlayerGlareGreens[0] = gPlayerGlareBlues[0] = 0;
+                        gPlayer[0].csTimer = 2;
+                        gCsFrameCount = 0;
+                        D_ctx_80177A48[1] = 0.0f;
+
+                    } else {
+                        gDrawBackdrop = 5;
+                        gFogRed = 129;
+                        gFogGreen = 27;
+                        gFogBlue = 0;
+                        gFogNear = 996;
+                        gFogFar = 1007;
+                        gBgColor = 0x4081; // 64, 16, 0
+                        gProjectFar = 30000.0f;
+                        gGroundHeight = -50.0f;
+                        gPlayer[0].pos.x = -25995.0f;
+                        gPlayer[0].pos.y = 300.0f;
+                        gPlayer[0].pos.z = -11140.0f;
+                        gPlayer[0].camDist = 0.0f;
+                        gPlayer[0].yRot_114 = 271.0f;
+                        gPlayer[0].boostSpeed = gPlayer[0].aerobaticPitch = gPlayer[0].rot.y = gPlayer[0].rot.x =
                         gPlayer[0].rot.z = 0.0f;
-                    gPlayer[0].zRotBank = 150.0f;
-                    gPlayer[0].camRoll = -90.0f;
-                    gPlayer[0].state = PLAYERSTATE_LEVEL_COMPLETE;
-                    gPlayer[0].csState = 100;
-                    gPlayer[0].csTimer = 240;
-                    gPlayer[0].draw = true;
-                    D_ctx_80177A48[5] = -1200.0f;
+                        gPlayer[0].zRotBank = 150.0f;
+                        gPlayer[0].camRoll = -90.0f;
+                        gPlayer[0].state = PLAYERSTATE_LEVEL_COMPLETE;
+                        gPlayer[0].csState = 100;
+                        gPlayer[0].csTimer = 240;
+                        gPlayer[0].draw = true;
+                        D_ctx_80177A48[5] = -1200.0f;
 
-                    Andross_80188468();
-                    Andross_80187C5C();
-                    gPlayer[0].unk_014 = 1.0f;
-                    Camera_Update360(gPlayer, true);
-                    Audio_StartPlayerNoise(0);
-                    AUDIO_PLAY_BGM(gBossBgms[gCurrentLevel]);
-                    AUDIO_PLAY_SFX(NA_SE_OB_ROUTE_EXPLOSION1, gDefaultSfxSource, 0);
+                        Andross_80188468();
+                        Andross_80187C5C();
+                        gPlayer[0].unk_014 = 1.0f;
+                        Camera_Update360(gPlayer, true);
+                        Audio_StartPlayerNoise(0);
+                        AUDIO_PLAY_BGM(gBossBgms[gCurrentLevel]);
+                        AUDIO_PLAY_SFX(NA_SE_OB_ROUTE_EXPLOSION1, gDefaultSfxSource, 0);
 
-                    D_ctx_80177CA4 = gHitCount;
+                        D_ctx_80177CA4 = gHitCount;
+                    }
                     break;
 
                 case 800:
@@ -1124,7 +1201,13 @@ void Andross_AndBrain_Update(AndBrain* this) {
             if (gCsFrameCount > 600) {
                 Math_SmoothStepToF(&D_ctx_801779A8[gMainController], 10.0f, 1.0f, 2.0f, 0.0f);
             }
-            this->obj.pos.y = 10000.0f;
+            
+            // Position of Venom 2 base exit in escape cutscene
+            if (gTurretModeEnabled) {
+                this->obj.pos.y = 0.0f;
+            } else {
+                this->obj.pos.y = 10000.0f;
+            }
 
             if ((gPlayer[0].state == PLAYERSTATE_ACTIVE) && ((gGameFrameCount % 4) == 0)) {
                 Matrix_RotateY(gCalcMatrix, (gPlayer[0].yRot_114 + gPlayer[0].rot.y) * M_DTOR, 0U);
@@ -1399,6 +1482,7 @@ void Andross_8018BDD8(void) {
     Math_SmoothStepToF(&D_Andross_801A7F70, D_Andross_801A7F78, 1.0f, 0.1f, 0.0f);
 }
 
+// Andross Mouth
 void Andross_8018C390(Player* player) {
     player->boostCooldown = 1;
     player->barrelRollAlpha = 0;
@@ -2074,9 +2158,18 @@ void Andross_AndAndross_Update(AndAndross* this) {
             }
 
             if (this->timer_050 != 0) {
-                this->fwork[6] = -3000.0f;
+                if (gTurretModeEnabled) {
+                    this->fwork[6] = -2500.0f;
+                } else {
+                    this->fwork[6] = -3000.0f;
+                }
             } else {
-                this->fwork[6] = -1000.0f;
+                if (gTurretModeEnabled) {
+                    this->fwork[6] = -1500.0f;
+                    player->unk_008 = 0;
+                } else {
+                    this->fwork[6] = -1000.0f;
+                }
                 Math_SmoothStepToF(&D_i6_801A7F5C, gLight1R, 1.0f, 4.0f, 0.0f);
                 Math_SmoothStepToF(&D_i6_801A7F64, gLight1G, 1.0f, 3.0f, 0.0f);
                 Math_SmoothStepToF(&D_i6_801A7F6C, gLight1B, 1.0f, 3.0f, 0.0f);
@@ -2689,7 +2782,7 @@ void Andross_AndAndross_Update(AndAndross* this) {
                 Math_SmoothStepToF(&player->pos.y, this->obj.pos.y - 150.0f, 0.1f, this->fwork[16], 0);
                 Math_SmoothStepToF(&this->fwork[16], 35.0f, 1.0f, 0.5f, 0);
 
-                if (fabsf(player->trueZpos - this->obj.pos.z) < 200.0f) {
+                if ((fabsf(player->trueZpos - this->obj.pos.z) < 200.0f) && (!gTurretModeEnabled)) {
                     this->state = 15;
                     this->swork[8] = 1;
                     this->fwork[9] = 0.2f;
@@ -2698,6 +2791,21 @@ void Andross_AndAndross_Update(AndAndross* this) {
                         player->state = PLAYERSTATE_ANDROSS_MOUTH;
                         player->csState = 0;
                     }
+                    break;
+                }
+
+                if ((fabsf(player->trueZpos - this->obj.pos.z) < 200.0f) && (gTurretModeEnabled)) {
+                    this->state = 15;
+                    this->swork[8] = 0;
+                    this->fwork[9] = 0.2f;
+                    this->animFrame = 0;
+
+                    /* this->state = 18;
+                    this->animFrame = 0;
+                    this->work_044 = 1;
+                    this->timer_050 = 40;
+                    this->fwork[9] = 0.0f; */
+                    Player_DamageEffects(player);
                     break;
                 }
             }

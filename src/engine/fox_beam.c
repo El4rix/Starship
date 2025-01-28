@@ -676,7 +676,11 @@ void PlayerShot_ApplyDamageToActor(PlayerShot* shot, Actor* actor, s32 hitIndex)
     actor->dmgType = DMG_BEAM;
     actor->dmgPart = hitIndex - 1;
     actor->timer_0C2 = 2;
-    actor->damage = 10;
+    if (!gTurretModeEnabled) {
+        actor->damage = 10;
+    } else {
+        actor->damage = 31;
+    }
     if ((shot->sourceId < 4) && (gPlayer[shot->sourceId].form != FORM_LANDMASTER)) {
         switch (gLaserStrength[shot->sourceId]) {
             case LASERS_TWIN:
@@ -694,15 +698,22 @@ void PlayerShot_ApplyDamageToActor(PlayerShot* shot, Actor* actor, s32 hitIndex)
     }
     if (shot->obj.id == PLAYERSHOT_GFOX_LASER) {
         if ((gTurretModeEnabled)) {
-            if ((actor->eventType == EVID_TEAMMATE) || (actor->obj.id == OBJ_ACTOR_TEAM_BOSS) || (actor->obj.id == OBJ_ACTOR_TEAM_ARWING)) {
+            if ((actor->eventType == EVID_TEAMMATE) || (actor->obj.id == OBJ_ACTOR_TEAM_BOSS) || (actor->obj.id == OBJ_ACTOR_TEAM_ARWING) || (gCurrentLevel == LEVEL_VENOM_2)) {
                 actor->damage = 10;
-            } else if ((gCurrentLevel == LEVEL_ZONESS) || (gCurrentLevel == LEVEL_FORTUNA) || (gCurrentLevel == LEVEL_BOLSE) || (gCurrentLevel == LEVEL_KATINA)) {
+            } else if ((gCurrentLevel == LEVEL_FORTUNA) || (gCurrentLevel == LEVEL_BOLSE) || (gCurrentLevel == LEVEL_KATINA)) {
                 actor->damage = 10;
                 actor->dmgType = DMG_EXPLOSION;
-            } else if (gCurrentLevel == LEVEL_VENOM_2) {
-                actor->damage = 10;
+            } else if ((gCurrentLevel == LEVEL_ZONESS) || (gCurrentLevel == LEVEL_AQUAS)) {
+                actor->dmgType = RAND_INT(5);
+                if (actor->dmgType == 4) {
+                    actor->dmgType = DMG_EXPLOSION;
+                    actor->damage = 31;
+                } else {
+                    actor->dmgType = DMG_BEAM;
+                    actor->damage = 10;
+                }
             } else {
-                actor->damage = 31;
+                actor->damage = 25;
             }
         } else {
             actor->damage = 100;
@@ -1040,6 +1051,8 @@ void PlayerShot_CollisionCheck(PlayerShot* shot) {
                             } else {
                                 boss->damage = 30;
                             }
+                        } else if ((gCurrentLevel == LEVEL_AQUAS) && (gTurretModeEnabled)) {
+                            boss->damage = RAND_INT(5) + 27;
                         } else {
                             boss->damage = 10;
                             if (shot->sourceId < 4) {
@@ -1048,7 +1061,9 @@ void PlayerShot_CollisionCheck(PlayerShot* shot) {
                                     case LASERS_TWIN:
                                         break;
                                     case LASERS_HYPER:
-                                        boss->damage = 15;
+                                        if (!gTurretModeEnabled) {
+                                            boss->damage = 15;
+                                        }
                                         break;
                                 }
                             }

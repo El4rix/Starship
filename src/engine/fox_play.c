@@ -519,6 +519,9 @@ void Play_Setup360_AND(void) {
     boss->obj.pos.x = 0.0f;
     boss->obj.pos.y = 0.0f;
     boss->obj.pos.z = 0.0f;
+    if (gTurretModeEnabled) {
+        boss->obj.pos.z = -2500.0f;
+    }
 
     boss->obj.id = OBJ_BOSS_AND_BRAIN;
     Object_SetInfo(&boss->info, boss->obj.id);
@@ -2669,7 +2672,11 @@ void Play_InitLevel(void) {
 
         case LEVEL_VENOM_ANDROSS:
             gDrawGround = false;
-            gDrawBackdrop = 6;
+            if (gTurretModeEnabled) {
+                gDrawBackdrop = 1;
+            } else {
+                gDrawBackdrop = 6;
+            }
             D_Andross_801A7F58 = D_Andross_801A7F60 = D_Andross_801A7F68 = D_Andross_801A7F70 = D_Andross_801A7F78 =
                 0.0f;
             break;
@@ -4678,7 +4685,7 @@ void Player_Setup(Player* playerx) {
             }
             if (gTurretModeEnabled) {
                 player->pathHeight = 650.0f;
-                player->pathFloor = 200.0f;
+                player->pathFloor = 100.0f;
             }
             break;
 
@@ -4824,7 +4831,7 @@ void Player_Setup(Player* playerx) {
         player->pos.y = 670.0f;
         player->pathHeight = 730.0f;
         player->wingPosition = 2;
-        if ((gCurrentLevel == LEVEL_VENOM_ANDROSS) && (gLevelPhase == 1)) {
+        if ((gCurrentLevel == LEVEL_VENOM_ANDROSS) && (gLevelPhase == 1) && (!gTurretModeEnabled)) {
             player->pos.x = -7910.0f;
             player->pos.y = 300.0f;
 
@@ -4832,8 +4839,17 @@ void Player_Setup(Player* playerx) {
             player->yRot_114 = 188.0f;
             player->hideShadow = true;
         }
+        if ((gCurrentLevel == LEVEL_VENOM_ANDROSS) && (gLevelPhase == 1) && (gTurretModeEnabled)) {
+            player->pos.x = 0;
+            player->pos.y = 300.0f;
+            player->pos.z = -5000.0f;
+            //gStartAndrossFightTimer = 1000;
+            player->hideShadow = true;
+        }
         if (!gTurretModeEnabled) {
             Camera_UpdateArwing360(player, true);
+        } else {
+            Turret_Update360Camera(player, true);
         }
     } else {
         player->unk_014 = 1.0f;
@@ -5347,7 +5363,6 @@ void Player_ArwingBrake(Player* player) {
 
     if ((gInputHold->button & gBrakeButton[player->num]) && !(gInputHold->button & gBoostButton[player->num]) &&
         (player->state != PLAYERSTATE_U_TURN) && !player->boostCooldown) {
-        AUDIO_PLAY_SFX(NA_SE_MISSILE_ALARM, gDefaultSfxSource, 4);
         CALL_CANCELLABLE_EVENT(PlayerActionBrakeEvent, player) {
             if (player->boostMeter == 0.0f) {
                 Player_PlaySfx(player->sfxSource, NA_SE_ARWING_BRAKE, player->num);
@@ -6119,7 +6134,11 @@ void Player_Update(Player* player) {
         case PLAYERSTATE_START_360:
             gPauseEnabled = false;
             Player_UpdateShields(player);
-            Cutscene_AllRangeMode(player);
+            if (gTurretModeEnabled) {
+                Turret_Cutscene_AllRangeMode(player);
+            } else {
+                Cutscene_AllRangeMode(player);
+            }
             Player_UpdateArwingRoll(player);
             gChargeTimers[player->num] = player->alternateView = gShowHud = 0;
             break;

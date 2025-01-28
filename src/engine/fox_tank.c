@@ -370,6 +370,8 @@ void func_tank_800444BC(Player* player) {
         if (player->rot.z > player->rot_104.z) {
             player->rot.z -= sp34;
         }
+    } else if ((gTurretModeEnabled) && ((player->pos.y - 150) < sp38)) {
+        player->grounded = true;
     }
     if (gCurrentLevel == LEVEL_TITANIA) {
         func_tank_800443DC(player);
@@ -938,8 +940,16 @@ void func_tank_80046704(Player* player) {
                         Math_SmoothStepToF(&player->camDist, 0, 0.3f, 3.5f, 0.001f);
                         if (temp_v0 == 1) {
                             player->vel.x = -10.0f;
+                            if (gTurretModeEnabled) {
+                                turretDestX -= 100.0f;
+                                Player_ApplyDamage(player, temp_v0, 5);
+                            }
                         } else {
                             player->vel.x = 10.0f;
+                            if (gTurretModeEnabled) {
+                                turretDestX += 100.0f;
+                                Player_ApplyDamage(player, temp_v0, 5);
+                            }
                         }
                         player->pos.x = player->basePos.x;
                         player->knockback.x = 2.0f * D_800C9F4C[temp_v0];

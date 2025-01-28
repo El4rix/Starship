@@ -606,9 +606,16 @@ void Display_ArwingWings(ArwingInfo* arwing) {
         arwing->laserGunsXpos = (-arwing->laserGunsYpos - 7.0f) * 2.5f;
     }
 
-    if (gGameState == GSTATE_PLAY) {
+    if ((gGameState == GSTATE_PLAY) && (!gTurretModeEnabled)) {
         Animation_DrawSkeleton(1, D_arwing_3016610, gPlayer[0].jointTable, Display_ArwingWingsOverrideLimbDraw, NULL,
                                arwing, &gIdentityMatrix);
+    } else if ((gGameState == GSTATE_PLAY) && (gTurretModeEnabled)) {
+        if (arwing->drawFace == 1) {
+            Cutscene_DrawGreatFox();
+        } else {
+            Animation_DrawSkeleton(1, D_arwing_3016610, gPlayer[0].jointTable, Display_ArwingWingsOverrideLimbDraw, NULL,
+                                arwing, &gIdentityMatrix);
+        }
     } else {
         if (gGameState == GSTATE_MENU) {
             Animation_GetFrameData(&D_arwing_3015AF4, 0, frameTable);
@@ -805,19 +812,23 @@ void Display_Reticle(Player* player) {
 }
 
 void Display_DrawPlayer(Player* player, s32 reflectY) {
-    switch (player->form) {
-        case FORM_ARWING:
-            Display_Arwing(player, reflectY);
-            break;
-        case FORM_LANDMASTER:
-            Display_Landmaster(player);
-            break;
-        case FORM_BLUE_MARINE:
-            Aquas_BlueMarine_Draw(player);
-            break;
-        case FORM_ON_FOOT:
-            Display_OnFootCharacter(player);
-            break;
+    if (gTurretModeEnabled) {
+        Display_Arwing(player, reflectY);
+    } else {
+        switch (player->form) {
+            case FORM_ARWING:
+                Display_Arwing(player, reflectY);
+                break;
+            case FORM_LANDMASTER:
+                Display_Landmaster(player);
+                break;
+            case FORM_BLUE_MARINE:
+                Aquas_BlueMarine_Draw(player);
+                break;
+            case FORM_ON_FOOT:
+                Display_OnFootCharacter(player);
+                break;
+        }
     }
 }
 
@@ -1364,6 +1375,10 @@ bool Display_CheckPlayerVisible(s32 index, s32 reflectY) {
     Vec3f dest;
 
     Matrix_MultVec3f(gGfxMatrix, &src, &dest);
+
+    if (gTurretModeEnabled) {
+        return true;
+    }
 
     if ((dest.z < 200.0f) && (dest.z > -12000.0f)) {
         if (fabsf(dest.x) < (fabsf(dest.z * /*0.5f*/ 1.5f) + 500.0f)) {

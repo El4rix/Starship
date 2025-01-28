@@ -243,7 +243,13 @@ void Turret_GreatFoxLaser(Player* player, f32 xOffset) {
         if (gPlayerShots[i].obj.status == SHOT_FREE) {
             Turret_SetupShot(player, &gPlayerShots[i], xOffset, -130.0f, 250.0f, PLAYERSHOT_GFOX_LASER, 100.0f);
             //Play_PlaySfxFirstPlayer(gPlayerShots[i].sfxSource, NA_SE_GREATFOX_SHOT_DEMO); //NA_SE_TURRET_SHOT
-            AUDIO_PLAY_SFX(NA_SE_GREATFOX_SHOT_DEMO, gPlayerShots[i].sfxSource, 4);
+            if (gCurrentLevel == LEVEL_AQUAS) {
+                AUDIO_PLAY_SFX(NA_SE_MAR_TWIN_LASER, gDefaultSfxSource, 4);
+            } else if (gCurrentLevel == LEVEL_SOLAR) {
+                AUDIO_PLAY_SFX(NA_SE_GREATFOX_SHOT_DEMO, gDefaultSfxSource, 4);
+            } else {
+                AUDIO_PLAY_SFX(NA_SE_GREATFOX_SHOT_DEMO, gPlayerShots[i].sfxSource, 4);
+            }
             break;
         }
     }
@@ -334,8 +340,9 @@ void Turret_Shoot(Player* player) {
         if (player->turretLockOnCount > ARRAY_COUNT(gActors)) {
             player->turretLockOnCount = ARRAY_COUNT(gActors);
             //func_effect_80081BEC(player->pos.x, player->pos.y, player->trueZpos - 500.0f, 1.0f, 9);
-            if (gBombCount[0] > 0) {
+            if ((gBombCount[0] > 0) || (gCurrentLevel == LEVEL_AQUAS)) {
                 Player_SetupArwingShot(player, &gPlayerShots[ARRAY_COUNT(gPlayerShots) - 1], 0.0f, 0.0f, PLAYERSHOT_BOMB, 0.0f);
+                PlayerShot_SetBombLight(player);
                 AUDIO_PLAY_SFX(NA_SE_MISSILE_ALARM, gDefaultSfxSource, 4);
             }
         } else {
@@ -344,12 +351,16 @@ void Turret_Shoot(Player* player) {
         if ((player->turretLockOnCount == ARRAY_COUNT(gActors)) && (gControllerPress[player->num].button & A_BUTTON) && (gBombCount[0] > 0)) {
             player->turretLockOnCount = 0;
             Player_SmartBomb(player);
+            if (gCurrentLevel == LEVEL_AQUAS) {
+                gBombCount[0]++;
+            }
         }
     } else {
        player->turretLockOnCount = 0;
        Audio_KillSfxBySourceAndId(gDefaultSfxSource, NA_SE_EN_A6BOSS_CHARGE);
     }
 }
+
 
 void Turret_UpdateRails(Player* player) {
     f32 sp2C;
@@ -386,6 +397,73 @@ void Turret_UpdateRails(Player* player) {
     Player_WaterEffects(player);
     Player_FloorCheck(player);
     Player_LowHealthAlarm(player);
+
+    switch (player->form) {
+        case FORM_LANDMASTER:
+            player->wingPosition = 1;
+            if (player->zRotBank > 0) {
+                player->unk_188 += 1.5f;
+                player->zRotBank -= player->unk_188;
+                if (player->zRotBank <= 0.0f) {
+                    player->zRotBank = 0.0f;
+                    if (player->unk_188 > 3.0f) {
+                        player->unk_188 *= -0.4f;
+                        player->zRotBank -= player->unk_188;
+                    }
+                }
+            }
+            if (player->zRotBank < 0.0f) {
+                player->unk_188 += 1.5f;
+                player->zRotBank += player->unk_188;
+                if (player->zRotBank >= 0.0f) {
+                    player->zRotBank = 0.0f;
+                    if (player->unk_188 > 3.0f) {
+                        player->unk_188 *= -0.4f;
+                        player->zRotBank += player->unk_188;
+                    }
+                }
+            }
+            if (player->grounded) {
+                turretDestY += 100.0f;
+                Player_ApplyDamage(player, 1, 21);
+                if (player->baseSpeed != 0.0f) {
+                    func_tank_80043B18(player);
+                }
+                if (player->rollState != 0.0f) {
+                    func_tank_80043B18(player);
+                }
+            }
+            // Has to do with broken texture scrolling? Fixed elsewhere.
+            /* if (player->baseSpeed > 0.0f) {
+                Lib_Texture_Scroll(D_landmaster_3002E80, 32, 32, 0);
+                if ((gCurrentLevel == LEVEL_TITANIA) && !gBossActive) {
+                    func_tank_80043280(D_landmaster_3005EA8, D_TI_6009BB8, gGameFrameCount * -55.0f);
+                }
+                if ((gCurrentLevel == LEVEL_MACBETH) && (player->state == PLAYERSTATE_LEVEL_COMPLETE)) {
+                    // Using D_TI_6009BB8 since it's the same texture, D_Tex_800DACB8 might be imported incorrectly.
+                    func_tank_80043280(D_landmaster_3005EA8, D_TI_6009BB8, gGameFrameCount * -55.0f);
+                }
+            }
+            if (player->baseSpeed > 10.0f) {
+                Lib_Texture_Scroll(D_landmaster_3002E80, 32, 32, 0);
+                if ((gCurrentLevel == LEVEL_TITANIA) && !gBossActive) {
+                    func_tank_80043280(D_landmaster_3005EA8, D_TI_6009BB8, gGameFrameCount * -55.0f);
+                }
+            } */
+            if (gCurrentLevel != LEVEL_MACBETH) {
+                Player_CollisionCheck(player);
+            } else {
+                func_tank_800481F4(player);
+            }
+            if (gCurrentLevel == LEVEL_TITANIA) {
+                func_tank_80046358(player);
+                func_tank_80046260(player);
+            }
+            break;
+
+        case FORM_BLUE_MARINE:
+            break;
+    }
 
     // Kill
     if ((player->shields <= 0) && (player->radioDamageTimer != 0)) {
@@ -443,6 +521,10 @@ void Turret_UpdateRails(Player* player) {
         }
     }
 
+    if (gCurrentLevel == LEVEL_AQUAS) {
+        Aquas_801A99D4(player);
+    }
+
     //Prevent looking back
     if (player->unk_008 > 60.0f) {
         player->unk_008 = 60.0f;
@@ -497,7 +579,7 @@ void Turret_UpdateRails(Player* player) {
         }
     }
 
-    gPlayerTurnRate = 2.3f;
+    /* gPlayerTurnRate = 2.3f;
     gPlayerTurnStickMod = 0.68f;
 
     stickX = 0;
@@ -563,8 +645,23 @@ void Turret_UpdateRails(Player* player) {
 
     player->vel.x = (sp5C.x + sp50.x) * player->unk_150;
     player->vel.y = (sp5C.y + sp50.y) * player->unk_150;
-    player->vel.z = sp5C.z + sp50.z;
-    
+    player->vel.z = sp5C.z + sp50.z; */
+
+    // Keep up with Andross
+    if (gCurrentLevel == LEVEL_VENOM_ANDROSS) {
+        player->vel.z += D_Andross_801A7F58;
+    }
+
+    if ((gCurrentLevel == LEVEL_AQUAS) && (gBossActive) && (fabsf(gBosses[0].obj.pos.z - gPlayer[0].trueZpos) <= 3000.0f)) {
+        player->vel.z = 0;
+    }
+
+    // Correct for Tank collision sending you backwards
+    if ((player->form == FORM_LANDMASTER) && (player->baseSpeed != 15)) {
+        Math_SmoothStepToF(&player->baseSpeed, 15, 0.1f, 1.0f, 0.00001f);
+    }
+
+    player->vel.z = -player->baseSpeed - player->boostSpeed;
     player->pos.z += player->vel.z;
 
     // Move Around
@@ -708,6 +805,16 @@ void Turret_Update360(Player* player) {
         player->unk_008 = 0.0f;
         player->unk_00C = 0.0f;
     }
+
+    // Quick look around
+    if ((gControllerPress[player->num].button & R_JPAD) || (gControllerPress[player->num].button & R_CBUTTONS)) {
+        player->unk_008 += 90.0f;
+        player->unk_180 -= 30.0f;
+    }
+    if ((gControllerPress[player->num].button & L_JPAD) || (gControllerPress[player->num].button & L_CBUTTONS)) {
+        player->unk_008 -= 90.0f;
+        player->unk_180 += 30.0f;
+    }
     
     // Resets position
     /* if (gControllerHold[player->num].button & B_BUTTON) {
@@ -757,14 +864,23 @@ void Turret_Update360(Player* player) {
 
     //Fortuna, Venom II, Corneria: 3000, 0.5, 350
 
+    turret360Radius = 3000;
+    turret360Speed = 0.5f;
+    turret360Height = 450;
+
     switch (gCurrentLevel) {
         case LEVEL_SECTOR_Y:
             turret360Height = 450;
             break;
-        default:
-            turret360Radius = 3000;
-            turret360Speed = 0.5f;
-            turret360Height = 450;
+        case LEVEL_SECTOR_Z:
+            turret360Radius = 0;
+            turret360Speed = 0;
+            turret360Height = 300;
+            break;
+        case LEVEL_VENOM_ANDROSS:
+            turret360Radius = 0;
+            turret360Speed = 0;
+            turret360Height = (player->pathHeight + player->pathFloor)/2;
             break;
     }
 
@@ -776,8 +892,11 @@ void Turret_Update360(Player* player) {
     //Updates rotation
     Math_SmoothStepToF(&player->unk_180, -player->unk_008 + 180, 0.5f, 3.0f, 0.00001f);
     Math_SmoothStepToF(&player->unk_17C, -player->unk_00C, 0.5f, 3.0f, 0.00001f);
+    
     //Rotates along path
-    player->unk_000 += 0.5;
+    if ((gCurrentLevel != LEVEL_SECTOR_Z) && (gCurrentLevel != LEVEL_VENOM_ANDROSS)) {
+        player->unk_000 += 0.5;
+    }
 
     Turret_Shoot(player);
 }
@@ -829,6 +948,166 @@ void Turret_Update360Camera(Player* player) {
     player->cam.eye.y = player->pos.y;
     player->cam.eye.z = player->pos.z + gPathProgress;
     player->camRoll = 0;
+}
+
+void Turret_Cutscene_AllRangeMode(Player* player) {
+    s32 pad;
+    Vec3f sp70;
+    Vec3f sp64;
+    ActorTeamBoss* actor;
+    f32 var_s1;
+    f32 var_s2;
+    f32 var_s3;
+    f32 D_demo_800CA080[] = { -400.0f, 0.0f, 400.0f };
+    f32 D_demo_800CA08C[] = { 0.0f, 200.0f, 0.0f };
+    s32 i;
+    s32 pad1;
+    s32 pad2;
+
+    gCsFrameCount++;
+
+    Math_SmoothStepToAngle(&player->aerobaticPitch, 0.0f, 0.1f, 20.0f, 0.0f);
+
+    player->draw = true;
+
+    if (gCsFrameCount == 37) {
+        gChangeTo360 = true;
+        if (gCurrentLevel == LEVEL_VENOM_ANDROSS) {
+            Radio_PlayMessage(gMsg_ID_19466, RCID_FOX);
+            AUDIO_PLAY_BGM(NA_BGM_ANDROSS_BRAIN);
+        } else if (gCurrentLevel != LEVEL_TRAINING) {
+            Radio_PlayMessage(gMsg_ID_20180, RCID_FOX);
+            if (gCurrentLevel == LEVEL_SECTOR_Y) {
+                Audio_PlaySequence(SEQ_PLAYER_BGM, gBossBgms[gCurrentLevel], 0, 2);
+            } else {
+                AUDIO_PLAY_BGM(gBossBgms[gCurrentLevel]);
+            }
+        }
+    }
+    player->arwing.bottomLeftFlapYrot = 0.0f;
+    player->arwing.bottomRightFlapYrot = 0.0f;
+    player->arwing.upperLeftFlapYrot = 0.0f;
+    player->arwing.upperRightFlapYrot = 0.0f;
+
+    Math_SmoothStepToF(&player->rot.x, 0.0f, 0.1f, 5.0f, 0.0f);
+    Math_SmoothStepToF(&player->rot.y, 0.0f, 0.1f, 5.0f, 0.0f);
+    Math_SmoothStepToF(&player->rot.z, 0.0f, 0.1f, 1.0f, 0.0f);
+    Math_SmoothStepToF(&player->zRotBank, 0.0f, 0.1f, 5.0f, 0.0f);
+    Math_SmoothStepToF(&player->camRoll, 0.0f, 0.1f, 3.0f, 0.0f);
+    Math_SmoothStepToF(&player->boostSpeed, 0.0f, 0.1f, 3.0f, 0.0f);
+    Math_SmoothStepToF(&player->camDist, 0.0f, 0.1f, 3.0f, 0.0f);
+
+    switch (player->csState) {
+        case 0:
+            Audio_PlayVoice(0);
+            D_ctx_80177A48[0] = 0.005f;
+            D_ctx_80177A48[1] = 0.0f;
+            D_ctx_80177A48[2] = 60.0f;
+            D_ctx_80177A48[3] = 0.0f;
+            player->arwing.drawFace = true;
+            player->csState++;
+            gCsFrameCount = 0;
+            /* fallthrough */
+        case 1:
+            if (player->pos.y < 350.0f) {
+                Math_SmoothStepToF(&player->pos.y, 350.0f, 0.1f, D_ctx_80177A48[3], 0.0f);
+            }
+
+            Math_SmoothStepToF(&D_ctx_80177A48[3], 10.0f, 1.0f, 1.0f, 0.0f);
+            Math_SmoothStepToF(&D_ctx_80177A48[1], 360.0f, 0.05f, 1.5f, 0.0f);
+            Math_SmoothStepToF(&D_ctx_80177A48[2], -70.0f, 0.1f, 0.7f, 0.0f);
+
+            if (D_ctx_80177A48[1] > 220.0f) {
+                player->wingPosition = 2;
+            }
+
+            if ((gCsFrameCount > 135) && (gCsFrameCount < 180)) {
+                Math_SmoothStepToF(&D_ctx_801779A8[player->num], 30.0f, 1.0f, 10.0f, 0.0f);
+            }
+
+            if (gCsFrameCount == 138) {
+                AUDIO_PLAY_SFX(NA_SE_WING_OPEN, player->sfxSource, 0);
+            }
+
+            if (gCsFrameCount == 190) {
+                AUDIO_PLAY_SFX(NA_SE_WING_OPEN_END, player->sfxSource, 0);
+            }
+
+            if (D_ctx_80177A48[1] > 350.0f) {
+                player->state = PLAYERSTATE_ACTIVE;
+                player->draw = false;
+                player->unk_014 = 0.0f;
+                player->unk_018 = 0.1f;
+                player->unk_194 = 10.0f;
+                player->unk_190 = 10.0f;
+
+                AUDIO_PLAY_SFX(NA_SE_ARWING_BOOST, player->sfxSource, 0);
+
+                D_ctx_801779A8[player->num] = 70.0f;
+
+                if ((gCurrentLevel != LEVEL_VENOM_ANDROSS) && (gCurrentLevel != LEVEL_TRAINING)) {
+                    D_hud_800D1970 = 0;
+                    for (i = 0, actor = &gActors[2]; i < 3; i++, actor++) {
+                        Actor_Initialize(actor);
+                        actor->obj.status = OBJ_INIT;
+                        actor->obj.id = OBJ_ACTOR_TEAM_BOSS;
+                        actor->obj.pos.x = D_demo_800CA080[i] + player->pos.x;
+                        actor->obj.pos.y = D_demo_800CA08C[i] + player->pos.y;
+                        actor->obj.pos.z = player->trueZpos - 1000.0f;
+                        actor->rot_0F4.y = 180.0f;
+                        Object_SetInfo(&actor->info, actor->obj.id);
+                    }
+                }
+            }
+
+            Matrix_RotateY(gCalcMatrix, D_ctx_80177A48[1] * M_DTOR, MTXF_NEW);
+            Matrix_RotateX(gCalcMatrix, D_ctx_80177A48[2] * M_DTOR, MTXF_APPLY);
+
+            sp70.x = 0.0f;
+            sp70.y = 0.0f;
+            sp70.z = 200.0f;
+
+            Matrix_MultVec3f(gCalcMatrix, &sp70, &sp64);
+
+            if ((gCurrentLevel == LEVEL_CORNERIA) || (gCurrentLevel == LEVEL_VENOM_ANDROSS)) {
+                sp64.x *= -1.0f;
+            }
+            Math_SmoothStepToF(&D_ctx_80177A48[0], 0.1f, 1.0f, 0.005f, 0.0f);
+            Math_SmoothStepToF(&player->cam.eye.x, player->pos.x + sp64.x, D_ctx_80177A48[0], 500.0f, 0.0f);
+            Math_SmoothStepToF(&player->cam.eye.y, player->pos.y + sp64.y, D_ctx_80177A48[0], 500.0f, 0.0f);
+            Math_SmoothStepToF(&player->cam.eye.z, player->trueZpos + gPathProgress + sp64.z - 1200, D_ctx_80177A48[0], 500.0f,
+                               0.0f);
+            Math_SmoothStepToF(&player->cam.at.x, player->pos.x, D_ctx_80177A48[0], 500.0f, 0.0f);
+            Math_SmoothStepToF(&player->cam.at.y, player->pos.y, D_ctx_80177A48[0], 500.0f, 0.0f);
+            Math_SmoothStepToF(&player->cam.at.z, player->trueZpos + gPathProgress - 1200, D_ctx_80177A48[0], 500.0f, 0.0f);
+            break;
+    }
+    Matrix_RotateY(gCalcMatrix, (player->rot.y + 180.0f) * M_DTOR, MTXF_NEW);
+    Matrix_RotateX(gCalcMatrix, -(player->rot.x * M_DTOR), MTXF_APPLY);
+
+    sp70.x = 0.0f;
+    sp70.y = 0.0f;
+    sp70.z = player->baseSpeed + player->boostSpeed;
+
+    Matrix_MultVec3fNoTranslate(gCalcMatrix, &sp70, &sp64);
+
+    player->vel.x = sp64.x;
+    player->vel.z = sp64.z;
+    player->vel.y = sp64.y;
+    player->pos.x += player->vel.x;
+    player->pos.y += player->vel.y;
+    player->pos.z += player->vel.z;
+    player->trueZpos = player->pos.z + player->camDist;
+    player->cam.at.z += player->vel.z;
+    player->cam.eye.z += player->vel.z;
+
+    player->bankAngle = player->rot.z + player->zRotBank + player->zRotBarrelRoll;
+    player->bobPhase += 10.0f;
+    player->yBob = -SIN_DEG(player->bobPhase) * 0.3f;
+    player->rockPhase += 8.0f;
+    player->rockAngle = SIN_DEG(player->rockPhase);
+
+    Player_FloorCheck(player);
 }
 
 

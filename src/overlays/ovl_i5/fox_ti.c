@@ -3232,6 +3232,15 @@ void Titania_80192118(TiGoras* this) {
             Animation_GetFrameData(&D_TI_A000934, 0, &D_i5_801BC978[16]);
             Animation_GetFrameData(&D_TI_A000934, 0, &D_i5_801BCDC8[16]);
 
+            if (((gPlayer[0].trueZpos - this->obj.pos.z) <= 650.0f) && (gTurretModeEnabled)) {
+                this->vel.z = gPlayer[0].vel.z;
+                gPlayer[0].unk_19C = -1;
+                gPlayer[0].unk_000 = 0.0f;
+                this->swork[1] = 2;
+                this->swork[31] = 0;
+                this->swork[30]++;
+            }
+
             if ((gPlayer[0].trueZpos - this->obj.pos.z) <= 450.0f) {
                 gPlayer[0].unk_19C = -1;
                 gPlayer[0].unk_000 = 0.0f;

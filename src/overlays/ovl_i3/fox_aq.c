@@ -10,7 +10,7 @@
 #include "port/hooks/Events.h"
 // #include "prevent_bss_reordering2.h"
 
-const char D_i3_801C1A30[] = "„Éó„É¨„Ç§„É§„Éº„ÅÆ„Åô„Åπ„Å¶„Çí„ÇØ„É™„Ç¢ \n"; // Clear of all players
+const char D_i3_801C1A30[] = "????????§„?§„?º„???????π„?????????????? \n"; // Clear of all players
 const char D_i3_801C1A50[] = "i %d\n";
 
 typedef enum AqBacoonLimbs {

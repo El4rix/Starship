@@ -667,6 +667,8 @@ void Background_DrawBackdrop(void) {
                             RCP_SetupDL(&gMasterDisp, SETUPDL_62);
                             if (gDrawBackdrop == 5) {
                                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 64);
+                            } else if ((gTurretModeEnabled) && (gAndrossUnkAlpha == 0)) {
+                                gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 0, 255, 128, (60.0f * fabsf(SIN_DEG(gGameFrameCount))));
                             } else {
                                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 0, 255, 128, (s32) gAndrossUnkAlpha);
                             }
