@@ -2296,6 +2296,9 @@ void Meteo_LevelStart(Player* player) {
         case 600:
             if ((gTeamShields[TEAM_ID_SLIPPY] > 0) && (gTeamShields[TEAM_ID_PEPPY] > 0)) {
                 Radio_PlayMessage(gMsg_ID_3010, RCID_PEPPY);
+                if (gTurretModeEnabled) {
+                    Object_Kill(&gActors[3].obj, gActors[3].sfxSource);
+                }
             }
             break;
 
@@ -2517,6 +2520,11 @@ void Meteo_LevelComplete(Player* player) {
             gCsCamAtY = player->pos.y;
             gCsCamAtZ = player->trueZpos + gPathProgress + 150.0f;
 
+            if ((gTurretModeEnabled) && (gCsFrameCount == 1390)) {
+                player->pos.z -= 3000;
+                player->baseSpeed += 10.0f;
+            }
+
             if (gCsFrameCount > 1390) {
                 player->baseSpeed += 2.0f;
                 player->rot.x += 0.1f;
@@ -2560,7 +2568,9 @@ void Meteo_LevelComplete(Player* player) {
             if (gTeamShields[TEAM_ID_PEPPY] > 0) {
                 Meteo_LevelComplete_SetupTeam(&gActors[2], 2);
             }
-            Meteo_LevelComplete_SetupTeam(&gActors[3], 3);
+            if (!gTurretModeEnabled) {
+                Meteo_LevelComplete_SetupTeam(&gActors[3], 3);
+            }
             break;
 
         case 370:
@@ -2640,10 +2650,12 @@ void Meteo_LevelComplete(Player* player) {
             break;
 
         case 1400:
-            gActors[3].state = 1;
-            gActors[3].obj.pos.x = player->cam.eye.x - 700.0f;
-            gActors[3].obj.pos.y = player->cam.eye.y;
-            gActors[3].obj.pos.z = player->cam.eye.z - gPathProgress + 1000.0f;
+            if (!gTurretModeEnabled) {
+                gActors[3].state = 1;
+                gActors[3].obj.pos.x = player->cam.eye.x - 700.0f;
+                gActors[3].obj.pos.y = player->cam.eye.y;
+                gActors[3].obj.pos.z = player->cam.eye.z - gPathProgress + 1000.0f;
+            }
             break;
     }
 

@@ -429,7 +429,7 @@ ObjectInfo gObjectInfo[] = {
   /* OBJ_BOSS_BO_BASE_SHIELD */  {(void*) BoBaseShield_Draw, 1, (ObjectFunc) BoBaseShield_Update,       gNoHitbox,     0.0f,  0, 0, 40, 1,   0.0f, 10 },
   /* OBJ_BOSS_BO_BASE_CORE */  {(void*) Bolse_BoBaseCore_Draw, 2, (ObjectFunc) Bolse_BoBaseCore_Update,        aBoBaseCoreHitbox,     0.0f,  0, 0, 40, 1,   0.0f, 10 },
   /* OBJ_BOSS_VE2_BASE */  {(void*) Venom2_Ve2Base_Draw, 2, (ObjectFunc) Venom2_Ve2Base_Update,        aVe2BaseHitbox,     0.0f,  0, 0, 40, 1,   0.0f, 10 },
-  /* OBJ_BOSS_SZ_GREAT_FOX */  {(void*) SectorZ_SzGreatFox_Draw, 1, (ObjectFunc) SectorZ_SzGreatFox_Update,        aSzGreatFoxHitbox,     0.0f,  0, 0, 40, 0,   0.0f, 10 },
+  /* OBJ_BOSS_SZ_GREAT_FOX */  {(void*) SectorZ_SzGreatFox_Draw, 1, (ObjectFunc) SectorZ_SzGreatFox_Update,   gNoHitbox  /* aSzGreatFoxHitbox */,     0.0f,  0, 0, 40, 0,   0.0f, 10 },
   /* OBJ_BOSS_SY_SHOGUN */  {(void*) SectorY_SyShogun_Draw, 2, (ObjectFunc) SectorY_SyShogun_Update,       gNoHitbox,     0.0f,  0, 0, 40, 0,   0.0f, 10 },
   /* OBJ_BOSS_SO_VULKAIN */  {(void*) Solar_SoVulkain_Draw, 2, (ObjectFunc) Solar_SoVulkain_Update,       gNoHitbox,     0.0f,  0, 0, 40, 0,   0.0f, 10 },
   /* OBJ_BOSS_KA_SAUCERER */  {(void*) Katina_KaSaucerer_Draw, 1, (ObjectFunc) Katina_KaSaucerer_Update,        aKaSaucererHitbox,     0.0f,  0, 0, 40, 0,   0.0f, 10 },

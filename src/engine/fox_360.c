@@ -266,6 +266,13 @@ void AllRange_GreatFoxRepair(Player* player) {
 void AllRange_FortunaIntro(Player* player) {
     Vec3f sp24;
 
+    if (gTurretModeEnabled) {
+        player->draw = true;
+        if (gCsFrameCount == 1) {
+            player->pos.y += 700;
+        }
+    }
+
     Math_Vec3fFromAngles(&sp24, 0.0f, player->yRot_114 + 180.0f, 40.0f);
     player->vel.x = sp24.x;
     player->vel.z = sp24.z;
@@ -275,7 +282,11 @@ void AllRange_FortunaIntro(Player* player) {
     player->pos.z += player->vel.z;
     player->trueZpos = player->pos.z;
     player->cam.eye.x = -200.0f;
-    player->cam.eye.y = 500.0f;
+    if (gTurretModeEnabled) {
+        player->cam.eye.y = 800.0f;
+    } else {
+        player->cam.eye.y = 500.0f;
+    }
     player->cam.eye.z = 7000.0f;
     player->cam.at.x = player->pos.x;
     player->cam.at.y = player->pos.y;
@@ -2268,6 +2279,38 @@ void ActorAllRange_Update(ActorAllRange* this) {
 
     if (this->iwork[8] != 0) {
         this->iwork[8]--;
+    }
+
+    if ((gTurretModeEnabled) && (gCurrentLevel == LEVEL_SECTOR_Z) && (gPlayer[0].state == PLAYERSTATE_ACTIVE)) {
+        if ((gControllerHold[0].button & R_TRIG)) {
+            if (((sin((gPlayer[0].unk_180) * M_DTOR) + 0.3f) 
+                    > (this->obj.pos.x / sqrtf(Math_PowF((this->obj.pos.z), 2) + Math_PowF((this->obj.pos.x), 2)))) 
+                    && ((sin((gPlayer[0].unk_180) * M_DTOR) - 0.3f) 
+                    < (this->obj.pos.x / sqrtf(Math_PowF((this->obj.pos.z), 2) + Math_PowF((this->obj.pos.x), 2)))) 
+                    && ((cos((gPlayer[0].unk_180) * M_DTOR) + 0.3f) 
+                    > (this->obj.pos.z / sqrtf(Math_PowF((this->obj.pos.z), 2) + Math_PowF((this->obj.pos.x), 2)))) 
+                    && ((cos((gPlayer[0].unk_180) * M_DTOR) - 0.3f) 
+                    < (this->obj.pos.z / sqrtf(Math_PowF((this->obj.pos.z), 2) + Math_PowF((this->obj.pos.x), 2))))) {
+                this->obj.pos.x *= 0.975f;
+                this->obj.pos.z *= 0.975f;
+            }
+        }
+    }
+
+    if ((gTurretModeEnabled) && (gCurrentLevel != LEVEL_SECTOR_Z) && (gPlayer[0].state == PLAYERSTATE_ACTIVE)) {
+        if ((gControllerHold[0].button & R_TRIG)) {
+            if (((sin((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) + 0.3f) 
+                    > ((this->obj.pos.x - gPlayer[0].pos.x) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2)))) 
+                    && ((sin((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) - 0.3f) 
+                    < ((this->obj.pos.x - gPlayer[0].pos.x) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2)))) 
+                    && ((cos((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) + 0.3f) 
+                    > ((this->obj.pos.z - gPlayer[0].pos.z) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2)))) 
+                    && ((cos((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) - 0.3f) 
+                    < ((this->obj.pos.z - gPlayer[0].pos.z) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2))))) {
+                this->obj.pos.x -= ((this->obj.pos.x - gPlayer[0].pos.x) * 0.025f);
+                this->obj.pos.z -= ((this->obj.pos.z - gPlayer[0].pos.z) * 0.025f);
+            }
+        }
     }
 }
 

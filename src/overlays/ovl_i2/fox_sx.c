@@ -346,8 +346,8 @@ void SectorX_SxSpyborg_Update(SxSpyborg* this) {
         gLight2BTarget = 20;
     }
 
-    PRINTF("たかおちゃん よう見ときや！\n");                      // Takao-chan, look at it!
-    PRINTF("ボス面累計時間 : <%d>フレーム\n\n", gBossFrameCount); // Boss stage total time: <%d> frames.
+    PRINTF("???????????��????? ??????�??????????�?\n");                      // Takao-chan, look at it!
+    PRINTF("?????��?�累�??????? : <%d>????????��??\n\n", gBossFrameCount); // Boss stage total time: <%d> frames.
 
     switch (gBossFrameCount) {
         case 175:
@@ -1766,9 +1766,20 @@ void SectorX_LevelComplete(Player* player) {
             sp54.y = 30.0f;
             sp54.z = D_ctx_80177A48[4];
             Matrix_MultVec3f(gCalcMatrix, &sp54, &sp48);
-            Math_SmoothStepToF(&player->cam.eye.x, player->pos.x + sp48.x, D_ctx_80177A48[0], 500.0f, 0.0f);
+            if (gTurretModeEnabled) {
+                Math_SmoothStepToF(&player->cam.eye.x, player->pos.x + sp48.x + 750, D_ctx_80177A48[0], 500.0f, 0.0f);
+                Math_SmoothStepToF(&player->cam.eye.y, player->pos.y + sp48.y, D_ctx_80177A48[0], 500.0f, 0.0f);
+                Math_SmoothStepToF(&player->cam.eye.z, player->trueZpos + gPathProgress + sp48.z - 300, D_ctx_80177A48[0], 500.0f,
+                                0.0f);
+            } else {
+                Math_SmoothStepToF(&player->cam.eye.x, player->pos.x + sp48.x, D_ctx_80177A48[0], 500.0f, 0.0f);
+                Math_SmoothStepToF(&player->cam.eye.y, player->pos.y + sp48.y, D_ctx_80177A48[0], 500.0f, 0.0f);
+                Math_SmoothStepToF(&player->cam.eye.z, player->trueZpos + gPathProgress + sp48.z, D_ctx_80177A48[0], 500.0f,
+                                0.0f);
+            }
+            Math_SmoothStepToF(&player->cam.eye.x, player->pos.x + sp48.x + 750, D_ctx_80177A48[0], 500.0f, 0.0f);
             Math_SmoothStepToF(&player->cam.eye.y, player->pos.y + sp48.y, D_ctx_80177A48[0], 500.0f, 0.0f);
-            Math_SmoothStepToF(&player->cam.eye.z, player->trueZpos + gPathProgress + sp48.z, D_ctx_80177A48[0], 500.0f,
+            Math_SmoothStepToF(&player->cam.eye.z, player->trueZpos + gPathProgress + sp48.z - 300, D_ctx_80177A48[0], 500.0f,
                                0.0f);
             Matrix_Pop(&gCalcMatrix);
             sp54.x = 0.0f;
@@ -1782,6 +1793,10 @@ void SectorX_LevelComplete(Player* player) {
             break;
 
         case 2:
+            if (gTurretModeEnabled) {
+                Math_SmoothStepToF(&player->cam.at.z, player->trueZpos + gPathProgress + D_ctx_80177A48[5], D_ctx_80177A48[1], 500.0f,
+                               0.0f);
+            }
             player->baseSpeed += 2.0f;
             if (player->csTimer == 0) {
                 Math_SmoothStepToAngle(&player->rot.x, 20.0f, 0.1f, 0.5f, 0.0f);
@@ -1840,8 +1855,10 @@ void SectorX_LevelComplete(Player* player) {
 
         case 920:
             gActors[1].iwork[TEAM_FACE] = gActors[2].iwork[TEAM_FACE] = gActors[3].iwork[TEAM_FACE] = FACE_NONE;
-            SectorX_LevelComplete_SetupTeam(&gActors[0], 3);
-            AUDIO_PLAY_SFX(NA_SE_GREATFOX_ENGINE, gActors[0].sfxSource, 0);
+            if (!gTurretModeEnabled) {
+                SectorX_LevelComplete_SetupTeam(&gActors[0], 3);
+                AUDIO_PLAY_SFX(NA_SE_GREATFOX_ENGINE, gActors[0].sfxSource, 0);
+            }
             break;
 
         case 1050:

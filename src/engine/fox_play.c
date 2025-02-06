@@ -2970,7 +2970,7 @@ void Play_Init(void) {
 
         switch (gCurrentLevel) {
             case LEVEL_SECTOR_Z:
-                if ((!D_ctx_8017782C) || (gTurretModeEnabled)) {
+                if (!D_ctx_8017782C) {
                     SectorZ_LoadLevelObjects();
                     ActorAllRange_SpawnTeam();
                 }
@@ -4897,7 +4897,7 @@ void Player_Setup(Player* playerx) {
                 break;
         }
         if ((gTurretModeEnabled) && (gCurrentLevel != LEVEL_MACBETH)) {
-                player->state = PLAYERSTATE_ACTIVE;
+                //player->state = PLAYERSTATE_ACTIVE;
                 gDrawGround = true;
             } 
     } else {
@@ -4923,7 +4923,9 @@ void Player_Setup(Player* playerx) {
     }
 
     if (player->state == PLAYERSTATE_LEVEL_INTRO) {
-        player->draw = true;
+        if (!gTurretModeEnabled) {
+            player->draw = true;
+        }
         switch (gCurrentLevel) {
             case LEVEL_CORNERIA:
                 AUDIO_PLAY_BGM(NA_BGM_START_DEMO);
@@ -6010,7 +6012,11 @@ void Player_Update(Player* player) {
             gShowHud = false;
             gPauseEnabled = false;
             player->arwing.drawFace = true;
-            Cutscene_LevelStart(player);
+            if (gTurretModeEnabled) {
+                Turret_Cutscene_LevelStart(player);
+            } else {
+                Cutscene_LevelStart(player);
+            }
             break;
 
         case PLAYERSTATE_ACTIVE:
@@ -6037,7 +6043,7 @@ void Player_Update(Player* player) {
                     gLoadLevelObjects = true;
                     if (gTurretModeEnabled) {
                         Turret_UpdateRails(player);
-                        player->draw = false;
+                        player->draw = true;
                     } else {
                         Player_UpdateOnRails(player);
                         player->draw = true;
@@ -6048,7 +6054,6 @@ void Player_Update(Player* player) {
                     if (!gVersusMode) {
                         if (gTurretModeEnabled) {
                             Turret_Update360(player);
-                            player->draw = false;
                         } else {
                             Player_Update360(player);
                             player->draw = true;
@@ -6119,7 +6124,11 @@ void Player_Update(Player* player) {
             player->alternateView = false;
             gPauseEnabled = false;
             Player_UpdateShields(player);
-            Cutscene_LevelComplete(player);
+            if (gTurretModeEnabled) {
+                Turret_Cutscene_LevelComplete(player);
+            } else {
+                Cutscene_LevelComplete(player);
+            }
             Player_WaterEffects(player);
             gShowHud = gChargeTimers[player->num] = 0;
             break;

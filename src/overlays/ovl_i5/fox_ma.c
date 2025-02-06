@@ -5555,20 +5555,6 @@ void Macbeth_LevelStart(Player* player) {
                 Object_Load(objInit, 4000.0f, -4000.0f, 4000.0f, -4000.0f);
             }
 
-            if (gTurretModeEnabled) {
-                AUDIO_PLAY_BGM(NA_BGM_STAGE_MA);
-                gLevelStartStatusScreenTimer = 50;
-                player->state = PLAYERSTATE_ACTIVE;
-                player->csState = player->csTimer = player->csEventTimer = player->hideShadow = 0;
-                player->gravity = 3.0f;
-                player->unk_014 = 0.0f;
-                D_ctx_8017782C = true;
-                Play_InitEnvironment();
-                D_ctx_8017782C = false;
-                gObjectLoadIndex = 40;
-                return;
-            }
-
             gFillScreenRed = gFillScreenGreen = gFillScreenBlue = gFillScreenAlpha = 255;
 
             player->zPath -= 800.0f;
@@ -5665,6 +5651,143 @@ void Macbeth_LevelStart(Player* player) {
     Math_SmoothStepToF(&player->cam.at.z, gCsCamAtZ, D_ctx_80177A48[2], sp44, 0);
 
     player->pathHeight = 0.0f;
+    player->rockPhase += player->vel.z * 5.0f;
+    player->rockAngle = SIN_DEG(player->rockPhase) * 0.7f;
+
+    Lib_Texture_Scroll(D_landmaster_3002E80, 32, 32, 0);
+
+    if ((gCsFrameCount > 150) && ((-player->trueZpos - player->zPath) > 200.0f)) {
+        if (D_i5_801BA768 < 11.5f) {
+            D_i5_801BA768 += 0.2f;
+        }
+        player->zPath += D_i5_801BA768;
+    }
+}
+
+void Turret_Macbeth_LevelStart(Player* player) {
+    f32 sp4C;
+    f32 sp48;
+    f32 sp44;
+    ObjectInit* objInit;
+    s32 i;
+    f32 zeroVar = 0.0f;
+
+    sp4C = 0.0f;
+    sp48 = 0.0f;
+    sp44 = 0.0f;
+
+    Player_UpdatePath(player);
+
+    switch (player->csState) {
+        case 0:
+            gLevelObjects = SEGMENTED_TO_VIRTUAL(D_MA_6035678);
+
+            for (i = 0, objInit = gLevelObjects; objInit->id != OBJ_INVALID; i++, objInit++) {
+                Object_Load(objInit, 4000.0f, -4000.0f, 4000.0f, -4000.0f);
+            }
+
+            gLevelObjects = SEGMENTED_TO_VIRTUAL(gLevelObjectInits[gCurrentLevel]);
+
+            for (i = 0, objInit = gLevelObjects; i < 40; i++, objInit++) {
+                Object_Load(objInit, 4000.0f, -4000.0f, 4000.0f, -4000.0f);
+            }
+
+            gFillScreenRed = gFillScreenGreen = gFillScreenBlue = gFillScreenAlpha = 255;
+
+            player->draw = true;
+
+            player->zPath -= 800.0f;
+            player->csState = 1;
+
+            D_i5_801BE24C = 8.0f;
+            D_i5_801BA768 = 0.0f;
+            break;
+
+        case 1:
+            gCsFrameCount = 0;
+            player->gravity = 0.0f;
+            player->pos.x = 0.0f;
+            player->pos.y = 1000.0f;
+            player->vel.z = -15.0f;
+            player->cam.eye.x = gCsCamEyeX = -950.0f;
+            player->cam.eye.y = gCsCamEyeY = 50.0f;
+            player->cam.eye.z = gCsCamEyeZ = -7500.0f;
+            player->cam.at.x = gCsCamAtX = -950.0f;
+            player->cam.at.y = gCsCamAtY = 50.0f;
+            player->cam.at.z = gCsCamAtZ = 8000.0f;
+            player->hideShadow = true;
+            player->csState = 2;
+            gFillScreenRed = gFillScreenGreen = gFillScreenBlue = 255;
+            gFillScreenAlpha = 255;
+            Macbeth_EffectClouds_Spawn();
+            /* fallthrough */
+        case 2:
+            if (gCsFrameCount < 30) {
+                gFillScreenRed = gFillScreenGreen = gFillScreenBlue = 255;
+                gFillScreenAlpha = 255;
+            }
+            if ((gCsFrameCount < 60) && ((gCsFrameCount % 16U) == 0)) {
+                Macbeth_EffectClouds_Spawn();
+            } else if ((gCsFrameCount < 100) && ((gCsFrameCount % 32) == 0)) {
+                Macbeth_EffectClouds_Spawn();
+            }
+            gCsCamEyeX = 500;
+            //gCsCamEyeY = player->pos.y;
+            gCsCamEyeZ = player->zPath + 100;
+            //gCsCamAtX = 0;
+            gCsCamAtY = player->pos.y;
+            gCsCamAtZ = player->zPath - 300;
+
+            D_ctx_80177A48[0] = 0.1f;
+            D_ctx_80177A48[1] = 0.1f;
+            D_ctx_80177A48[2] = 0.1f;
+
+            if (gCsFrameCount < 80) {
+                sp4C = 5.0f;
+                sp48 = 8.0f;
+                sp44 = 30.0f;
+            } else {
+                sp4C = 5.0f;
+                if (D_i5_801BE24C < 35.0f) {
+                    D_i5_801BE24C += 0.2f;
+                }
+                sp48 = D_i5_801BE24C;
+                sp44 = 30.0f;
+            }
+            if (gCsFrameCount == 260) {
+                player->csState = 3;
+                player->csTimer = 10;
+            }
+            break;
+
+        case 3:
+            AUDIO_PLAY_BGM(NA_BGM_STAGE_MA);
+            gLevelStartStatusScreenTimer = 50;
+            player->state = PLAYERSTATE_ACTIVE;
+            player->csState = player->csTimer = player->csEventTimer = player->hideShadow = 0;
+            player->unk_014 = 0.0f;
+            D_ctx_8017782C = true;
+            Play_InitEnvironment();
+            D_ctx_8017782C = false;
+            gObjectLoadIndex = 40;
+            player->csState = 4;
+            player->pos.y = 300.0f;
+            break;
+
+        case 4:
+
+        default:
+            break;
+    }
+    player->trueZpos = player->pos.z += player->vel.z;
+    Math_SmoothStepToF(&player->cam.eye.x, gCsCamEyeX, D_ctx_80177A48[0], sp4C, 0);
+    Math_SmoothStepToF(&player->cam.eye.y, gCsCamEyeY, D_ctx_80177A48[1], sp48, 0);
+    Math_SmoothStepToF(&player->cam.eye.z, gCsCamEyeZ, D_ctx_80177A48[2], sp44, 0);
+    Math_SmoothStepToF(&player->cam.at.x, gCsCamAtX, D_ctx_80177A48[0], sp4C, 0);
+    Math_SmoothStepToF(&player->cam.at.y, gCsCamAtY, D_ctx_80177A48[1], sp48, 0);
+    Math_SmoothStepToF(&player->cam.at.z, gCsCamAtZ, D_ctx_80177A48[2], sp44, 0);
+
+    player->pathHeight = 650.0f;
     player->rockPhase += player->vel.z * 5.0f;
     player->rockAngle = SIN_DEG(player->rockPhase) * 0.7f;
 
@@ -6354,6 +6477,10 @@ f32 D_i5_801BA820[5] = { 90.0f, -90.0f, 25.0f, 0.0f, 225.0f };
 
 void Macbeth_801AF27C(ActorCutscene* this, s32 arg1) {
     Player* player = &gPlayer[0];
+
+    if ((gTurretModeEnabled) && (arg1 == 3)) {
+            return;
+    }
 
     Actor_Initialize(this);
 
@@ -7260,6 +7387,763 @@ void Macbeth_LevelComplete2(Player* player) {
     }
 }
 
+void Turret_Macbeth_LevelComplete2(Player* player) {
+    s32 i;
+    s32 j;
+    Vec3f spE4;
+    Vec3f spD8;
+    f32 zeroVar = 0.0f;
+
+    switch (player->csState) {
+        case 0:
+            gCsFrameCount = 0;
+            gLoadLevelObjects = 1;
+            player->draw = false;
+
+            SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 30);
+            SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_FANFARE, 30);
+
+            player->csState = 1;
+
+            D_ctx_80177A48[0] = 0.0f;
+            D_ctx_80177A48[4] = -60.0f;
+            D_ctx_80177A48[5] = 240.0f;
+
+            player->gravity = 3.0f;
+
+            gCameraShakeY = player->vel.x = player->vel.y = player->vel.z = player->baseSpeed = 0.0f;
+
+            if (player->shields <= 0) {
+                player->shields = 1;
+            }
+
+            player->cam.eye.x = gCsCamEyeX = gActors[D_i5_801BE318].obj.pos.x - 250.0f;
+            player->cam.eye.y = gCsCamEyeY = gActors[D_i5_801BE318].obj.pos.y + 150.0f;
+            player->cam.eye.z = gCsCamEyeZ = gActors[D_i5_801BE318].obj.pos.z + gPathProgress + 500.0f;
+            player->cam.at.x = gCsCamAtX = gActors[D_i5_801BE318].obj.pos.x;
+            player->cam.at.y = gCsCamAtY = gActors[D_i5_801BE318].obj.pos.y + 200.0f;
+            player->cam.at.z = gCsCamAtZ = gActors[D_i5_801BE318].obj.pos.z + gPathProgress;
+
+            player->pos.x = 500.0f;
+            player->pos.y = -3.0f;
+
+            sMaTrainSpeedTarget = 0.0f;
+            player->aerobaticPitch = 0.0f;
+            player->camRoll = 0.0f;
+            player->boostSpeed = 0.0f;
+            player->arwing.upperLeftFlapYrot = player->arwing.bottomRightFlapYrot = player->arwing.bottomLeftFlapYrot =
+                player->zRotBarrelRoll = player->zRotBank = 0.0f;
+            player->yBob = 0.0f;
+            player->rockAngle = 0.0f;
+            player->unk_16C = 0.0f;
+            player->unk_170 = 0.0f;
+            player->arwing.upperRightFlapYrot = 0.0f;
+            /* fallthrough */
+        case 1:
+            gShowBossHealth = false;
+            if (gCsFrameCount == 70) {
+                gObjectLoadIndex = 498;
+
+                for (i = 0; i < ARRAY_COUNT(gActors); i++) {
+                    if (gActors[i].obj.id == OBJ_ACTOR_MA_RAILWAY_SIGNAL) {
+                        gActors[i].state++;
+                        break;
+                    }
+                }
+
+                player->csState++;
+
+                gCsCamEyeX = -100.0f;
+                gCsCamEyeY = 250.0f;
+                gCsCamEyeZ = 2090.0f;
+                gCsCamAtX = -250.0f;
+                gCsCamAtY = 10.0f;
+                gCsCamAtZ = -3210.0f;
+
+                player->cam.eye.x = -250.0f;
+                player->cam.eye.y = 50.0f;
+                player->cam.eye.z = 1580.0f;
+                player->cam.at.x = -250.0f;
+                player->cam.at.y = 10.0f;
+                player->cam.at.z = -3210.0f;
+
+                D_i5_801BE312 = 1;
+
+                player->pos.x = 500.0f;
+                player->pos.y = -3.0f;
+                player->pos.z = player->trueZpos = -111130.0f;
+                player->zPath = gPathProgress = 115930.0f;
+                player->flags_228 = PFLAG_228_4;
+
+                gLastPathChange = OBJ_ITEM_PATH_TURN_RIGHT;
+
+                sMaTrainSpeedTarget = 0.0f;
+
+                gActors[D_i5_801BE314].obj.pos.x = -431.0f;
+                gActors[D_i5_801BE314].obj.pos.y = 0.0f;
+                gActors[D_i5_801BE314].obj.pos.z = -111174.0f;
+                gActors[D_i5_801BE314].vel.x = 0.0f;
+                gActors[D_i5_801BE314].vel.y = 0.0f;
+                gActors[D_i5_801BE314].vel.z = 0.0f;
+                gActors[D_i5_801BE316].obj.pos.x = -864.0f;
+                gActors[D_i5_801BE316].obj.pos.y = 874.0f;
+                gActors[D_i5_801BE316].obj.pos.z = -109864.0f;
+            }
+            break;
+
+        case 2:
+            if (gCsFrameCount > 105) {
+                Math_SmoothStepToF(&D_ctx_80177A48[0], 1.0f, 1.0f, 0.005f, 0.0f);
+            }
+            if (gCsFrameCount < 160) {
+                gActors[D_i5_801BE314].obj.pos.x = -431.0f;
+                gActors[D_i5_801BE314].obj.pos.y = 0.0f;
+                gActors[D_i5_801BE314].obj.pos.z = -111174.0f;
+                gActors[D_i5_801BE314].vel.x = 0.0f;
+                gActors[D_i5_801BE314].vel.y = 0.0f;
+                gActors[D_i5_801BE314].vel.z = 0.0f;
+                gActors[D_i5_801BE316].obj.pos.x = -864.0f;
+                gActors[D_i5_801BE316].obj.pos.y = 874.0f;
+                gActors[D_i5_801BE316].obj.pos.z = -109864.0f;
+            } else {
+                D_ctx_80177A48[0] = 0.0f;
+                sMaTrainSpeedTarget = -40.0f;
+                player->csState++;
+            }
+            /* fallthrough */
+        case 3:
+            player->vel.z = gActors[D_i5_801BE314].vel.z;
+            if (gCsFrameCount == 252) {
+                gCsCamEyeY = 570.0f;
+                player->pathChangeTimer = 1000;
+                player->xPathTarget = 20000.0f;
+                player->pathChangeYaw = -23.0f;
+                player->pathStep = 0.0f;
+            }
+            if (gCsFrameCount >= 252) {
+                player->pos.x = gActors[D_i5_801BE314].obj.pos.x + 500.0f;
+                player->zPathVel = -gActors[D_i5_801BE314].vel.z;
+                player->zPath += player->zPathVel;
+
+                gPathVelZ = player->zPathVel;
+                gPathProgress = player->zPath;
+                gPathTexScroll += player->zPathVel;
+
+                player->pos.z = player->trueZpos = -(gPathProgress + 210.0f);
+
+                Math_SmoothStepToF(&D_ctx_80177A48[0], 1.0f, 0.1f, 0.00025f, 0.0f);
+
+                gCsCamAtX = gActors[D_i5_801BE314].obj.pos.x + 2500.0f;
+                gCsCamAtZ = gActors[D_i5_801BE314].obj.pos.z + gPathProgress - 2000.0f;
+                gCsCamEyeX = gCsCamAtX - 2340.0f;
+                gCsCamEyeZ = gCsCamAtZ + 1410.0f;
+            }
+            if (gCsFrameCount == 389) {
+                player->csState++;
+                player->vel.z = 0.0f;
+                player->zPathVel = 0.0f;
+
+                gPathVelX = 0.0f;
+                gPathVelY = 0.0f;
+
+                player->pathChangeTimer = 0;
+
+                player->cam.eye.x = gCsCamEyeX = 2750.0f;
+                player->cam.eye.y = gCsCamEyeY = 50.0f;
+                player->cam.eye.z = gCsCamEyeZ = -620.0f;
+                player->cam.at.x = gCsCamAtX = -650.0f;
+                player->cam.at.y = gCsCamAtY = 30.0f;
+                player->cam.at.z = gCsCamAtZ = 1900.0f;
+
+                player->yRot_114 = 0.0f;
+                sMaTrainSpeedTarget = -100.0f;
+                Audio_KillSfxById(NA_SE_EN_FREIGHT_TRAIN);
+                AUDIO_PLAY_SFX(NA_SE_EN_TRAIN_BREAK, gActors[D_i5_801BE314].sfxSource, 4);
+                D_i5_801BE313 = 0;
+            }
+            break;
+
+        case 4:
+            if (gCsFrameCount == 403) {
+                gFillScreenRed = gFillScreenGreen = gFillScreenBlue = 255;
+                gFillScreenAlphaTarget = 255;
+                gFillScreenAlphaStep = 20;
+            }
+            if (gCsFrameCount == 416) {
+                player->csState++;
+
+                D_ctx_80177A48[0] = 1.0f;
+
+                player->yRot_114 = 30.0f;
+                player->xPath = 4600.0f;
+
+                sMaTrainSpeedTarget = -80.0f;
+
+                player->zPath = gPathProgress += 300.0f;
+
+                D_ctx_80177A48[5] = 0.0f;
+                D_ctx_80177A48[6] = 0.5f;
+                D_ctx_80177A48[7] = 1560.0f;
+                D_ctx_80177A48[8] = 2400.0f;
+
+                player->cam.at.x = gCsCamAtX = gActors[D_i5_801BE314].obj.pos.x;
+                player->cam.at.z = gCsCamAtZ = (gActors[D_i5_801BE314].obj.pos.z + gPathProgress) - 2000.0f;
+                player->cam.eye.y = gCsCamEyeY = 50.0f;
+                player->cam.at.y = gCsCamAtY = 10.0f;
+                player->cam.eye.x = gCsCamEyeX = D_ctx_80177A48[7] + gCsCamAtX;
+                player->cam.eye.z = gCsCamEyeZ = D_ctx_80177A48[8] + gCsCamAtZ;
+
+                player->pathChangeYaw = -30.0f;
+                player->xPathTarget = 10014.0f;
+                player->pathChangeTimer = 1000;
+                player->pathStep = 0.0f;
+
+                gFillScreenAlphaTarget = 0;
+                gFillScreenAlphaStep = 127;
+            }
+            break;
+
+        case 5:
+            if (gCsFrameCount <= 625) {
+                Math_SmoothStepToF(&sMaTrainSpeedTarget, 0.0f, 0.1f, 0.05f, 0.0f);
+            }
+            if (gCsFrameCount >= 430) {
+                Math_SmoothStepToF(&D_ctx_80177A48[6], 22.0f, 0.1f, 1.0f, 0.0f);
+                Math_SmoothStepToF(&D_ctx_80177A48[7], 2600.0f, 0.1f, D_ctx_80177A48[6], 0.0f);
+                Math_SmoothStepToF(&D_ctx_80177A48[8], 3800.0f, 0.1f, D_ctx_80177A48[6], 0.0f);
+                Math_SmoothStepToF(&gCsCamEyeY, 1300.0f, 0.1f, 17.0f, 0.0f);
+            }
+            if (gCsFrameCount <= 505) {
+                gCsCamAtZ = gActors[D_i5_801BE314].obj.pos.z + gPathProgress - 2000.0f;
+                gCsCamAtX = gActors[D_i5_801BE314].obj.pos.x;
+                player->vel.z = gActors[D_i5_801BE314].vel.z;
+                player->pos.x = gActors[D_i5_801BE314].obj.pos.x + 500.0f;
+                player->pos.z = player->trueZpos = -(gPathProgress + 210.0f);
+                player->zPathVel = -gActors[D_i5_801BE314].vel.z;
+                gCsCamEyeX = D_ctx_80177A48[7] + gCsCamAtX;
+                gCsCamEyeZ = D_ctx_80177A48[8] + gCsCamAtZ;
+                Effect_Effect390_Spawn(gActors[D_i5_801BE314].obj.pos.x + 480.0f,
+                                       gActors[D_i5_801BE314].obj.pos.y + 15.0f,
+                                       gActors[D_i5_801BE314].obj.pos.z - 400.0f, gActors[D_i5_801BE314].vel.x,
+                                       gActors[D_i5_801BE314].vel.y, 0.0f, 0.2f, 10);
+            } else {
+                player->vel.z = 0.0f;
+                if ((gGameFrameCount % 16) == 0) {
+                    gFogRed -= 1;
+                    gFogGreen -= 1;
+                    gFogBlue -= 2;
+                }
+
+                Math_SmoothStepToF(&player->zPathVel, 0.0f, 1.0f, 0.6f, 0.0f);
+                Math_SmoothStepToF(&gCsCamAtX, 11700.0f, 0.1f, 50.0f, 0.0f);
+                Math_SmoothStepToF(&D_ctx_80177A48[5], 30.0f, 0.1f, 0.05f, 0.0f);
+                Math_SmoothStepToF(&gCsCamAtY, 1600.0f, 0.1f, D_ctx_80177A48[5], 0.0f);
+
+                if (player->zPathVel >= 2.5f) {
+                    player->pos.x = gActors[D_i5_801BE314].obj.pos.x + 500.0f;
+                    player->pos.z = player->trueZpos = -(gPathProgress + 210.0f);
+                } else {
+                    player->xPathTarget = player->xPath;
+                    gPathVelX = 0.0f;
+                }
+
+                Effect_Effect362_Spawn(gActors[D_i5_801BE314].obj.pos.x + 190.0f,
+                                       gActors[D_i5_801BE314].obj.pos.y + 30.0f,
+                                       gActors[D_i5_801BE314].obj.pos.z - 100.0f, 6.0f);
+                Effect_Effect362_Spawn(gActors[D_i5_801BE314].obj.pos.x + 190.0f,
+                                       gActors[D_i5_801BE314].obj.pos.y + 30.0f,
+                                       gActors[D_i5_801BE314].obj.pos.z - 120.0f, 6.0f);
+                Effect_Effect362_Spawn(gActors[D_i5_801BE314].obj.pos.x - 190.0f,
+                                       gActors[D_i5_801BE314].obj.pos.y + 30.0f,
+                                       gActors[D_i5_801BE314].obj.pos.z - 100.0f, 6.0f);
+                Effect_Effect362_Spawn(gActors[D_i5_801BE314].obj.pos.x - 190.0f,
+                                       gActors[D_i5_801BE314].obj.pos.y + 30.0f,
+                                       gActors[D_i5_801BE314].obj.pos.z - 120.0f, 6.0f);
+            }
+
+            player->zPath += player->zPathVel;
+            gPathVelZ = player->zPathVel;
+            gPathProgress = player->zPath;
+            gPathTexScroll += player->zPathVel;
+
+            if (gCsFrameCount == 630) {
+                Audio_KillSfxBySourceAndId(gActors[D_i5_801BE314].sfxSource, NA_SE_EN_TRAIN_BREAK);
+                AUDIO_PLAY_SFX(NA_SE_EN_EXPLOSION_L, gActors[D_i5_801BE314].sfxSource, 4);
+                player->csState++;
+                player->vel.z = 0.0f;
+                player->zPathVel = 0.0f;
+
+                gPathVelZ = 0.0f;
+                gPathVelX = 0.0f;
+                gPathVelY = 0.0f;
+
+                player->pathChangeTimer = 10000;
+
+                D_ctx_80177A48[0] = 1.0f;
+
+                sMaTrainSpeedTarget = 0.0f;
+
+                gControllerRumbleFlags[0] = 1;
+                gControllerRumbleTimers[0] = 10;
+
+                gCameraShake = 10;
+
+                D_ctx_80177A48[4] = -70.0f;
+                D_ctx_80177A48[5] = 280.0f;
+            }
+            break;
+
+        case 6:
+            Math_SmoothStepToF(&D_ctx_80177A48[4], -60.0f, 1.0f, 0.5f, 0.0f);
+            Math_SmoothStepToF(&D_ctx_80177A48[5], 240.0f, 1.0f, 2.0f, 0.0f);
+
+            if ((gGameFrameCount % 2) == 0) {
+                Effect_FireSmoke_Spawn2(11000.0f, 200.0f, -139000.0f, D_ctx_80177A48[4], 4.0f, D_ctx_80177A48[5],
+                                        20.0f);
+            }
+
+            if (gCsFrameCount == 710) {
+                gFillScreenRed = gFillScreenGreen = gFillScreenBlue = gFillScreenAlpha = 255;
+                gFillScreenAlphaTarget = 0;
+                gFillScreenAlphaStep = 128;
+
+                Effect_Effect367_Spawn(gActors[D_i5_801BE314].obj.pos.x + 1000.0f,
+                                       gActors[D_i5_801BE314].obj.pos.y + 20.0f, -138500.0f, 100.0f, 1000.0f, 0);
+                Effect_Effect383_Spawn(gActors[D_i5_801BE314].obj.pos.x + 200.0f,
+                                       gActors[D_i5_801BE314].obj.pos.y + 700.0f, -137750.0f, 100.0f);
+
+                for (i = 0; i < 8; i++) {
+                    Effect_Effect357_Spawn50(gActors[D_i5_801BE314].obj.pos.x + RAND_FLOAT_CENTERED(1000.0f),
+                                             gActors[D_i5_801BE314].obj.pos.y + 1300.0f,
+                                             gActors[D_i5_801BE314].obj.pos.z + 700.0f + RAND_FLOAT_CENTERED(1000.0f),
+                                             6.0f);
+                    Macbeth_Effect357_Spawn2(RAND_FLOAT_CENTERED(650.0f) + 11250.0f, 300.0f,
+                                             RAND_FLOAT(650.0f) + -139000.0f, 0.7f);
+                }
+
+                gActors[58].scale = 0.8f;
+
+                func_effect_8007D0E0(gActors[D_i5_801BE314].obj.pos.x + 500.0f + RAND_FLOAT_CENTERED(700.0f),
+                                     gActors[D_i5_801BE314].obj.pos.y + 500.0f + RAND_FLOAT_CENTERED(700.0f),
+                                     gActors[D_i5_801BE314].obj.pos.z + 3000.0f + RAND_FLOAT_CENTERED(700.0f), 30.0f);
+            }
+            if ((gCsFrameCount > 710) && ((gGameFrameCount % 8) == 0)) {
+                func_effect_8007D0E0(gActors[D_i5_801BE314].obj.pos.x + 500.0f + RAND_FLOAT_CENTERED(700.0f),
+                                     gActors[D_i5_801BE314].obj.pos.y + 500.0f + RAND_FLOAT_CENTERED(700.0f),
+                                     gActors[D_i5_801BE314].obj.pos.z + 3000.0f + RAND_FLOAT_CENTERED(700.0f), 30.0f);
+            }
+            if ((gCsFrameCount > 725) && ((gGameFrameCount % 8) == 0)) {
+                func_effect_8007D0E0(gActors[D_i5_801BE314].obj.pos.x - 1500.0f + RAND_FLOAT_CENTERED(700.0f),
+                                     gActors[D_i5_801BE314].obj.pos.y + 1000.0f + RAND_FLOAT_CENTERED(700.0f),
+                                     gActors[D_i5_801BE314].obj.pos.z + 1700.0f + RAND_FLOAT_CENTERED(700.0f), 30.0f);
+            }
+            if ((gCsFrameCount > 740) && ((gGameFrameCount % 8) == 0)) {
+                func_effect_8007D0E0(gActors[D_i5_801BE314].obj.pos.x - 3500.0f + RAND_FLOAT_CENTERED(700.0f),
+                                     gActors[D_i5_801BE314].obj.pos.y + 600.0f + RAND_FLOAT_CENTERED(700.0f),
+                                     gActors[D_i5_801BE314].obj.pos.z + 1200.0f + RAND_FLOAT_CENTERED(700.0f), 30.0f);
+            }
+            if ((gCsFrameCount > 755) && ((gGameFrameCount % 8) == 0)) {
+                func_effect_8007D0E0(gActors[D_i5_801BE314].obj.pos.x - 3000.0f + RAND_FLOAT_CENTERED(700.0f),
+                                     gActors[D_i5_801BE314].obj.pos.y + 400.0f + RAND_FLOAT_CENTERED(700.0f),
+                                     gActors[D_i5_801BE314].obj.pos.z + 1300.0f + RAND_FLOAT_CENTERED(700.0f), 30.0f);
+            }
+            if (gCsFrameCount == 800) {
+                Effect_Effect383_Spawn(gActors[D_i5_801BE314].obj.pos.x - 3000.0f,
+                                       gActors[D_i5_801BE314].obj.pos.y + 500.0f,
+                                       gActors[D_i5_801BE314].obj.pos.z + 1600.0f, 10000.0f);
+                for (i = 0; i < 8; i++) {
+                    Effect_Effect357_Spawn50(gActors[D_i5_801BE314].obj.pos.x - 3000.0f + RAND_FLOAT_CENTERED(1000.0f),
+                                             gActors[D_i5_801BE314].obj.pos.y + 700.0f,
+                                             gActors[D_i5_801BE314].obj.pos.z + 1600.0f + RAND_FLOAT_CENTERED(1000.0f),
+                                             6.0f);
+                    Macbeth_Effect357_Spawn2(RAND_FLOAT_CENTERED(650.0f) + 11250.0f, 300.0f,
+                                             RAND_FLOAT(650.0f) + -139000.0f, 0.7f);
+                }
+            }
+            if (gCsFrameCount == 820) {
+                Effect_Effect383_Spawn(gActors[D_i5_801BE314].obj.pos.x, gActors[D_i5_801BE314].obj.pos.y + 500.0f,
+                                       gActors[D_i5_801BE314].obj.pos.z + 3300.0f, 14000.0f);
+                for (i = 0; i < 8; i++) {
+                    Effect_Effect357_Spawn50(gActors[D_i5_801BE314].obj.pos.x + 500.0f + RAND_FLOAT_CENTERED(1000.0f),
+                                             gActors[D_i5_801BE314].obj.pos.y + 900.0f,
+                                             gActors[D_i5_801BE314].obj.pos.z + 3300.0f + RAND_FLOAT_CENTERED(1000.0f),
+                                             6.0f);
+                    Macbeth_Effect357_Spawn2(RAND_FLOAT_CENTERED(650.0f) + 11250.0f, 300.0f,
+                                             RAND_FLOAT(650.0f) + -139000.0f, 0.7f);
+                }
+            }
+            if (gCsFrameCount == 835) {
+                Effect_Effect383_Spawn(gActors[D_i5_801BE314].obj.pos.x - 1500.0f,
+                                       gActors[D_i5_801BE314].obj.pos.y + 500.0f,
+                                       gActors[D_i5_801BE314].obj.pos.z + 2000.0f, 80.0f);
+                for (i = 0; i < 8; i++) {
+                    Effect_Effect357_Spawn50(gActors[D_i5_801BE314].obj.pos.x - 1500.0f + RAND_FLOAT_CENTERED(1000.0f),
+                                             gActors[D_i5_801BE314].obj.pos.y + 1200.0f,
+                                             gActors[D_i5_801BE314].obj.pos.z + 2000.0f + RAND_FLOAT_CENTERED(1000.0f),
+                                             6.0f);
+                    Macbeth_Effect357_Spawn2(RAND_FLOAT_CENTERED(650.0f) + 11250.0f, 300.0f,
+                                             RAND_FLOAT(650.0f) + -139000.0f, 0.7f);
+                }
+            }
+            if (gCsFrameCount == 845) {
+                Effect_Effect383_Spawn(gActors[D_i5_801BE314].obj.pos.x - 500.0f,
+                                       gActors[D_i5_801BE314].obj.pos.y + 500.0f,
+                                       gActors[D_i5_801BE314].obj.pos.z + 2800.0f, 10000.0f);
+                for (i = 0; i < 11; i++) {
+                    Effect_Effect357_Spawn50(gActors[D_i5_801BE314].obj.pos.x - 500.0f + RAND_FLOAT_CENTERED(1000.0f),
+                                             gActors[D_i5_801BE314].obj.pos.y + 900.0f,
+                                             gActors[D_i5_801BE314].obj.pos.z + 2800.0f + RAND_FLOAT_CENTERED(1000.0f),
+                                             6.0f);
+                    Macbeth_Effect357_Spawn2(RAND_FLOAT_CENTERED(650.0f) + 11250.0f, 300.0f,
+                                             RAND_FLOAT(650.0f) + -139000.0f, 0.7f);
+                }
+            }
+            if (gCsFrameCount == 853) {
+                Effect_Effect383_Spawn(gActors[D_i5_801BE314].obj.pos.x - 3500.0f,
+                                       gActors[D_i5_801BE314].obj.pos.y + 500.0f,
+                                       gActors[D_i5_801BE314].obj.pos.z + 2500.0f, 14000.0f);
+                for (i = 0; i < 8; i++) {
+                    Effect_Effect357_Spawn50(gActors[D_i5_801BE314].obj.pos.x - 3500.0f + RAND_FLOAT_CENTERED(1000.0f),
+                                             gActors[D_i5_801BE314].obj.pos.y + 900.0f,
+                                             gActors[D_i5_801BE314].obj.pos.z + 1500.0f + RAND_FLOAT_CENTERED(1000.0f),
+                                             6.0f);
+                    Macbeth_Effect357_Spawn2(RAND_FLOAT_CENTERED(650.0f) + 11250.0f, 300.0f,
+                                             RAND_FLOAT(650.0f) + -139000.0f, 0.7f);
+                }
+                gCameraShake = 30;
+            }
+            if (gCsFrameCount == 860) {
+                Effect_Effect367_Spawn(gActors[D_i5_801BE314].obj.pos.x + 1000.0f,
+                                       gActors[D_i5_801BE314].obj.pos.y + 20.0f, -138500.0f, 100.0f, 1000.0f, 0);
+                Effect_Effect383_Spawn(gActors[D_i5_801BE314].obj.pos.x - 1500.0f,
+                                       gActors[D_i5_801BE314].obj.pos.y + 700.0f,
+                                       gActors[D_i5_801BE314].obj.pos.z + 3000.0f, 180.0f);
+                for (i = 0; i < 8; i++) {
+                    Effect_Effect357_Spawn50(gActors[D_i5_801BE314].obj.pos.x - 1500.0f + RAND_FLOAT_CENTERED(1000.0f),
+                                             gActors[D_i5_801BE314].obj.pos.y + 1300.0f,
+                                             gActors[D_i5_801BE314].obj.pos.z + 2500.0f + RAND_FLOAT_CENTERED(1000.0f),
+                                             6.0f);
+                    Macbeth_Effect357_Spawn2(RAND_FLOAT_CENTERED(650.0f) + 11250.0f, 300.0f,
+                                             RAND_FLOAT(650.0f) + -139000.0f, 0.7f);
+                }
+            }
+            if (gCsFrameCount == 880) {
+                gControllerRumbleFlags[0] = 1;
+                gControllerRumbleTimers[0] = 10;
+
+                gFillScreenRed = gFillScreenGreen = gFillScreenBlue = 255;
+                gFillScreenAlphaTarget = 255;
+                gFillScreenAlphaStep = 20;
+
+                AUDIO_PLAY_SFX(NA_SE_EN_STAR_EXPLOSION, gActors[D_i5_801BE314].sfxSource, 4);
+                gBossActive = gLoadLevelObjects = false;
+            }
+            if (gCsFrameCount == 940) {
+                player->csState++;
+                gDrawGround = false;
+
+                Play_ClearObjectData();
+
+                player->pos.z = player->trueZpos = -(gPathProgress + 210.0f);
+                player->pos.x = player->xPath;
+
+                Effect_Effect383_Spawn(player->pos.x - 1800.0f, -1300.0f, player->pos.z + 5000.0f, 40.0f);
+
+                gFillScreenRed = gFillScreenGreen = gFillScreenBlue = gFillScreenAlpha = 255;
+                gFillScreenAlphaTarget = 0;
+                gFillScreenAlphaStep = 8;
+
+                D_ctx_80177A48[0] = 0.0f;
+
+                player->draw = true;
+
+                player->cam.at.x = gCsCamAtX = player->cam.eye.x = gCsCamEyeX = player->pos.x;
+                player->cam.at.y = gCsCamAtY = player->pos.y - 10;
+                player->cam.eye.y = gCsCamEyeY = player->pos.y - 50.0f;
+                player->cam.eye.z = gCsCamEyeZ = (player->trueZpos + gPathProgress) - 600.0f;
+                player->cam.at.z = gCsCamAtZ = player->trueZpos + gPathProgress;
+
+                player->savedAlternateView = player->pathChangeTimer = 0;
+                player->unk_190 = player->unk_194 = player->unk_188 = player->unk_18C = player->pathChangeYaw =
+                    player->yRot_114 = player->aerobaticPitch = player->camRoll = player->unk_174 = player->unk_178 =
+                        player->unk_17C = player->unk_180 = player->unk_184 = player->arwing.upperRightFlapYrot =
+                            player->unk_170 = player->unk_16C = player->rockAngle = player->yBob =
+                                player->arwing.upperLeftFlapYrot = player->arwing.bottomRightFlapYrot =
+                                    player->arwing.bottomLeftFlapYrot = player->zRotBarrelRoll = player->zRotBank =
+                                        player->boostSpeed = 0.0f;
+
+                player->baseSpeed = 5.0f;
+
+                D_ctx_80177A48[3] = D_ctx_80177A48[6] = D_ctx_80177A48[7] = D_ctx_80177A48[8] = 0.0f;
+
+                player->pos.y = gGroundHeight + 13.0f;
+
+                player->rollState = player->boostCooldown = player->boostMeter = player->unk_184 = player->rot_104.y =
+                    player->rot_104.z = player->rot.y = player->rot.x = player->rot_104.x = 0.0f;
+                player->rollInputTimerL = player->sfx.bank = 0;
+            }
+            break;
+
+        case 7:
+            if ((gGameFrameCount % 4) == 0) {
+                func_effect_8007D0E0(player->pos.x - 1750.0f + RAND_FLOAT_CENTERED(700.0f), -1300.0f,
+                                     player->pos.z + 5000.0f + RAND_FLOAT_CENTERED(700.0f), 5.0f);
+                Effect_Effect343_Spawn(player->pos.x - 1800.0f + RAND_FLOAT_CENTERED(40.0f), -1300.0f,
+                                       player->pos.z + 5000.0f + RAND_FLOAT_CENTERED(40.0f), 9.0f);
+            }
+
+            if ((gCsFrameCount >= 1059) && (gCsFrameCount < 2120)) {
+                Math_SmoothStepToF(&D_ctx_80177A48[0], 1.0f, 1.0f, 0.005f, 0.0f);
+                Math_SmoothStepToF(&D_ctx_80177A48[3], 1080.0f, 0.1f, D_ctx_80177A48[0] * 1.2f, 0.0f);
+                Matrix_RotateY(gCalcMatrix, -D_ctx_80177A48[3] * M_DTOR, MTXF_NEW);
+                spE4.x = 0.0f;
+                spE4.y = 0.0f;
+                spE4.z = -300.0f;
+                Matrix_MultVec3fNoTranslate(gCalcMatrix, &spE4, &spD8);
+                gCsCamEyeX = player->pos.x + spD8.x;
+                gCsCamEyeZ = player->pos.z + gPathProgress + spD8.z;
+            }
+            if (gCsFrameCount >= 2120) {
+                Math_SmoothStepToF(&D_ctx_80177A48[0], 1.0f, 1.0f, 0.001f, 0.0f);
+                Math_SmoothStepToF(&D_ctx_80177A48[8], 20.0f, 0.1f, 0.1f, 0.0f);
+                Math_SmoothStepToF(&gCsCamEyeX, player->pos.x - 2000.0f, 0.1f, D_ctx_80177A48[8], 0.0f);
+                gCsCamEyeZ -= 1.0f;
+            }
+
+            //! @BUG: The following condition is always true:
+            // if ((gCsFrameCount >= 2120) || (gCsFrameCount < 2175)) {
+            if (CVarGetInteger("gMaCameraFix", 0) == 1) {
+                if ((gCsFrameCount >= 2120) && (gCsFrameCount < 2175)) {
+                    Math_SmoothStepToF(&gCsCamAtY, player->pos.y - 50, 0.1f, 8.0f, 0.0f);
+                }
+            } else {
+                if ((gCsFrameCount >= 2120) || (gCsFrameCount < 2175)) {
+                    Math_SmoothStepToF(&gCsCamAtY, player->pos.y - 50, 0.1f, 8.0f, 0.0f);
+                }
+            }
+
+            if (gCsFrameCount == 2120) {
+                D_ctx_80177A48[0] = 0.0f;
+            }
+            if (gCsFrameCount >= 2160) {
+                player->vel.y = 4.0f;
+                Math_SmoothStepToF(&player->unk_170, 2.0f, 1.0f, 0.3f, 0.0f);
+                Math_SmoothStepToF(&player->unk_16C, 2.0f, 1.0f, 0.3f, 0.0f);
+                Math_SmoothStepToF(&D_ctx_80177A48[7], 4.5f, 0.1f, 0.3f, 0.0f);
+                player->trueZpos = player->pos.z;
+            }
+
+            func_tank_80045130(player);
+            //func_tank_80044868(player);
+            //func_tank_800444BC(player);
+
+            Player_UpdatePath(player);
+
+            player->cam.at.z = gCsCamAtZ = player->trueZpos + gPathProgress;
+            Math_SmoothStepToF(&player->pos.y, 260.0f, 0.1f, D_ctx_80177A48[7], 0.0f);
+            break;
+    }
+
+    switch (gCsFrameCount) {
+        case 973:
+            gLevelClearScreenTimer = 100;
+            break;
+
+        case 340:
+            Radio_PlayMessage(gMsg_ID_17471, RCID_BOSS_MACBETH);
+            break;
+
+        case 520:
+            Radio_PlayMessage(gMsg_ID_17472, RCID_BOSS_MACBETH);
+            break;
+
+        case 710:
+        case 800:
+        case 820:
+        case 835:
+        case 845:
+        case 860:
+            gCameraShake = 20;
+            D_ctx_80177A48[4] = -90.0f;
+            D_ctx_80177A48[5] = 360.0f;
+            break;
+
+        case 910:
+            AUDIO_PLAY_BGM(NA_BGM_COURSE_CLEAR);
+            break;
+
+        case 1040:
+            Radio_PlayMessage(gMsg_ID_20010, RCID_FOX);
+            break;
+
+        case 1060:
+            if (gTeamShields[TEAM_ID_SLIPPY] > 0) {
+                Macbeth_801AF27C(&gActors[5], 0);
+            }
+            break;
+
+        case 1130:
+            switch (gTeamShields[TEAM_ID_SLIPPY]) {
+                case 0:
+                    Radio_PlayMessage(gMsg_ID_20345, RCID_ROB64);
+                    break;
+                case -1:
+                    Radio_PlayMessage(gMsg_ID_20333, RCID_ROB64);
+                    break;
+                default:
+                    Radio_PlayMessage(gMsg_ID_17330, RCID_SLIPPY);
+                    break;
+            }
+            break;
+
+        case 1240:
+            if (gTeamShields[TEAM_ID_PEPPY] > 0) {
+                Macbeth_801AF27C(&gActors[6], 1);
+            }
+            break;
+
+        case 1310:
+            D_i5_801BA874[5] = 220.0f;
+            break;
+
+        case 1350:
+            switch (gTeamShields[TEAM_ID_PEPPY]) {
+                case 0:
+                    Radio_PlayMessage(gMsg_ID_20344, RCID_ROB64);
+                    break;
+                case -1:
+                    Radio_PlayMessage(gMsg_ID_20332, RCID_ROB64);
+                    break;
+                default:
+                    Radio_PlayMessage(gMsg_ID_17310, RCID_PEPPY);
+                    break;
+            }
+            break;
+
+        case 1420:
+            if (gLeveLClearStatus[LEVEL_ZONESS] != 0) {
+                Macbeth_801AF44C();
+            }
+            break;
+
+        case 1460:
+            D_i5_801BA874[6] = 170.0f;
+            break;
+
+        case 1500:
+            if (gLeveLClearStatus[LEVEL_ZONESS] != 0) {
+                Radio_PlayMessage(gMsg_ID_17300, RCID_KATT);
+            }
+            break;
+
+        case 1640:
+            if (gTeamShields[TEAM_ID_FALCO] > 0) {
+                Macbeth_801AF27C(&gActors[7], 2);
+            }
+            break;
+
+        case 1660:
+            switch (gTeamShields[TEAM_ID_FALCO]) {
+                case 0:
+                    Radio_PlayMessage(gMsg_ID_20340, RCID_ROB64);
+                    break;
+                case -1:
+                    Radio_PlayMessage(gMsg_ID_20331, RCID_ROB64);
+                    break;
+                default:
+                    Radio_PlayMessage(gMsg_ID_17320, RCID_FALCO);
+                    break;
+            }
+            break;
+
+        case 1661:
+            D_i5_801BA854[6] = -0.5f;
+            break;
+
+        case 1810:
+            Object_Kill(&gActors[8].obj, gActors[8].sfxSource);
+            gSceneSetup = 1;
+            break;
+
+        case 1817:
+            gShowLevelClearStatusScreen = true;
+            break;
+
+        case 1960:
+            Macbeth_801AF27C(&gActors[3], 3);
+            gActors[3].info.hitbox = SEGMENTED_TO_VIRTUAL(gNoHitbox);
+            break;
+
+        case 2017:
+            gShowLevelClearStatusScreen = false;
+            break;
+
+        case 2040:
+            gActors[5].state++;
+            break;
+
+        case 2080:
+            gActors[6].state++;
+            break;
+
+        case 2130:
+            gActors[7].state++;
+            break;
+
+        case 2160:
+            gProjectFar = 30000.0f;
+            player->hideShadow = true;
+            Audio_StopPlayerNoise(0);
+            AUDIO_PLAY_SFX(NA_SE_TANK_GO_UP, player->sfxSource, 0);
+            break;
+
+        case 2310:
+            gActors[3].state++;
+            break;
+
+        case 2260:
+            SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 60);
+            SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_FANFARE, 60);
+            break;
+    }
+
+    if (player->pathChangeTimer != 0) {
+        player->pathChangeTimer--;
+        Math_SmoothStepToF(&player->yRot_114, -player->pathChangeYaw, 0.03f, 0.5f, 0.0001f);
+        Math_SmoothStepToF(&player->pathStep, gPathVelZ * .3f, 0.1f, 2.0f, 0.0001f);
+        gPathVelX = Math_SmoothStepToF(&player->xPath, player->xPathTarget, 0.1f, player->pathStep, 0.0001f);
+        gPathVelY = Math_SmoothStepToF(&player->yPath, player->yPathTarget, 0.1f, player->pathStep, 0.0001f);
+    } else {
+        Math_SmoothStepToF(&player->yRot_114, 0.0f, 0.03f, 0.5f, 0.0001f);
+    }
+
+    Math_SmoothStepToF(&player->cam.eye.x, gCsCamEyeX, D_ctx_80177A48[0], 20000.0f, 0);
+    Math_SmoothStepToF(&player->cam.eye.y, gCsCamEyeY, D_ctx_80177A48[0], 20000.0f, 0);
+    Math_SmoothStepToF(&player->cam.eye.z, gCsCamEyeZ, D_ctx_80177A48[0], 20000.0f, 0);
+    Math_SmoothStepToF(&player->cam.at.x, gCsCamAtX, D_ctx_80177A48[0], 20000.0f, 0);
+    Math_SmoothStepToF(&player->cam.at.y, gCsCamAtY, D_ctx_80177A48[0], 20000.0f, 0);
+    Math_SmoothStepToF(&player->cam.at.z, gCsCamAtZ, D_ctx_80177A48[0], 20000.0f, 0);
+
+    player->cam.at.y += zeroVar;
+
+    if (player->csState >= 6) {
+        player->cam.eye.y += gCameraShakeY * 10.0f;
+    }
+
+    if (gCsFrameCount > 2325) {
+        gFillScreenRed = gFillScreenGreen = gFillScreenBlue = 0;
+        gFillScreenAlphaTarget = 255;
+
+        if (gFillScreenAlpha == 255) {
+            player->state = PLAYERSTATE_NEXT;
+            gFadeoutType = 4;
+            Play_ClearObjectData();
+            Audio_FadeOutAll(10);
+            gLeveLClearStatus[LEVEL_MACBETH] = Play_CheckMedalStatus(150) + 1;
+        }
+    }
+}
+
 void Macbeth_801B28BC(ActorCutscene* this) {
     Vec3f sp5C;
     Vec3f sp50;
@@ -7421,7 +8305,11 @@ void Macbeth_801B28BC(ActorCutscene* this) {
             Matrix_MultVec3f(gCalcMatrix, &sp5C, &sp44);
 
             this->fwork[0] = sp44.x;
-            this->fwork[1] = sp44.y;
+            if (gTurretModeEnabled) {
+                this->fwork[1] = sp44.y - 200;
+            } else {
+                this->fwork[1] = sp44.y;
+            }
             this->fwork[2] = sp44.z - 100.0f;
 
             Math_SmoothStepToF(&this->obj.rot.z, SIN_DEG(this->fwork[3]) * -30.0f, 0.1f, 2.0f, 0.0f);
@@ -7670,7 +8558,9 @@ void Macbeth_LevelComplete1(Player* player) {
                 player->cam.at.z = gCsCamAtZ = -283.55914f;
                 player->csState++;
                 player->pos.x = 0.0f;
-                player->pos.y = -3.0f;
+                if (!gTurretModeEnabled) {
+                    player->pos.y = -3.0f;
+                }
                 player->camDist = 0.0f;
                 Macbeth_801B38E0();
             }
@@ -7890,6 +8780,324 @@ void Macbeth_LevelComplete1(Player* player) {
     Math_SmoothStepToF(&player->cam.at.y, gCsCamAtY, D_ctx_80177A48[0], D_i5_801BE244, 0.0f);
     Math_SmoothStepToF(&player->cam.at.z, gCsCamAtZ, D_ctx_80177A48[0], D_i5_801BE248, 0.0f);
     player->cam.at.y += zeroVar;
+
+    if ((gCsFrameCount >= 850) && ((gGameFrameCount % 16) == 0)) {
+        Macbeth_EffectClouds_Spawn();
+    }
+    if (gCsFrameCount == 1220) {
+        SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 60);
+        SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_FANFARE, 60);
+    }
+    if (gCsFrameCount > 1280) {
+        gFillScreenRed = gFillScreenGreen = gFillScreenBlue = 0;
+        gFillScreenAlphaTarget = 255;
+        if (gFillScreenAlpha == 255) {
+            player->state = PLAYERSTATE_NEXT;
+            gFadeoutType = 4;
+            Play_ClearObjectData();
+            Audio_FadeOutAll(10);
+            gLeveLClearStatus[LEVEL_MACBETH] = Play_CheckMedalStatus(150) + 1;
+        }
+    }
+}
+
+void Turret_Macbeth_LevelComplete1(Player* player) {
+    f32 zeroVar = 0.0f;
+
+    gCsCamEyeX = player->pos.x;
+    gCsCamEyeY = player->pos.y;
+    gCsCamEyeZ = player->pos.z + player->zPath + 50.0f;
+    switch (player->csState) {
+        case 0:
+            gCsFrameCount = gBossActive = gLoadLevelObjects = 1;
+            D_i5_801BA894[4] = 80.0f;
+            D_i5_801BA894[3] = D_i5_801BA894[4];
+            D_i5_801BA894[2] = D_i5_801BA894[4];
+            D_i5_801BA894[1] = D_i5_801BA894[4];
+            D_i5_801BA894[0] = D_i5_801BA894[4];
+
+            gFillScreenRed = 255;
+            gFillScreenGreen = 255;
+            gFillScreenBlue = 255;
+            gFillScreenAlpha = gFillScreenAlphaTarget = D_ctx_80177A10[9] = 0;
+
+            D_ctx_80177A48[0] = 0.0f;
+            player->csState++;
+            /* fallthrough */
+        case 1:
+            D_i5_801BE240 = 2000.0f;
+            D_i5_801BE244 = 2000.0f;
+            D_i5_801BE248 = 2000.0f;
+
+            Math_SmoothStepToF(D_ctx_80177A48, 0.1f, 1.0f, 0.01f, 0.0f);
+            Math_SmoothStepToF(&player->baseSpeed, 4.9f, 0.1f, 1.0f, 0.0f);
+            Math_SmoothStepToF(&player->camDist, 0.0f, 0.1f, 1.0f, 0.0f);
+
+            gCsCamEyeX = player->pos.x;
+            gCsCamEyeY = player->pos.y;
+            gCsCamEyeZ = player->pos.z + player->zPath + 50.0f;
+
+            if (gCsCamEyeY < 5.0f) {
+                gCsCamEyeY = 5.0f;
+            }
+
+            gCsCamAtX = player->pos.x;
+            gCsCamAtY = player->pos.y + 30.0f;
+            gCsCamAtZ = player->pos.z + player->zPath;
+            gFillScreenRed = 255;
+            gFillScreenGreen = 255;
+            gFillScreenBlue = 255;
+
+            if (D_ctx_80177A10[9] >= 248) {
+                D_ctx_80177A10[9] = 255;
+            } else {
+                D_ctx_80177A10[9] += 8;
+            }
+
+            gFillScreenAlpha = gFillScreenAlphaTarget = D_ctx_80177A10[9];
+
+            if (gCsFrameCount > 40) {
+                D_ctx_80177A10[9] = 255;
+                player->cam.eye.x = gCsCamEyeX = 0.0f;
+                player->cam.eye.y = gCsCamEyeY = 21.182106f;
+                player->cam.eye.z = gCsCamEyeZ = -112.08748f;
+                player->cam.at.x = gCsCamAtX = 0.0f;
+                player->cam.at.y = gCsCamAtY = 22.873417f;
+                player->cam.at.z = gCsCamAtZ = -283.55914f;
+                player->csState++;
+                player->pos.x = 0.0f;
+                if (!gTurretModeEnabled) {
+                    player->pos.y = -3.0f;
+                }
+                player->camDist = 0.0f;
+                Macbeth_801B38E0();
+            }
+            func_tank_80045130(player);
+            func_tank_80044868(player);
+            func_tank_80045678(player);
+            func_tank_80045E7C(player);
+            Player_CollisionCheck(player);
+            Player_UpdatePath(player);
+            break;
+
+        case 2:
+            Math_SmoothStepToF(D_ctx_80177A48, 0.01f, 0.1f, 0.01f, 0.0f);
+
+            gCsCamEyeX = player->pos.x + 500;
+            gCsCamAtX = player->pos.x;
+            gCsCamEyeY = 3520.0f;
+            gCsCamAtY = 0.0f;
+            gCsCamEyeZ = 350.0f;
+            gCsCamAtZ = -300.0f;
+
+            D_i5_801BE240 = 2.0f;
+            D_i5_801BE244 = 2.0f;
+            D_i5_801BE248 = 2.0f;
+
+            if (gCsFrameCount > 85) {
+                gFillScreenAlphaTarget = gFillScreenAlpha = D_ctx_80177A10[9];
+                D_ctx_80177A10[9] -= 10;
+                if (D_ctx_80177A10[9] < 11) {
+                    gFillScreenAlphaTarget = gFillScreenAlpha = 0;
+                    player->csState = 10;
+                }
+            }
+
+            func_tank_80045130(player);
+            func_tank_80044868(player);
+            func_tank_80045678(player);
+            func_tank_80045E7C(player);
+            Player_CollisionCheck(player);
+            Player_UpdatePath(player);
+            break;
+
+        case 10:
+            player->csState = 11;
+            player->gravity = 3.0f;
+            D_i5_801BE240 = 0.2f;
+            /* fallthrough */
+        case 11:
+            Math_SmoothStepToF(D_ctx_80177A48, 0.01f, 0.1f, 0.01f, 0.0f);
+
+            gCsCamEyeX = player->pos.x + 500;
+            gCsCamAtX = player->pos.x;
+            gCsCamEyeY = 3520.0f;
+            gCsCamEyeZ = 350.0f;
+
+            if (gCsFrameCount < 1040) {
+                gCsCamAtZ = -300.0f;
+            } else {
+                D_i5_801BE248 = 20.0f;
+                gCsCamEyeZ = 1000.0f;
+                gCsCamAtZ = -50000.0f;
+            }
+            if (gCsFrameCount < 270) {
+                D_i5_801BE244 = 1.0f;
+                D_i5_801BE248 = 1.0f;
+            } else if (gCsFrameCount < 690) {
+                Math_SmoothStepToF(&D_i5_801BE248, 0.3f, 0.1f, 0.1f, 0.01f);
+                D_i5_801BE244 = 1.2f;
+            } else {
+                Math_SmoothStepToF(&D_i5_801BE244, 1.5f, 0.1f, 0.05f, 0.01f);
+                Math_SmoothStepToF(&D_i5_801BE248, 2.0f, 0.1f, 0.1f, 0.01f);
+            }
+
+            Math_SmoothStepToF(&player->baseSpeed, 4.9f, 0.1f, 1.0f, 0.0f);
+            Math_SmoothStepToF(&player->camDist, 0.0f, 0.1f, 1.0f, 0.0f);
+
+            func_tank_80045130(player);
+            func_tank_80044868(player);
+            func_tank_80045678(player);
+            func_tank_80045E7C(player);
+            Player_CollisionCheck(player);
+            Player_UpdatePath(player);
+            break;
+
+        case 12:
+            break;
+    }
+
+    switch (gCsFrameCount) {
+        case 755:
+            gShowLevelClearStatusScreen = true;
+            break;
+
+        case 1025:
+            gShowLevelClearStatusScreen = false;
+            break;
+
+        case 50:
+            AUDIO_PLAY_BGM(NA_BGM_COURSE_CLEAR);
+            break;
+
+        case 100:
+            gLevelClearScreenTimer = 100;
+            break;
+
+        case 160:
+            Radio_PlayMessage(gMsg_ID_20010, RCID_FOX);
+            break;
+
+        case 230:
+            if (gTeamShields[TEAM_ID_SLIPPY] > 0.0f) {
+                Macbeth_LevelComplete1_TeamSetup(&gActors[0], 0);
+            }
+            break;
+
+        case 260:
+            switch (gTeamShields[TEAM_ID_SLIPPY]) {
+                case 0:
+                    Radio_PlayMessage(gMsg_ID_20345, RCID_ROB64);
+                    break;
+                case -1:
+                    Radio_PlayMessage(gMsg_ID_20333, RCID_ROB64);
+                    break;
+                default:
+                    func_demo_80048AC0(TEAM_ID_SLIPPY);
+                    break;
+            }
+            break;
+
+        case 380:
+            if (gTeamShields[TEAM_ID_PEPPY] > 0.0f) {
+                Macbeth_LevelComplete1_TeamSetup(&gActors[1], 1);
+            }
+            break;
+
+        case 410:
+            switch (gTeamShields[TEAM_ID_PEPPY]) {
+                case 0:
+                    Radio_PlayMessage(gMsg_ID_20344, RCID_ROB64);
+                    break;
+                case -1:
+                    Radio_PlayMessage(gMsg_ID_20332, RCID_ROB64);
+                    break;
+                default:
+                    func_demo_80048AC0(TEAM_ID_PEPPY);
+                    break;
+            }
+            break;
+
+        case 530:
+            if (gTeamShields[TEAM_ID_FALCO] > 0.0f) {
+                Macbeth_LevelComplete1_TeamSetup(&gActors[2], 2);
+            }
+            break;
+
+        case 560:
+            switch (gTeamShields[TEAM_ID_FALCO]) {
+                case 0:
+                    Radio_PlayMessage(gMsg_ID_20340, RCID_ROB64);
+                    break;
+                case -1:
+                    Radio_PlayMessage(gMsg_ID_20331, RCID_ROB64);
+                    break;
+                default:
+                    func_demo_80048AC0(TEAM_ID_FALCO);
+                    break;
+            }
+            break;
+
+        case 680:
+            if (gLeveLClearStatus[LEVEL_ZONESS] != 0) {
+                Macbeth_801B3718();
+            }
+            break;
+
+        case 1027:
+            if (gLeveLClearStatus[LEVEL_ZONESS] != 0) {
+                Radio_PlayMessage(gMsg_ID_17350, RCID_KATT);
+            }
+            break;
+
+        case 1065:
+            if (gLeveLClearStatus[LEVEL_ZONESS] != 0) {
+                gActors[8].state++;
+            }
+            break;
+
+        case 1157:
+            gActors[0].state++;
+            break;
+
+        case 1136:
+            gActors[1].state++;
+            break;
+
+        case 1197:
+            gActors[2].state++;
+            break;
+
+        case 1158:
+            if (gLeveLClearStatus[LEVEL_ZONESS] != 0) {
+                Object_Kill(&gActors[8].obj, gActors[8].sfxSource);
+            }
+            /* fallthrough */
+        case 1195:
+            gSceneSetup = 1;
+            break;
+
+        case 1200:
+            //Macbeth_LevelComplete1_TeamSetup(&gActors[3], 3);
+            gLoadLevelObjects = 0;
+            break;
+    }
+    Math_SmoothStepToF(&player->cam.eye.x, gCsCamEyeX, D_ctx_80177A48[0], D_i5_801BE240, 0.0f);
+    Math_SmoothStepToF(&player->cam.eye.y, gCsCamEyeY, D_ctx_80177A48[0], D_i5_801BE244, 0.0f);
+    Math_SmoothStepToF(&player->cam.eye.z, gCsCamEyeZ, D_ctx_80177A48[0], D_i5_801BE248, 0.0f);
+    Math_SmoothStepToF(&player->cam.at.x, gCsCamAtX, D_ctx_80177A48[0], D_i5_801BE240, 0.0f);
+    Math_SmoothStepToF(&player->cam.at.y, gCsCamAtY, D_ctx_80177A48[0], D_i5_801BE244, 0.0f);
+    Math_SmoothStepToF(&player->cam.at.z, gCsCamAtZ, D_ctx_80177A48[0], D_i5_801BE248, 0.0f);
+    player->cam.at.y += zeroVar;
+    if (gCsFrameCount > 1100) {
+        player->cam.at.y += 2.0f;                
+    }
+
+    if (gCsFrameCount > 40) {
+        player->pos.y = 900;                
+    } else {
+        player->pos.y = 300;
+    }
 
     if ((gCsFrameCount >= 850) && ((gGameFrameCount % 16) == 0)) {
         Macbeth_EffectClouds_Spawn();

@@ -1,13 +1,19 @@
 #include "global.h"
 #include "assets/ast_great_fox.h"
+#include "assets/ast_corneria.h"
+#include "fox_co.h"
+#include "assets/ast_arwing.h"
 #include "port/hooks/Events.h"
 
 f32 turretDestY = 50.0f;
 f32 turretDestX = 0.0f;
 f32 turretDestZ = 0.0f;
 f32 turret360Radius = 0.0f;
+f32 turret360RadiusMod = 0.0f;
 f32 turret360Speed = 0.0f;
+f32 turret360SpeedMod = 0.0f;
 f32 turret360Height = 0.0f;
+f32 turret360HeightMod = 0.0f;
 
 u64 Guns_D_GREAT_FOX_E00B4B0_rgba16_png_019_rgba16[] = {
 	0x0001000100010001, 0x0001000100010001, 0x0001000100010001, 0x0001000100010001, 0x0001000100010001, 0x0001000100010001, 0x0001000100010843, 0x0843000100010001, 
@@ -718,7 +724,7 @@ void Turret_Update360(Player* player) {
     Player_LowHealthAlarm(player);
 
     // Kill
-    if ((player->shields <= 0) && (player->radioDamageTimer != 0)) {
+    if ((player->shields <= 0)/*  && (player->radioDamageTimer != 0) */) {
         Player_Down(player);
         player->vel.x *= 0.2f;
         player->vel.y = 5.0f;
@@ -815,6 +821,18 @@ void Turret_Update360(Player* player) {
         player->unk_008 -= 90.0f;
         player->unk_180 += 30.0f;
     }
+
+    // Orbit Radius
+    if (turret360Speed != 0) {
+        if ((turret360RadiusMod > (1000 - turret360Radius)) && ((gControllerHold[player->num].button & U_JPAD) || (gControllerHold[player->num].button & U_CBUTTONS))) {
+            turret360RadiusMod -= 30.0f;
+            turret360SpeedMod += 0.005f;
+        }
+        if ((turret360RadiusMod < (turret360Radius + 2000)) && ((gControllerHold[player->num].button & D_JPAD) || (gControllerHold[player->num].button & D_CBUTTONS))) {
+            turret360RadiusMod += 30.0f;
+            turret360SpeedMod -= 0.005f;
+        }
+    }
     
     // Resets position
     /* if (gControllerHold[player->num].button & B_BUTTON) {
@@ -865,7 +883,7 @@ void Turret_Update360(Player* player) {
     //Fortuna, Venom II, Corneria: 3000, 0.5, 350
 
     turret360Radius = 3000;
-    turret360Speed = 0.5f;
+    turret360Speed = 1.0f;
     turret360Height = 450;
 
     switch (gCurrentLevel) {
@@ -885,9 +903,9 @@ void Turret_Update360(Player* player) {
     }
 
     //Updates XYZ
-    Math_SmoothStepToF(&player->pos.y, turret360Height, 0.5f, 25.0f, 0.00001f);
-    player->trueZpos = player->pos.z = turret360Radius * COS_DEG(turret360Speed * 2 * player->unk_000);
-                       player->pos.x = turret360Radius * SIN_DEG(turret360Speed * 2 * player->unk_000);
+    Math_SmoothStepToF(&player->pos.y, turret360Height + turret360RadiusMod / 10, 0.5f, 25.0f, 0.00001f);
+    player->trueZpos = player->pos.z = (turret360Radius + turret360RadiusMod) * COS_DEG(turret360Speed * player->unk_000);
+                       player->pos.x = (turret360Radius + turret360RadiusMod) * SIN_DEG(turret360Speed * player->unk_000);
 
     //Updates rotation
     Math_SmoothStepToF(&player->unk_180, -player->unk_008 + 180, 0.5f, 3.0f, 0.00001f);
@@ -895,7 +913,7 @@ void Turret_Update360(Player* player) {
     
     //Rotates along path
     if ((gCurrentLevel != LEVEL_SECTOR_Z) && (gCurrentLevel != LEVEL_VENOM_ANDROSS)) {
-        player->unk_000 += 0.5;
+        player->unk_000 += (0.5 * (turret360Speed + turret360SpeedMod));
     }
 
     Turret_Shoot(player);
@@ -966,9 +984,7 @@ void Turret_Cutscene_AllRangeMode(Player* player) {
 
     gCsFrameCount++;
 
-    Math_SmoothStepToAngle(&player->aerobaticPitch, 0.0f, 0.1f, 20.0f, 0.0f);
-
-    player->draw = true;
+    Math_SmoothStepToAngle(&player->aerobaticPitch, 0.0f, 0.1f, 20.0f, 0.0f);    
 
     if (gCsFrameCount == 37) {
         gChangeTo360 = true;
@@ -984,10 +1000,12 @@ void Turret_Cutscene_AllRangeMode(Player* player) {
             }
         }
     }
-    player->arwing.bottomLeftFlapYrot = 0.0f;
-    player->arwing.bottomRightFlapYrot = 0.0f;
-    player->arwing.upperLeftFlapYrot = 0.0f;
-    player->arwing.upperRightFlapYrot = 0.0f;
+
+    if (gCsFrameCount > 70) {
+        player->draw = true;
+    } else {
+        player->draw = false;
+    }
 
     Math_SmoothStepToF(&player->rot.x, 0.0f, 0.1f, 5.0f, 0.0f);
     Math_SmoothStepToF(&player->rot.y, 0.0f, 0.1f, 5.0f, 0.0f);
@@ -1072,6 +1090,15 @@ void Turret_Cutscene_AllRangeMode(Player* player) {
             if ((gCurrentLevel == LEVEL_CORNERIA) || (gCurrentLevel == LEVEL_VENOM_ANDROSS)) {
                 sp64.x *= -1.0f;
             }
+
+            if (gCsFrameCount < 60) {
+                sp64.y = -80;
+            } else if (gCsFrameCount < 140) {
+                Math_SmoothStepToF(&sp64.y, 25.0f, 1.0f, 1.0f, 0.0f);
+            } else if (gCsFrameCount > 230) {
+                sp64.y = 0;
+            }
+
             Math_SmoothStepToF(&D_ctx_80177A48[0], 0.1f, 1.0f, 0.005f, 0.0f);
             Math_SmoothStepToF(&player->cam.eye.x, player->pos.x + sp64.x, D_ctx_80177A48[0], 500.0f, 0.0f);
             Math_SmoothStepToF(&player->cam.eye.y, player->pos.y + sp64.y, D_ctx_80177A48[0], 500.0f, 0.0f);
@@ -1110,6 +1137,180 @@ void Turret_Cutscene_AllRangeMode(Player* player) {
     Player_FloorCheck(player);
 }
 
+void Turret_Cutscene_LevelStart(Player* player) {
+    gCsFrameCount++;
+    if (gLevelMode == LEVELMODE_ON_RAILS) {
+        switch (gCurrentLevel) {
+            case LEVEL_CORNERIA:
+                Turret_Corneria_LevelStart(player);
+                Player_FloorCheck(player);
+                break;
+
+            case LEVEL_METEO:
+                Meteo_LevelStart(player);
+                break;
+
+            case LEVEL_SECTOR_X:
+                SectorX_LevelStart(player);
+                break;
+
+            case LEVEL_TITANIA:
+                Titania_LevelStart(player);
+                Player_FloorCheck(player);
+                break;
+
+            case LEVEL_ZONESS:
+                Zoness_LevelStart(player);
+                break;
+
+            case LEVEL_MACBETH:
+                Turret_Macbeth_LevelStart(player);
+                break;
+
+            case LEVEL_SECTOR_Y:
+                SectorY_801A0AC0(player);
+                break;
+
+            case LEVEL_SOLAR:
+                Solar_LevelStart(player);
+                break;
+
+            case LEVEL_VENOM_1:
+                Venom1_LevelStart(player);
+                Player_FloorCheck(player);
+                break;
+
+            case LEVEL_AQUAS:
+                Turret_Aquas_CsLevelStart(player);
+                break;
+
+            case LEVEL_AREA_6:
+                Area6_LevelStart(player);
+                break;
+        }
+        func_demo_8004990C(player);
+    } else {
+        switch (gCurrentLevel) {
+            case LEVEL_FORTUNA:
+                AllRange_FortunaIntro(player);
+                Player_FloorCheck(player);
+                break;
+
+            case LEVEL_VENOM_2:
+                Venom2_LevelStart(player);
+                Player_FloorCheck(player);
+                break;
+
+            case LEVEL_BOLSE:
+                Bolse_LevelStart(player);
+                Player_FloorCheck(player);
+                break;
+
+            case LEVEL_KATINA:
+                Katina_LevelStart(player);
+                Player_FloorCheck(player);
+                break;
+
+            case LEVEL_SECTOR_Z:
+                Turret_SectorZ_LevelStart(player);
+
+            default:
+                break;
+        }
+    }
+}
+
+void Turret_Cutscene_LevelComplete(Player* player) {
+    s32 sp24;
+    s32 sp20;
+    s32 btn;
+
+    gCsFrameCount++;
+
+    switch (player->form) {
+        case FORM_ARWING:
+            if ((gCurrentLevel == LEVEL_VENOM_ANDROSS) || ((gCurrentLevel == LEVEL_VENOM_2) && (gLevelPhase == 1))) {
+                Andross_80193C4C(player);
+            } else if (gCurrentLevel == LEVEL_SECTOR_X) {
+                if (gLevelPhase == 0) {
+                    SectorX_LevelComplete(player);
+                } else {
+                    Cutscene_WarpZoneComplete(player);
+                }
+            } else if (gCurrentLevel == LEVEL_AREA_6) {
+                Area6_LevelComplete(player);
+            } else if (gCurrentLevel == LEVEL_FORTUNA) {
+                Cutscene_FortunaComplete(player);
+                Player_FloorCheck(player);
+            } else if (gCurrentLevel == LEVEL_BOLSE) {
+                Bolse_LevelComplete(player);
+                Player_FloorCheck(player);
+            } else if (gCurrentLevel == LEVEL_SECTOR_Z) {
+                SectorZ_LevelComplete(player);
+            } else if (gCurrentLevel == LEVEL_KATINA) {
+                Katina_LevelComplete(player);
+                Player_FloorCheck(player);
+            } else if (gCurrentLevel == LEVEL_SECTOR_Y) {
+                SectorY_LevelComplete(player);
+                Player_FloorCheck(player);
+            } else if (gCurrentLevel == LEVEL_SOLAR) {
+                Solar_LevelComplete(player);
+                Player_FloorCheck(player);
+            } else if (gCurrentLevel == LEVEL_ZONESS) {
+                Zoness_LevelComplete(player);
+                Player_FloorCheck(player);
+            } else if (gCurrentLevel == LEVEL_VENOM_2) {
+                Venom2_LevelComplete(player);
+                Player_FloorCheck(player);
+            } else if (gCurrentLevel == LEVEL_METEO) {
+                if (gLevelPhase == 0) {
+                    Meteo_LevelComplete(player);
+                } else {
+                    Cutscene_WarpZoneComplete(player);
+                }
+            } else if ((gCurrentLevel == LEVEL_CORNERIA) && (gLevelMode == LEVELMODE_ALL_RANGE)) {
+                Turret_Corneria_LevelComplete1(player);
+                Player_FloorCheck(player);
+            } else {
+                if (gCsFrameCount == 170) {
+                    AUDIO_PLAY_BGM(NA_BGM_COURSE_CLEAR);
+                }
+                Turret_Cutscene_CoComplete2(player);
+                //Cutscene_CoComplete2(player);
+                Player_FloorCheck(player);
+            }
+            Player_UpdateArwingRoll(player);
+            break;
+
+        case FORM_LANDMASTER:
+            sp20 = gInputPress->button;
+            sp24 = gInputHold->button;
+            gInputPress->button = 0;
+            btn = gInputPress->button;
+            gInputHold->button = gInputPress->button;
+            gInputPress->stick_y = btn;
+            gInputPress->stick_x = btn;
+
+            if (gCurrentLevel == LEVEL_TITANIA) {
+                Turret_Titania_LevelComplete(player);
+            } else if (gMissionStatus != MISSION_COMPLETE) {
+                Turret_Macbeth_LevelComplete2(player);
+            } else {
+                Turret_Macbeth_LevelComplete1(player);
+            }
+
+            func_tank_80046358(player);
+            gInputPress->button = sp20;
+            gInputHold->button = sp24;
+            break;
+
+        case FORM_BLUE_MARINE:
+            if (gCurrentLevel == LEVEL_AQUAS) {
+                Aquas_CsLevelComplete(player);
+            }
+            break;
+    }
+}
 
 void Turret_Draw(Player* player) {
     FrameInterpolation_RecordOpenChild("Reticle", 0);

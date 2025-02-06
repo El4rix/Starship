@@ -2833,18 +2833,30 @@ f32 sCoLevelStartTeamYpos[3] = { 200.0f, 140.0f, 200.0f };
 f32 sCoLevelStartTeamZpos[3] = { 160.0f, 160.0f, 320.0f };
 f32 sCoLevelStartTeamZrot[3] = { -60.0f, 60.0f, -45.0f };
 
+f32 sTurretCoLevelStartTeamXpos[3] = { 180.0f, -180.0f, 0.0f };
+f32 sTurretCoLevelStartTeamYpos[3] = { -100.0f, -160.0f, -100.0f };
+f32 sTurretCoLevelStartTeamZpos[3] = { 160.0f, 160.0f, 0.0f };
+
 void Corneria_CsTeamSetup(ActorCutscene* this, s32 teamIdx) {
     Actor_Initialize(this);
     this->obj.status = OBJ_INIT;
     this->obj.id = OBJ_ACTOR_CUTSCENE;
-
-    this->obj.pos.x = (sCoLevelStartTeamXpos[teamIdx] * 4.0f) + gPlayer[0].pos.x;
-    this->obj.pos.y = (sCoLevelStartTeamYpos[teamIdx] * 2.0f) + gPlayer[0].pos.y;
-    this->obj.pos.z = (sCoLevelStartTeamZpos[teamIdx] * 3.0f) + gPlayer[0].trueZpos;
-
-    this->vwork[20].x = sCoLevelStartTeamXpos[teamIdx] + gPlayer[0].pos.x;
-    this->vwork[20].y = gPlayer[0].pos.y;
-    this->vwork[20].z = sCoLevelStartTeamZpos[teamIdx] + gPlayer[0].trueZpos;
+    
+    if (gTurretModeEnabled) {
+        this->obj.pos.x = (sTurretCoLevelStartTeamXpos[teamIdx] * 4.0f) + gPlayer[0].pos.x;
+        this->obj.pos.y = (sTurretCoLevelStartTeamYpos[teamIdx] * 2.0f) + gPlayer[0].pos.y;
+        this->obj.pos.z = (sTurretCoLevelStartTeamZpos[teamIdx] * 3.0f) + gPlayer[0].trueZpos;
+        this->vwork[20].x = sTurretCoLevelStartTeamXpos[teamIdx] + gPlayer[0].pos.x;
+        this->vwork[20].y = sTurretCoLevelStartTeamYpos[teamIdx] + gPlayer[0].pos.y;
+        this->vwork[20].z = sTurretCoLevelStartTeamZpos[teamIdx] + gPlayer[0].trueZpos;
+    } else {
+        this->obj.pos.x = (sCoLevelStartTeamXpos[teamIdx] * 4.0f) + gPlayer[0].pos.x;
+        this->obj.pos.y = (sCoLevelStartTeamYpos[teamIdx] * 2.0f) + gPlayer[0].pos.y;
+        this->obj.pos.z = (sCoLevelStartTeamZpos[teamIdx] * 3.0f) + gPlayer[0].trueZpos;
+        this->vwork[20].x = sCoLevelStartTeamXpos[teamIdx] + gPlayer[0].pos.x;
+        this->vwork[20].y = gPlayer[0].pos.y;
+        this->vwork[20].z = sCoLevelStartTeamZpos[teamIdx] + gPlayer[0].trueZpos;
+    }   
 
     this->obj.rot.z = sCoLevelStartTeamZrot[teamIdx];
     this->obj.rot.y = 180.0f;
@@ -3381,12 +3393,536 @@ void Corneria_LevelStart(Player* player) {
     slippy->obj.pos.y -= 3.0f;
 }
 
+void Turret_Corneria_LevelStart(Player* player) {
+    s32 i;
+    ActorCutscene* falco = &gActors[0];
+    ActorCutscene* slippy = &gActors[1];
+    ActorCutscene* peppy = &gActors[2];
+    f32 sp44;
+    f32 sp40;
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 sp30;
+    f32 sp2C;
+
+    // Corneria_SpawnTerrainBumps(); // This function call was probably around here.
+
+    PRINTF("Enms[1].obj.mode %d\n", gActors[1].obj.status);
+
+    player->draw = true;
+
+    if (gCsFrameCount < 815) {
+        x = player->pos.x;
+        y = player->pos.y + 15.0f;
+        z = player->trueZpos - 20.0f;
+    } else {
+        if (gCsFrameCount < 1009) {
+            x = falco->obj.pos.x;
+            y = falco->obj.pos.y + 15.0f;
+            z = falco->obj.pos.z - 20.0f;
+        } else if (gCsFrameCount < 1198) {
+            x = peppy->obj.pos.x;
+            y = peppy->obj.pos.y + 15.0f;
+            z = peppy->obj.pos.z - 20.0f;
+        } else {
+            x = slippy->obj.pos.x;
+            y = slippy->obj.pos.y + 15.0f;
+            z = slippy->obj.pos.z - 20.0f;
+        }
+    }
+
+    sp2C = -Math_Atan2F(player->cam.eye.x - x, player->cam.eye.z - z);
+    sp30 = -Math_Atan2F(player->cam.eye.y - y, sqrtf(SQ(player->cam.eye.z - z) + SQ(player->cam.eye.x - x)));
+
+    sp44 = Math_RadToDeg(sp2C) - D_ctx_80177A48[4];
+    sp40 = Math_RadToDeg(sp30) - D_ctx_80177A48[5];
+
+    if (sp44 > 180.0f) {
+        sp44 -= 360.0f;
+    }
+    if (sp44 < -180.0f) {
+        sp44 += 360.0f;
+    }
+    if (sp40 > 180.0f) {
+        sp40 -= 360.0f;
+    }
+    if (sp40 < -180.0f) {
+        sp40 += 360.0f;
+    }
+
+    D_ctx_80177A48[6] += fabsf(sp44);
+    D_ctx_80177A48[7] += fabsf(sp40);
+
+    // Cloud reflexions on Arwing windshields
+    if (sp2C >= 0.0f) {
+        Lib_Texture_Scroll(aWindshieldClouldReflextionTex, 64, 32, 2);
+        Lib_Texture_Scroll(aWindshieldClouldReflextionTex, 64, 32, 2);
+    } else {
+        Lib_Texture_Scroll(aWindshieldClouldReflextionTex, 64, 32, 3);
+        Lib_Texture_Scroll(aWindshieldClouldReflextionTex, 64, 32, 3);
+    }
+
+    for (i = 0; (i < 40) && (D_ctx_80177A48[6] >= 0.2f); i++, D_ctx_80177A48[6] -= 0.2f) {
+        if (sp44 >= 0) {
+            Lib_Texture_Scroll(aWindshieldClouldReflextionTex, 64, 32, 2);
+        } else {
+            Lib_Texture_Scroll(aWindshieldClouldReflextionTex, 64, 32, 3);
+        }
+    }
+
+    for (i = 0; (i < 40) && (D_ctx_80177A48[7] >= 0.3f); i++, D_ctx_80177A48[7] -= 0.3f) {
+        if (sp40 >= 0) {
+            Lib_Texture_Scroll(aWindshieldClouldReflextionTex, 64, 32, 0);
+        } else {
+            Lib_Texture_Scroll(aWindshieldClouldReflextionTex, 64, 32, 1);
+        }
+    }
+
+    D_ctx_80177A48[4] = Math_RadToDeg(sp2C);
+    D_ctx_80177A48[5] = Math_RadToDeg(sp30);
+
+    player->flags_228 = 0;
+
+    D_ctx_80177950 = -1.0f;
+    if ((Math_RadToDeg(gPlayer[0].camYaw) < 90.0f) || (Math_RadToDeg(gPlayer[0].camYaw) > 270.0f)) {
+        D_ctx_80177950 = 1.0f;
+    }
+
+    player->vel.z = 0.0f;
+    player->pos.z = player->pos.z;
+    player->trueZpos = player->pos.z + player->camDist;
+    player->bobPhase += 10.0f;
+    player->yBob = -SIN_DEG(player->bobPhase) * 0.5f;/* 
+    player->rockPhase += 3.0f;
+    player->rockAngle = SIN_DEG(player->rockPhase) * 1.5f; */
+
+    Corneria_SpawnClouds();
+
+    player->arwing.teamFaceXrot = 0;
+
+    switch (player->csState) {
+        case 0: // LevelStart initialization
+            gCsFrameCount = 0;
+            player->csState = 1;
+            player->csTimer = 600;
+            player->pos.z += 1400.0f;
+            player->pos.y = 6000.0f;
+            player->pos.x = 0.1f;
+
+            Corneria_CsTeamSetup(falco, 0);
+            Corneria_CsTeamSetup(slippy, 1);
+            Corneria_CsTeamSetup(peppy, 2);
+
+            falco->iwork[TEAM_FACE] = FACE_FALCO;
+            slippy->iwork[TEAM_FACE] = FACE_SLIPPY;
+            peppy->iwork[TEAM_FACE] = FACE_PEPPY;
+
+            player->cam.eye.x = gCsCamEyeX = player->pos.x - 2000.0f;
+            gPlayer[0].cam.eye.y = gCsCamEyeY = player->pos.y;
+            player->cam.eye.z = gCsCamEyeZ = player->trueZpos + 6000.0f;
+
+            player->cam.at.x = gCsCamAtX = player->pos.x;
+            player->cam.at.y = gCsCamAtY = player->pos.y;
+            player->cam.at.z = gCsCamAtZ = player->trueZpos - 1400.0f;
+
+            D_ctx_80177A48[0] = 0;
+            D_ctx_80177A48[1] = D_ctx_80177A48[2] = 0;
+
+            gFillScreenAlphaTarget = 255;
+            gFillScreenAlpha = 255;
+            gFillScreenRed = gFillScreenGreen = gFillScreenBlue = 255;
+            break;
+
+        case 1: // cs phase: camera focus on fox and team (open the wings!)
+            if (player->csTimer < 550) {
+                gFillScreenAlphaTarget = 0;
+                gFillScreenAlphaStep = 3;
+                Math_SmoothStepToF(&D_ctx_80177A48[0], 0.01f, 1.0f, 0.0005f, 0.0f);
+            }
+
+            gCsCamEyeX = player->pos.x - 150.0f - 150;
+            gCsCamEyeY = player->pos.y - 70.0f - 100;
+            gCsCamEyeZ = player->trueZpos + 150.0f - 2200;
+
+            gCsCamAtX = player->pos.x;
+            gCsCamAtY = player->pos.y - 100;
+            gCsCamAtZ = player->trueZpos - 1000;
+
+            if (player->csTimer == 0) {
+                player->csState = 2;
+                player->csTimer = 130;
+                D_ctx_80177A48[0] = 0.0f;
+            }
+
+            if (player->csTimer == 315) {
+                player->pos.x = 0.0f;
+            }
+
+            if (player->csTimer == 270) {
+                gHideRadio = false;
+                Radio_PlayMessage(gMsg_ID_2005, RCID_FOX);
+            }
+
+            if (player->csTimer == 180) {
+                AUDIO_PLAY_SFX(NA_SE_WING_OPEN, player->sfxSource, 0);
+            }
+
+            if (player->csTimer == 120) {
+                AUDIO_PLAY_SFX(NA_SE_WING_OPEN_END, player->sfxSource, 0);
+            }
+
+            if ((player->csTimer < 190) && (player->csTimer > 150)) {
+                Math_SmoothStepToF(&player->arwing.wingsZrot, 2.0f, 0.2f, 0.5f, 0.0f);
+            }
+
+            if (player->csTimer < 150) {
+                player->wingPosition = 0;
+            }
+
+            if ((player->csTimer < 120) && ((player->csTimer % 16) == 0)) {
+                D_ctx_80177A48[1] = RAND_FLOAT_CENTERED(60.0f);
+                D_ctx_80177A48[2] = RAND_FLOAT_CENTERED(60.0f);
+            }
+
+            if (player->csTimer == 0) {
+                D_ctx_80177A48[1] = 0.0f;
+                D_ctx_80177A48[2] = D_ctx_80177A48[1];
+            }
+            break;
+
+        case 2: // camera goes to the side of Fox.
+            Math_SmoothStepToF(&D_ctx_80177A48[0], 0.1f, 1.0f, 0.001f, 0.0f);
+
+            gCsCamEyeX = player->pos.x - 50.0f - 150;
+            gCsCamEyeY = player->pos.y + 10.0f - 100;
+            gCsCamEyeZ = player->trueZpos - 10.0f - 1000;
+
+            gCsCamAtX = player->pos.x;
+            gCsCamAtY = player->pos.y + 10.0f - 100;
+            gCsCamAtZ = player->trueZpos + 10.0f - 800;
+
+            if (player->csTimer == 20) {
+                Radio_PlayMessage(gMsg_ID_2010, RCID_FOX);
+            }
+
+            if (player->csTimer == 0) {
+                player->csState = 3;
+                player->csTimer = 180;
+                player->unk_004 = 0.0f;
+                falco->state = 0;
+                peppy->state = 0;
+                slippy->state = 0;
+            }
+
+            if (gMsgCharIsPrinting && ((gGameFrameCount & 2) != 0)) {
+                player->arwing.teamFaceXrot = 5.0f;
+            }
+            break;
+
+        case 3: // Falco appears on scene from behind
+            player->csState = 4;
+            D_ctx_80177A48[0] = 0.0f;
+            player->csTimer = 190;
+
+            if (gMsgCharIsPrinting && ((gGameFrameCount & 2) != 0)) {
+                player->arwing.teamFaceXrot = 5.0f;
+            }
+
+            gCsCamEyeY = player->pos.y + 10.0f;
+            gCsCamAtY = player->pos.y + 10.0f;
+            break;
+
+        case 4:
+            if (gMsgCharIsPrinting && ((gGameFrameCount & 2) != 0)) {
+                player->arwing.teamFaceXrot = 5.0f;
+            }
+
+            Math_SmoothStepToF(&D_ctx_80177A48[0], 0.1f, 1.0f, 0.001f, 0.0f);
+
+            // Focus camera on Falco.
+            gCsCamEyeX = falco->obj.pos.x - 50.0f;
+            gCsCamEyeY = falco->obj.pos.y + 10.0f;
+            gCsCamEyeZ = falco->obj.pos.z - 10.0f;
+
+            gCsCamAtX = falco->obj.pos.x;
+            gCsCamAtY = falco->obj.pos.y + 10.0f;
+            gCsCamAtZ = falco->obj.pos.z + 10.0f;
+
+            if (player->csTimer == 0) {
+                player->csState = 5;
+                player->csTimer = 5;
+            }
+
+            if (player->csTimer == 80) {
+                Radio_PlayMessage(gMsg_ID_2020, RCID_FALCO);
+            }
+
+            // Falco looks towards the camera.
+            if (player->csTimer < 100) {
+                Math_SmoothStepToF(&falco->fwork[TEAM_HEAD_XROT], 50.0f, 0.1f, 3.0f, 0.01f);
+            }
+
+            // Falco's head rocks back and forth as he speaks.
+            falco->fwork[TEAM_HEAD_YROT] = 0.0f;
+            if (gMsgCharIsPrinting && ((gGameFrameCount & 2) != 0)) {
+                falco->fwork[TEAM_HEAD_YROT] = 5.0f;
+            }
+            break;
+
+        case 5:
+            // Falco's head rotates back.
+            Math_SmoothStepToF(&falco->fwork[TEAM_HEAD_XROT], 0.0f, 0.1f, 3.0f, 0.01f);
+
+            if (player->csTimer == 0) {
+                player->csState = 6;
+                D_ctx_80177A48[0] = 0.0f;
+                player->csTimer = 190;
+            }
+
+            // Camera moves towards Peppy.
+            gCsCamEyeY = falco->obj.pos.y + 10.0f;
+            gCsCamAtY = falco->obj.pos.y + 10.0f;
+            break;
+
+        case 6:
+            // Falco's head rotates back.
+            Math_SmoothStepToF(&falco->fwork[TEAM_HEAD_XROT], 0.0f, 0.1f, 3.0f, 0.01f);
+            Math_SmoothStepToF(&D_ctx_80177A48[0], 0.1f, 1.0f, 0.001f, 0.0f);
+
+            D_ctx_80177A48[3] -= 0.5f;
+
+            // Focus camera on Peppy
+            gCsCamEyeX = peppy->obj.pos.x + 100.0f + D_ctx_80177A48[3];
+            gCsCamEyeY = peppy->obj.pos.y + 10.0f;
+            gCsCamEyeZ = peppy->obj.pos.z - 70.0f;
+
+            gCsCamAtX = peppy->obj.pos.x + 20.0f + (D_ctx_80177A48[3] * 0.5f);
+            gCsCamAtY = peppy->obj.pos.y + 10.0f;
+            gCsCamAtZ = peppy->obj.pos.z + 10.0f;
+
+            if (player->csTimer == 0) {
+                player->csState = 7;
+                player->csTimer = 190;
+                D_ctx_80177A48[0] = 0.0f;
+                //falco->obj.pos.y = player->pos.y;
+                //falco->obj.pos.z = player->trueZpos + 240.0f;
+            }
+
+            if (player->csTimer == 80) {
+                Radio_PlayMessage(gMsg_ID_2030, RCID_PEPPY);
+            }
+
+            // Peppy's head rocks back and forth as he speaks.
+            peppy->fwork[TEAM_HEAD_YROT] = 0.0f;
+            if (gMsgCharIsPrinting && ((gGameFrameCount & 2) != 0)) {
+                peppy->fwork[TEAM_HEAD_YROT] = 5.0f;
+            }
+            break;
+
+        case 7:
+            Math_SmoothStepToF(&D_ctx_80177A48[0], 0.1f, 1.0f, 0.001f, 0.0f);
+
+            // Focus camera on Slippy.
+            gCsCamEyeX = slippy->obj.pos.x + 20.0f;
+            gCsCamEyeY = slippy->obj.pos.y + 10.0f;
+            gCsCamEyeZ = slippy->obj.pos.z - 50.0f;
+
+            gCsCamAtX = slippy->obj.pos.x + 10.0f;
+            gCsCamAtY = slippy->obj.pos.y + 10.0f;
+            gCsCamAtZ = slippy->obj.pos.z + 10.0f;
+
+            if (player->csTimer == 0) {
+                player->csState = 8;
+                D_ctx_80177A48[0] = 0.0f;
+                player->csTimer = 300;
+                D_ctx_80177A48[8] = 50.0f;
+                D_ctx_80177A48[3] = 0.0f;
+            }
+
+            if (player->csTimer == 80) {
+                Radio_PlayMessage(gMsg_ID_2040, RCID_SLIPPY);
+                player->pos.x = 0.1f;
+                falco->obj.pos.y = slippy->obj.pos.y;
+            }
+
+            if (player->csTimer < 100) {
+                Math_SmoothStepToF(&slippy->fwork[TEAM_HEAD_XROT], -20.0f, 0.1f, 3.0f, 0.01f);
+            }
+
+            // Slippy's head rocks back and forth as he speaks.
+            slippy->fwork[TEAM_HEAD_YROT] = 0.0f;
+            if (gMsgCharIsPrinting && ((gGameFrameCount & 2) != 0)) {
+                slippy->fwork[TEAM_HEAD_YROT] = 5.0f;
+            }
+            break;
+
+        case 8:
+            Math_SmoothStepToF(&D_ctx_80177A48[0], 0.1f, 1.0f, 0.001f, 0.0f);
+
+            if (player->csTimer < 150) {
+                D_ctx_80177A48[3] += player->unk_004;
+                Math_SmoothStepToF(&player->unk_004, 2.0f, 1.0f, 0.2f, 0.0f);
+            }
+
+            // Focus camera on Fox.
+            gCsCamEyeX = player->pos.x;
+            gCsCamEyeY = player->pos.y + D_ctx_80177A48[8] - 100;
+            gCsCamEyeZ = (player->trueZpos - 600.0f - 1400) + D_ctx_80177A48[3];
+
+            gCsCamAtX = player->pos.x;
+            gCsCamAtY = player->pos.y + 20.0f - 125;
+            gCsCamAtZ = player->trueZpos + 100.0f - 1400;
+
+            if (player->csTimer < 100) {
+                Math_SmoothStepToF(&D_ctx_80177A48[8], 10.0f, 0.1f, 0.7f, 0.0f);
+            }
+
+            if (player->csTimer == 200) {
+                Radio_PlayMessage(gMsg_ID_2050, RCID_FOX);
+            }
+
+            // Fox's head rotates back and forth as he speaks.
+            player->arwing.teamFaceXrot = 0.0f;
+            if (gMsgCharIsPrinting && ((gGameFrameCount & 2) != 0)) {
+                player->arwing.teamFaceXrot = 5.0f;
+            }
+
+            if (player->csTimer == 80) {
+                falco->fwork[29] = 5.0f;
+            }
+
+            if (player->csTimer == 60) {
+                slippy->fwork[29] = 5.0f;
+            }
+
+            if (player->csTimer == 40) {
+                peppy->fwork[29] = 5.0f;
+            }
+
+            if ((player->csTimer > 70) && (player->csTimer < 80)) {
+                falco->iwork[11] = 2;
+            }
+
+            if ((player->csTimer > 50) && (player->csTimer < 60)) {
+                slippy->iwork[11] = 2;
+            }
+
+            if ((player->csTimer > 30) && (player->csTimer < 40)) {
+                peppy->iwork[11] = 2;
+            }
+
+            if (player->csTimer == 70) {
+                falco->state = 1;
+                Play_PlaySfxFirstPlayer(player->sfxSource, NA_SE_ARWING_BOOST);
+            }
+
+            if (player->csTimer == 50) {
+                slippy->state = 2;
+                Play_PlaySfxFirstPlayer(player->sfxSource, NA_SE_ARWING_BOOST);
+            }
+
+            if (player->csTimer == 30) {
+                peppy->state = 3;
+                Play_PlaySfxFirstPlayer(player->sfxSource, NA_SE_ARWING_BOOST);
+            }
+
+            if (player->csTimer == 0) {
+                player->csState = 9;
+                Play_PlaySfxFirstPlayer(player->sfxSource, NA_SE_ARWING_BOOST);
+                player->csTimer = 3;
+                player->unk_194 = 5.0f;
+                player->unk_190 = 5.0f;
+            }
+            break;
+
+        case 9:
+            gCsCamEyeX = player->pos.x;
+            gCsCamEyeY = player->pos.y;
+            gCsCamEyeZ = player->trueZpos + 1000.0f;
+
+            gCsCamAtX = player->pos.x;
+            gCsCamAtY = player->pos.y;
+            gCsCamAtZ = player->trueZpos + 1100.0f;
+
+            D_ctx_80177A48[0] = 0.03f;
+
+            player->unk_190 = 2.0f;
+
+            if (player->csTimer == 0) {
+                gFillScreenAlphaTarget = 255;
+                gFillScreenAlphaStep = 48;
+                gFillScreenRed = gFillScreenGreen = gFillScreenBlue = 255;
+            }
+
+            if (gFillScreenAlpha == 255) {
+                AUDIO_PLAY_BGM(gBgmSeqId);
+
+                Object_Kill(&falco->obj, falco->sfxSource);
+                Object_Kill(&slippy->obj, slippy->sfxSource);
+                Object_Kill(&peppy->obj, peppy->sfxSource);
+
+                gLevelStartStatusScreenTimer = 80;
+
+                player->pos.y = 350.0f;
+                player->pos.x = 0.0f;
+                player->vel.x = 0.0f;
+                turretDestX = 0;
+                player->cam.eye.x = player->pos.x;
+                player->cam.eye.y = (player->pos.y * player->unk_148) + 50.0f;
+                player->cam.eye.z = 30.0f;
+                gPlayState = PLAY_INIT;
+                player->csState = 0;
+                player->cam.at.x = player->pos.x;
+                player->cam.at.y = (player->pos.y * player->unk_148) + 20.0f;
+                player->cam.at.z = player->trueZpos;
+
+                D_ctx_80177950 = 1.0f;
+
+                gPlayerGlareAlphas[0] = gPlayerGlareAlphas[1] = gPlayerGlareAlphas[2] = gPlayerGlareAlphas[3] = 0;
+                gLoadLevelObjects = 1;
+                gFillScreenAlphaTarget = 0;
+                player->csTimer = 15;
+            }
+            break;
+
+        case 10:
+            break;
+    }
+
+    Math_SmoothStepToF(&player->cam.eye.x, gCsCamEyeX, D_ctx_80177A48[0], 20000.0f, 0.0f);
+    Math_SmoothStepToF(&player->cam.eye.y, player->yBob + gCsCamEyeY, D_ctx_80177A48[0], 20000.0f, 0.0f);
+    Math_SmoothStepToF(&player->cam.eye.z, gCsCamEyeZ, D_ctx_80177A48[0], 20000.0f, 0.0f);
+
+    Math_SmoothStepToF(&player->cam.at.x, gCsCamAtX, D_ctx_80177A48[0], 20000.0f, 0.0f);
+    Math_SmoothStepToF(&player->cam.at.y, gCsCamAtY - player->yBob, D_ctx_80177A48[0], 20000.0f, 0.0f);
+    Math_SmoothStepToF(&player->cam.at.z, gCsCamAtZ, D_ctx_80177A48[0], 20000.0f, 0.0f);
+
+    Math_SmoothStepToF(&player->arwing.upperRightFlapYrot, D_ctx_80177A48[1], 0.2f, 1.0f, 0.0f);
+    Math_SmoothStepToF(&player->arwing.upperLeftFlapYrot, D_ctx_80177A48[2], 0.2f, 1.0f, 0.0f);
+
+    player->arwing.bottomRightFlapYrot = player->arwing.upperRightFlapYrot;
+    player->arwing.bottomLeftFlapYrot = player->arwing.upperLeftFlapYrot;
+
+    player->cam.eye.y -= 3.0f;
+    player->cam.at.y -= 3.0f;
+    player->pos.y -= 3.0f;
+
+    falco->vwork[20].y -= 3.0f;
+    falco->obj.pos.y -= 3.0f;
+    peppy->vwork[20].y -= 3.0f;
+    peppy->obj.pos.y -= 3.0f;
+    slippy->vwork[20].y -= 3.0f;
+    slippy->obj.pos.y -= 3.0f;
+}
+
 f32 D_i1_80199AE4[3] = { -1500.0f, 700.0f, 0.0f };
 f32 D_i1_80199AF0[3] = { -300.0f, 400.0f, 500.0f };
 f32 D_i1_80199AFC[3] = { 500.0f, 800.0f, 1200.0f };
 f32 D_i1_80199B08[3] = { -150.0f, 150.0f, 0.0f };
 f32 D_i1_80199B14[3] = { 0.0f, 0.0f, 0.0f };
 f32 D_i1_80199B20[3] = { 200.0f, 200.0f, 400.0f };
+f32 Turret_D_i1_80199B20[3] = { 200.0f, 200.0f, 0.0f }; // 400
 f32 D_i1_80199B2C[3] = { 180.0f, -120.0f, 180.0f };
 
 void Corneria_CsLevelComplete1_TeamSetup(ActorCutscene* this, s32 index) {
@@ -3403,7 +3939,12 @@ void Corneria_CsLevelComplete1_TeamSetup(ActorCutscene* this, s32 index) {
 
     sp44.x = D_i1_80199B08[index];
     sp44.y = D_i1_80199B14[index];
-    sp44.z = D_i1_80199B20[index];
+    if (gTurretModeEnabled) {
+        sp44.z = Turret_D_i1_80199B20[index];
+    } else {
+        sp44.z = D_i1_80199B20[index];       
+    }
+    
 
     Matrix_MultVec3fNoTranslate(gCalcMatrix, &sp5C, &sp50);
     Matrix_MultVec3fNoTranslate(gCalcMatrix, &sp44, &sp38);
@@ -3662,6 +4203,314 @@ void Corneria_LevelComplete1(Player* player) {
 
         case 410:
             Radio_PlayMessage(gMsg_ID_2335, RCID_FOX);
+            break;
+
+        case 550:
+            if ((gTeamShields[TEAM_ID_SLIPPY] == -1) || (gTeamShields[TEAM_ID_SLIPPY] == 0)) {
+                Radio_PlayMessage(gMsg_ID_20333, RCID_ROB64);
+            } else {
+                Radio_PlayMessage(gMsg_ID_2300, RCID_SLIPPY);
+            }
+            break;
+
+        case 682:
+            if ((gTeamShields[TEAM_ID_PEPPY] == -1) || (gTeamShields[TEAM_ID_PEPPY] == 0)) {
+                Radio_PlayMessage(gMsg_ID_20332, RCID_ROB64);
+            } else {
+                Radio_PlayMessage(gMsg_ID_2310, RCID_PEPPY);
+            }
+            break;
+
+        case 816:
+            if ((gTeamShields[TEAM_ID_FALCO] == -1) || (gTeamShields[TEAM_ID_FALCO] == 0)) {
+                Radio_PlayMessage(gMsg_ID_20331, RCID_ROB64);
+            } else {
+                Radio_PlayMessage(gMsg_ID_2320, RCID_FALCO);
+            }
+            break;
+
+        case 1150:
+            if (gTeamShields[TEAM_ID_FALCO] > 0) {
+                gActors[0].state = 1;
+                gActors[0].fwork[9] = 2.0f;
+                gActors[0].timer_0BC = 50;
+                AUDIO_PLAY_SFX(NA_SE_ARWING_BOOST, gActors[0].sfxSource, 0);
+                gActors[0].fwork[29] = 5.0f;
+            }
+            break;
+
+        case 1190:
+            if (gTeamShields[TEAM_ID_SLIPPY] > 0) {
+                gActors[1].state = 1;
+                gActors[1].fwork[9] = 2.0f;
+                gActors[1].timer_0BC = 50;
+                AUDIO_PLAY_SFX(NA_SE_ARWING_BOOST, gActors[1].sfxSource, 0);
+                gActors[1].fwork[29] = 5.0f;
+            }
+            break;
+
+        case 1230:
+            if (gTeamShields[TEAM_ID_PEPPY] > 0) {
+                gActors[2].state = 1;
+                gActors[2].fwork[9] = 2.0f;
+                gActors[2].timer_0BC = 50;
+                AUDIO_PLAY_SFX(NA_SE_ARWING_BOOST, gActors[2].sfxSource, 0);
+                gActors[2].fwork[29] = 5.0f;
+            }
+            break;
+    }
+
+    Matrix_RotateY(gCalcMatrix, (player->rot.y + 180.0f) * M_DTOR, MTXF_NEW);
+    Matrix_RotateX(gCalcMatrix, -((player->rot.x + player->aerobaticPitch) * M_DTOR), MTXF_APPLY);
+
+    sp64.x = 0.0f;
+    sp64.y = 0.0f;
+    sp64.z = player->baseSpeed + player->boostSpeed;
+
+    Matrix_MultVec3fNoTranslate(gCalcMatrix, &sp64, &sp58);
+
+    player->vel.x = sp58.x;
+    player->vel.z = sp58.z;
+    player->vel.y = sp58.y;
+
+    player->pos.x += player->vel.x;
+    player->pos.y += player->vel.y;
+    player->pos.z += player->vel.z;
+
+    player->trueZpos = player->pos.z;
+    player->bankAngle = player->rot.z + player->zRotBank + player->zRotBarrelRoll;
+    player->bobPhase += 10.0f;
+    player->yBob = -SIN_DEG(player->bobPhase) * 0.3f;
+    player->rockPhase += 8.0f;
+    player->rockAngle = SIN_DEG(player->rockPhase);
+}
+
+void Turret_Corneria_LevelComplete1(Player* player) {
+    Vec3f sp64;
+    Vec3f sp58;
+    f32 sp54;
+    f32 var_fv1;
+    f32 sp4C;
+    f32 temp_fa0;
+    f32 temp_fa1;
+    f32 temp_deg;
+
+    player->arwing.upperRightFlapYrot = player->arwing.upperLeftFlapYrot = player->arwing.bottomRightFlapYrot =
+        player->arwing.bottomLeftFlapYrot = 0.0f;
+
+    Math_SmoothStepToF(&player->zRotBarrelRoll, 0.0f, 0.1f, 15.0f, 0.0f);
+    Math_SmoothStepToF(&player->zRotBank, 0.0f, 0.1f, 15.0f, 0.0f);
+    Math_SmoothStepToF(&player->camRoll, 0.0f, 0.1f, 3.0f, 0.0f);
+    Math_SmoothStepToAngle(&player->aerobaticPitch, 0.0f, 0.1f, 20.0f, 0.0f);
+    Math_SmoothStepToF(&player->boostSpeed, 0.0f, 0.1f, 3.0f, 0.0f);
+
+    if (player->csState >= 3) {
+        player->cam.eye.y += 3.0f;
+        player->cam.at.y += 3.0f;
+        player->pos.y += 3.0f;
+        gActors[0].obj.pos.y += 3.0f;
+        gActors[1].obj.pos.y += 3.0f;
+        gActors[2].obj.pos.y += 3.0f;
+    }
+
+    gBgColor = 0x845; // 8, 8, 32
+
+    switch (player->csState) {
+        case 0:
+            Audio_StopSfxByBankAndSource(1, player->sfxSource);
+
+            sp54 = player->cam.eye.x - sCoGrangaWork[62];
+            sp4C = player->cam.eye.z - sCoGrangaWork[64];
+
+            D_ctx_80177A48[0] = Math_RadToDeg(Math_Atan2F(sp54, sp4C));
+            D_ctx_80177A48[1] = sqrtf(SQ(sp54) + SQ(sp4C));
+
+            player->csState++;
+
+            D_ctx_80177A48[5] = 0.0f;
+            D_ctx_80177A48[4] = D_ctx_80177A48[5];
+            D_ctx_80177A48[2] = D_ctx_80177A48[5];
+            /* fallthrough */
+        case 1:
+            Math_SmoothStepToF(&player->rot.x, 0.0f, 0.1f, 5.0f, 0.0f);
+            Math_SmoothStepToF(&player->pos.y, 400.0f, 0.05f, 3.0f, 0.0f);
+            Math_SmoothStepToF(&D_ctx_80177A48[1], 1300.0f, 0.05f, 1000.0f, 0.0f);
+
+            if (player->rot.y > 180.0f) {
+                D_ctx_80177A48[0] += 0.5f;
+            } else {
+                D_ctx_80177A48[0] -= 0.5f;
+            }
+
+            Matrix_RotateY(gCalcMatrix, D_ctx_80177A48[0] * M_DTOR, MTXF_NEW);
+
+            sp64.x = 0.0f;
+            sp64.y = 0.0f;
+            sp64.z = D_ctx_80177A48[1];
+
+            Matrix_MultVec3f(gCalcMatrix, &sp64, &sp58);
+
+            Math_SmoothStepToF(&player->cam.eye.x, sCoGrangaWork[GRANGA_WORK_62] + sp58.x, 0.05f, 500.0f, 0.0f);
+            Math_SmoothStepToF(&player->cam.eye.y, sCoGrangaWork[GRANGA_WORK_63] + 100.0f, 0.05f, 500.0f, 0.0f);
+            Math_SmoothStepToF(&player->cam.eye.z, sCoGrangaWork[GRANGA_WORK_64] + sp58.z, 0.05f, 500.0f, 0.0f);
+            Math_SmoothStepToF(&player->cam.at.x, sCoGrangaWork[GRANGA_WORK_62], 0.05f, 500.0f, 0.0f);
+            Math_SmoothStepToF(&player->cam.at.y, sCoGrangaWork[GRANGA_WORK_63], 0.05f, 500.0f, 0.0f);
+            Math_SmoothStepToF(&player->cam.at.z, sCoGrangaWork[GRANGA_WORK_64], 0.05f, 500.0f, 0.0f);
+
+            temp_fa0 = player->pos.x - sCoGrangaWork[GRANGA_WORK_62];
+            temp_fa1 = player->pos.z - sCoGrangaWork[GRANGA_WORK_64];
+
+            if (gCsFrameCount < 30) {
+                temp_deg = Math_RadToDeg(-Math_Atan2F(temp_fa0, temp_fa1));
+                var_fv1 = Math_SmoothStepToAngle(&player->rot.y, temp_deg, 0.5f, 4.0f, 0.0001f) * 20.0f;
+            } else {
+                temp_deg = Math_RadToDeg(Math_Atan2F(temp_fa0, temp_fa1));
+                var_fv1 = Math_SmoothStepToAngle(&player->rot.y, temp_deg, 0.5f, 2.0f, 0.0001f) * 30.0f;
+            }
+
+            Math_SmoothStepToAngle(&player->rot.z, var_fv1, 0.1f, 5.0f, 0.0001f);
+
+            if (gCsFrameCount == 220) {
+                player->csState++;
+            }
+            break;
+
+        case 2:
+            Math_SmoothStepToAngle(&player->rot.x, 20.0f, 0.1f, 0.5f, 0.0001f);
+            Math_SmoothStepToAngle(&player->rot.z, 0.0f, 0.1f, 1.0f, 0.0001f);
+
+            Math_SmoothStepToF(&D_ctx_80177A48[2], 0.05f, 1.0f, 0.005f, 0.0001f);
+
+            Math_SmoothStepToF(&player->cam.at.x, player->pos.x + 500, D_ctx_80177A48[2], 500.0f, 0.0f);
+            Math_SmoothStepToF(&player->cam.at.y, player->pos.y, D_ctx_80177A48[2], 500.0f, 0.0f);
+            Math_SmoothStepToF(&player->cam.at.z, player->pos.z, D_ctx_80177A48[2], 500.0f, 0.0f);
+
+            if (gCsFrameCount == 350) {
+                player->csState++;
+                D_ctx_80177A48[2] = 0.0f;
+                D_ctx_80177A48[3] = 0.05f;
+            }
+            break;
+
+        case 3:
+            if ((gCsFrameCount > 700) && (gCsFrameCount < 1000)) {
+                func_demo_8004AA84();
+            }
+            Math_SmoothStepToAngle(&player->rot.x, 20.0f, 0.1f, 0.5f, 0);
+            Math_SmoothStepToAngle(&player->rot.z, 0.0f, 0.1f, 1.0f, 0);
+
+            Math_SmoothStepToF(&player->baseSpeed, 0.0f, 0.1f, 2.0f, 0.0f);
+
+            Math_SmoothStepToF(&D_ctx_80177A48[2], 0.1f, 1.0f, 0.002f, 0);
+            Math_SmoothStepToF(&D_ctx_80177A48[3], 0.1f, 1.0f, 0.002f, 0);
+
+            Matrix_RotateY(gCalcMatrix, player->rot.y * M_DTOR, MTXF_NEW);
+            Matrix_Push(&gCalcMatrix);
+            Matrix_RotateY(gCalcMatrix, D_ctx_80177A48[5] * M_DTOR, MTXF_APPLY);
+
+            sp64.x = 0.0f;
+            sp64.y = -200.0f;
+            sp64.z = 800.0f;
+
+            Matrix_MultVec3f(gCalcMatrix, &sp64, &sp58);
+            
+            Math_SmoothStepToF(&player->cam.eye.x, player->pos.x + sp58.x, D_ctx_80177A48[2], 500.0f, 0.0f);
+            Math_SmoothStepToF(&player->cam.eye.y, player->pos.y + sp58.y, D_ctx_80177A48[2], 500.0f, 0.0f);
+            Math_SmoothStepToF(&player->cam.eye.z, player->pos.z + sp58.z, D_ctx_80177A48[2], 500.0f, 0.0f);
+
+            Matrix_Pop(&gCalcMatrix);
+
+            sp64.x = 0.0f;
+            sp64.y = 0;
+            sp64.z = 150.0f;
+
+            Matrix_MultVec3f(gCalcMatrix, &sp64, &sp58);
+
+            Math_SmoothStepToF(&player->cam.at.x, player->pos.x + sp58.x, D_ctx_80177A48[3], 500.0f, 0.0f);
+            Math_SmoothStepToF(&player->cam.at.y, player->pos.y + sp58.y, D_ctx_80177A48[3], 500.0f, 0.0f);
+            Math_SmoothStepToF(&player->cam.at.z, player->pos.z + sp58.z, D_ctx_80177A48[3], 500.0f, 0.0f);
+
+            D_ctx_80177A48[5] += D_ctx_80177A48[4];
+
+            if ((gCsFrameCount > 400) && (gCsFrameCount < 1000)) {
+                Math_SmoothStepToF(&D_ctx_80177A48[4], 0.45f, 1.0f, 0.003f, 0);
+            }
+            if (gCsFrameCount > 1100) {
+                Math_SmoothStepToF(&D_ctx_80177A48[4], 0.0f, 1.0f, 0.003f, 0);
+            }
+            if (gCsFrameCount == 1270) {
+                SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 50);
+                SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_FANFARE, 50);
+                AUDIO_PLAY_SFX(NA_SE_ARWING_BOOST, player->sfxSource, 0);
+                player->csState++;
+                player->baseSpeed = 2.0f;
+                player->unk_194 = 5.0f;
+                player->unk_190 = 5.0f;
+            }
+            break;
+
+        case 4:
+            if (gCsFrameCount >= 1270) {
+                player->baseSpeed *= 1.2f;
+                player->contrailScale += 0.04f;
+                if (player->contrailScale > 0.6f) {
+                    player->contrailScale = 0.6f;
+                }
+                player->unk_190 = 2.0f;
+            }
+
+            if (gCsFrameCount == 1290) {
+                Audio_FadeOutAll(50);
+            }
+
+            if (gCsFrameCount > 1300) {
+                gFillScreenAlphaTarget = 255;
+                gFillScreenRed = gFillScreenGreen = gFillScreenBlue = 0;
+                gFillScreenAlphaStep = 8;
+
+                if (gFillScreenAlpha == 255) {
+                    player->state = PLAYERSTATE_NEXT;
+                    player->csTimer = 0;
+                    gFadeoutType = 4;
+                    gLeveLClearStatus[gCurrentLevel] = Play_CheckMedalStatus(150) + 1;
+                }
+            }
+            break;
+    }
+
+    switch (gCsFrameCount) {
+        case 981:
+            gShowLevelClearStatusScreen = true;
+            break;
+
+        case 1181:
+            gShowLevelClearStatusScreen = false;
+            break;
+
+        case 240:
+            AUDIO_PLAY_BGM(NA_BGM_COURSE_CLEAR);
+            break;
+
+        case 330:
+            gLevelClearScreenTimer = 100;
+            break;
+
+        case 470:
+            Play_ClearObjectData();
+            if (gTeamShields[TEAM_ID_FALCO] > 0) {
+                Corneria_CsLevelComplete1_TeamSetup(&gActors[0], 0);
+            }
+            if (gTeamShields[TEAM_ID_SLIPPY] > 0) {
+                Corneria_CsLevelComplete1_TeamSetup(&gActors[1], 1);
+            }
+            if (gTeamShields[TEAM_ID_PEPPY] > 0) {
+                Corneria_CsLevelComplete1_TeamSetup(&gActors[2], 2);
+            }
+            break;
+
+        case 410:
+            Radio_PlayMessage(gMsg_ID_2335, RCID_FOX);
+            player->draw = true;
             break;
 
         case 550:

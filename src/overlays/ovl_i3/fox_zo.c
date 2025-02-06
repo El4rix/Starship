@@ -4741,8 +4741,12 @@ void Zoness_LevelStart(Player* player) {
             gControllerHold[gMainController].button = gBoostButton[gMainController];
 
             player->csTimer = 60;
-            player->boostMeter = 1.0f;
-            Player_ArwingBoost(player);
+            if (!gTurretModeEnabled) {
+                player->boostMeter = 1.0f;
+                Player_ArwingBoost(player);
+            } else {
+                player->draw = true;
+            }
 
             if (gCsFrameCount > 195) {
                 D_ctx_801779A8[0] = 50.0f;
@@ -4924,6 +4928,9 @@ void Zoness_LevelComplete(Player* player) {
                 player->rot.x += 0.1f;
                 Math_SmoothStepToF(&D_ctx_80177A48[2], 0.0f, 1.0f, 0.001f, 0);
                 player->unk_190 = 2.0f;
+                if ((gTurretModeEnabled) && (gCsCamEyeX > -4000)) {
+                    gCsCamEyeX += (gCsCamEyeX * 0.04);
+                }
 
                 if (!gMissedZoSearchlight) {
                     Math_SmoothStepToF(&D_ctx_80177A48[0], 1.0f, 1.0f, 0.025f, 0.0f);

@@ -703,6 +703,9 @@ void PlayerShot_ApplyDamageToActor(PlayerShot* shot, Actor* actor, s32 hitIndex)
             } else if ((gCurrentLevel == LEVEL_FORTUNA) || (gCurrentLevel == LEVEL_BOLSE) || (gCurrentLevel == LEVEL_KATINA)) {
                 actor->damage = 10;
                 actor->dmgType = DMG_EXPLOSION;
+            } else if (gCurrentLevel == LEVEL_SECTOR_Z) {
+                actor->damage = 25;
+                //actor->dmgType = DMG_EXPLOSION;
             } else if ((gCurrentLevel == LEVEL_ZONESS) || (gCurrentLevel == LEVEL_AQUAS)) {
                 actor->dmgType = RAND_INT(5);
                 if (actor->dmgType == 4) {

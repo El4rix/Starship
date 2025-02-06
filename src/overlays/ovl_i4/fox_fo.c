@@ -643,6 +643,9 @@ void Fortuna_LevelComplete_CsSpawnTeam(ActorCutscene* this, s32 actorIdx) {
             this->iwork[14] = actorIdx + 2;
         }
     } else {
+        if (gTurretModeEnabled) {
+            this->obj.pos.x = 0;
+        }
         this->obj.pos.z = -9500.0f;
         this->animFrame = ACTOR_CS_GREAT_FOX;
         this->vel.z = 22.0f;
@@ -860,7 +863,11 @@ void Fortuna_LevelComplete(Player* player) {
             break;
 
         case 10:
-            player->draw = true;
+            if (!gTurretModeEnabled) {
+                player->draw = true;
+            } else {
+                player->draw = false;
+            }
             gFillScreenAlphaTarget = 0;
             gFillScreenAlphaStep = 4;
             player->cam.eye.x = 400.0f;
@@ -1152,12 +1159,19 @@ void Fortuna_LevelComplete(Player* player) {
             }
             Fortuna_LevelComplete_CsSpawnTeam(greatFox, 3);
 
-            greatFox->obj.pos.z = player->pos.z + 400.0f;
+            if (gTurretModeEnabled) {
+                greatFox->obj.pos.z = player->pos.z - 1600.0f;
+                greatFox->obj.pos.x = 500.0f;
+            } else {
+                greatFox->obj.pos.z = player->pos.z + 400.0f;
+            }
             greatFox->vel.z = 0.0f;
             greatFox->info.bonus = 1;
             gCsFrameCount = 0;
             player->csState = 21;
-            player->draw = true;
+            if (!gTurretModeEnabled) {
+                player->draw = true;
+            }
 
             for (i = 0; i < 9; i++) {
                 D_ctx_80177A48[i] = 0.0f;
@@ -1399,7 +1413,12 @@ void Fortuna_LevelComplete(Player* player) {
                 src.y = D_ctx_80177A48[7];
                 src.z = D_ctx_80177A48[5];
                 Matrix_Translate(gCalcMatrix, player->pos.x, 0.0f, player->pos.z + gPathProgress, MTXF_NEW);
-                Matrix_RotateY(gCalcMatrix, -(D_ctx_80177A48[4] * M_DTOR), MTXF_APPLY);
+                if (gTurretModeEnabled) {
+                    Matrix_RotateY(gCalcMatrix, (D_ctx_80177A48[4] * M_DTOR), MTXF_APPLY);
+                } else {
+                    Matrix_RotateY(gCalcMatrix, -(D_ctx_80177A48[4] * M_DTOR), MTXF_APPLY);
+                }
+                
                 Matrix_MultVec3f(gCalcMatrix, &src, &dest);
                 player->cam.eye.x = gCsCamEyeX = dest.x;
                 player->cam.eye.y = gCsCamEyeY = dest.y;

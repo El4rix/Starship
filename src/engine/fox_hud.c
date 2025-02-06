@@ -5428,6 +5428,365 @@ void Aquas_CsLevelStart(Player* player) {
     Math_SmoothStepToF(&player->cam.at.z, gCsCamAtZ, D_ctx_80177A48[0], 50000.0f, 0.0f);
 }
 
+void Turret_Aquas_CsLevelStart(Player* player) {
+    Vec3f D_800D22D8[] = { { -1730.0f, 1600.0f, -6690.0f },
+                           { -830.0f, 1600.0f, -7380.0f },
+                           { 0.0f, 1600.0f, -7380.0f } };
+    Vec3f D_800D22FC[] = { { 0.0f, 0.0f, 0.0f }, { 190.0f, 2570.0f, -4740.0f }, { 0.0f, 0.0f, 0.0f } };
+    Vec3f D_800D2320[] = { { 50.0f, -165.0f, -900.0f },   { -100.0f, -165.0f, -900.0f }, { -100.0f, -165.0f, -850.0f },
+                           { -200.0f, -165.0f, -800.0f }, { -200.0f, -165.0f, -750.0f }, { -240.0f, -165.0f, -700.0f },
+                           { -240.0f, -165.0f, -650.0f }, { -280.0f, -165.0f, -600.0f }, { -280.0f, -165.0f, -550.0f },
+                           { -320.0f, -165.0f, -500.0f }, { -320.0f, -165.0f, -450.0f }, { -360.0f, -165.0f, -400.0f },
+                           { -360.0f, -165.0f, -350.0f }, { -400.0f, -165.0f, -300.0f }, { -400.0f, -165.0f, -250.0f },
+                           { -440.0f, -165.0f, -200.0f }, { -440.0f, -165.0f, -150.0f }, { -480.0f, -165.0f, -100.0f },
+                           { -480.0f, -165.0f, -50.0f },  { -520.0f, -165.0f, 0.0f },    { -520.0f, -165.0f, 50.0f },
+                           { -560.0f, -165.0f, 100.0f },  { -560.0f, -165.0f, 150.0f },  { -600.0f, -165.0f, 200.0f },
+                           { -600.0f, -165.0f, 250.0f },  { -640.0f, -165.0f, 300.0f },  { -640.0f, -165.0f, 350.0f },
+                           { -680.0f, -165.0f, 400.0f },  { -680.0f, -165.0f, 450.0f },  { -720.0f, -165.0f, 500.0f },
+                           { -720.0f, -165.0f, 550.0f },  { -50.0f, -165.0f, -900.0f } };
+    Vec3f src, dest;
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 stepSize;
+    f32 temp2;
+    f32 temp;
+    s32 i;
+    s32 j;
+    Actor* actor;
+
+    actor = &gActors[0];
+
+    switch (player->csState) {
+
+        case 0:
+            Aquas_CsIntroGreatFox_Init();
+            gCsFrameCount = 0;
+            gDrawBackdrop = 1;
+            gAqDrawMode = 1;
+            player->draw = false;
+            player->csState = 1;
+            player->unk_208 = 0;
+            player->baseSpeed = 0.0f;
+
+            gFillScreenAlpha = 255;
+            gFillScreenRed = gFillScreenGreen = gFillScreenBlue = 0;
+            gFillScreenAlphaTarget = 0;
+
+            player->cam.eye.x = gCsCamEyeX = -3061.2f;
+            player->cam.eye.y = gCsCamEyeY = 1745.9f;
+            player->cam.eye.z = gCsCamEyeZ = -5786.0f;
+
+            player->cam.at.x = gCsCamAtX = 300.0f;
+            player->cam.at.y = gCsCamAtY = 2200.0f;
+            player->cam.at.z = gCsCamAtZ = -5700.0f;
+
+            D_801616A0.x = 5.18f;
+            D_801616A0.y = 124.17f;
+            D_801616A0.z = 0.00f;
+
+            actor->rot_0F4.y = 30.0f;
+
+            D_ctx_80177A48[5] = 14.0f;
+            D_ctx_80177A48[0] = 0.2f;
+            D_ctx_80177A10[6] = 0;
+            D_ctx_80177A10[7] = 0;
+            D_801616B0.x = D_801616B0.y = D_801616B0.z = 0.0f;
+            D_ctx_80177A48[7] = 0.0f;
+
+        case 1:
+            if ((player->unk_208 == 0) && (gCsFrameCount < 250)) {
+                i = RAND_INT(64.0f);
+                if (i < 32) {
+                    for (j = 0; j < 4; j++) {
+                        src.x = D_800D2320[i].x;
+                        src.y = D_800D2320[i].y + RAND_FLOAT(12.0f);
+                        src.z = D_800D2320[i].z;
+
+                        Matrix_Translate(gCalcMatrix, actor->obj.pos.x, actor->obj.pos.y, actor->obj.pos.z, MTXF_NEW);
+                        Matrix_RotateY(gCalcMatrix, M_DTOR * 30.0f, MTXF_APPLY);
+                        Matrix_MultVec3f(gCalcMatrix, &src, &dest);
+
+                        x = dest.x;
+                        y = dest.y;
+                        z = dest.z;
+
+                        Aquas_Effect363_Spawn(x, y, z, 20.0f);
+
+                        i = (i + 1) % 32;
+                    }
+                } else {
+                    i -= 32;
+                    for (j = 0; j < 4; j++) {
+                        src.x = -D_800D2320[i].x;
+                        src.y = D_800D2320[i].y + RAND_FLOAT(12.0f);
+                        src.z = D_800D2320[i].z;
+
+                        Matrix_Translate(gCalcMatrix, actor->obj.pos.x, actor->obj.pos.y, actor->obj.pos.z, MTXF_NEW);
+                        Matrix_RotateY(gCalcMatrix, M_DTOR * 30.0f, MTXF_APPLY);
+                        Matrix_MultVec3f(gCalcMatrix, &src, &dest);
+
+                        x = dest.x;
+                        y = dest.y;
+                        z = dest.z;
+
+                        Aquas_Effect363_Spawn(x, y, z, 20.0f);
+
+                        i = (i + 1) % 32;
+                    }
+                }
+                player->unk_208 = RAND_INT(3.0f) + 1;
+            } else {
+                player->unk_208--;
+            }
+
+            if (D_ctx_80177A10[6] < 3) {
+                i = D_ctx_80177A10[6];
+                stepSize = D_ctx_80177A48[5];
+
+                src.x = gCsCamEyeX;
+                src.y = gCsCamEyeY;
+                src.z = gCsCamEyeZ;
+
+                dest.x = D_800D22D8[i].x;
+                dest.y = D_800D22D8[i].y;
+                dest.z = D_800D22D8[i].z;
+
+                if (Math_PursueVec3f(&src, &dest, &D_801616A0, stepSize, 0.4f, 4.8f, stepSize)) {
+                    if (D_ctx_80177A10[6] == 0) {
+                        D_ctx_80177A10[7]++;
+                    }
+                    D_ctx_80177A10[6]++;
+                }
+                gCsCamEyeX = src.x;
+                gCsCamEyeY = src.y;
+                gCsCamEyeZ = src.z;
+            }
+
+            if (D_ctx_80177A10[7] == 1) {
+                i = D_ctx_80177A10[7];
+                stepSize = D_ctx_80177A48[5];
+
+                src.x = gCsCamAtX;
+                src.y = gCsCamAtY;
+                src.z = gCsCamAtZ;
+
+                dest.x = D_800D22FC[i].x;
+                dest.y = D_800D22FC[i].y;
+                dest.z = D_800D22FC[i].z;
+
+                if (D_ctx_80177A10[6] <= D_ctx_80177A10[7]) {
+                    if (Math_PursueVec3f(&src, &dest, &D_801616B0, stepSize, 0.4f, 4.8f, stepSize)) {
+                        D_ctx_80177A10[7]++;
+                    }
+                }
+
+                gCsCamAtX = src.x;
+                gCsCamAtY = src.y;
+                gCsCamAtZ = src.z;
+            }
+
+            if (gCsFrameCount >= 50) {
+                // clang-format off
+	        if (gFillScreenAlpha == 255) { player->csState = 2; }
+                // clang-format on
+                gFillScreenRed = gFillScreenGreen = gFillScreenBlue = 255;
+                gFillScreenAlphaTarget = 255;
+                Math_SmoothStepToF(&D_ctx_80177A48[7], 16.0f, 0.04f, 0.05f, 0.0f);
+                gFillScreenAlphaStep = D_ctx_80177A48[7];
+            }
+            break;
+
+        case 2:
+            gPlayerGlareAlphas[0] = 0;
+
+            D_ctx_80177A10[0] = gLight1R;
+            D_ctx_80177A10[1] = gLight1G;
+            D_ctx_80177A10[2] = gLight1B;
+            D_ctx_80177A10[3] = gAmbientR;
+            D_ctx_80177A10[4] = gAmbientG;
+            D_ctx_80177A10[5] = gAmbientB;
+
+            gLight1R = 40;
+            gLight1G = 100;
+            gLight1B = 120;
+
+            gAmbientR = 20;
+            gAmbientG = 30;
+            gAmbientB = 50;
+
+            D_ctx_80177A48[2] = 0.0f;
+            D_ctx_80177A48[3] = -1600.0f;
+            D_ctx_80177A48[4] = 520.0f;
+
+            player->csState = 3;
+
+            gDrawBackdrop = 0;
+
+            player->camRoll = 60.0f;
+            player->csTimer = 1000;
+
+            player->rot.y = 30.0f;
+
+            player->pos.z = -5100.0f;
+            player->pos.x = -50.0f;
+            player->pos.y = 1200.0f;
+
+            gFillScreenAlphaTarget = 0;
+
+            Aquas_801BDF14();
+
+            AUDIO_PLAY_BGM(NA_BGM_START_DEMO_M);
+
+        case 3:
+            gFillScreenAlphaStep = 16;
+
+            Math_SmoothStepToF(&D_ctx_80177A48[4], -2000.0f, 1.00f, 7.0f, 0.0f);              
+
+            src.x = D_ctx_80177A48[2];
+            src.y = D_ctx_80177A48[3];
+            src.z = D_ctx_80177A48[4];
+
+            Matrix_Translate(gCalcMatrix, actor->obj.pos.x, actor->obj.pos.y, actor->obj.pos.z, MTXF_NEW);
+            Matrix_RotateY(gCalcMatrix, M_DTOR * 30.0f, MTXF_APPLY);
+            Matrix_MultVec3f(gCalcMatrix, &src, &dest);
+
+            gCsCamEyeX = dest.x;
+            gCsCamEyeY = dest.y;
+            gCsCamEyeZ = dest.z;
+
+            player->cam.at.x = gCsCamAtX = gCsCamEyeX;
+            player->cam.at.y = gCsCamAtY = gCsCamEyeY + 100.0f;
+            player->cam.at.z = gCsCamAtZ = gCsCamEyeZ + 10.0f;
+
+            player->cam.eye.x = gCsCamEyeX;
+            player->cam.eye.y = gCsCamEyeY;
+            player->cam.eye.z = gCsCamEyeZ;
+
+            if (player->csTimer < 736) {
+                //player->csState = 4;
+                gAqDrawMode = 1;
+                gFillScreenRed = gFillScreenGreen = gFillScreenBlue = 255;
+                gFillScreenAlphaTarget = 255;
+                if (gFillScreenAlpha == 255) {
+                    player->csState = 5;
+                }
+            }
+            break;
+
+        case 4:
+            if (gFillScreenAlpha == 255) {
+                player->csState = 5;
+            }
+            break;
+
+        case 5:
+            player->pos.x = 0.0f;
+            player->pos.y = 350.0f;
+            player->pos.z = 0.0f;
+
+            player->cam.eye.x = player->pos.x * (600.0f / player->pathWidth);
+            player->cam.eye.y = player->pos.y * (1040.0f / player->pathHeight);
+            player->cam.eye.y -= 50.0f;
+
+            player->cam.at.x = player->pos.x * (600.0f / player->pathWidth);
+            player->cam.at.y = player->pos.y * (1050.0f / player->pathHeight);
+            player->cam.at.y += player->xRock * 10.0f;
+
+            player->pos.z += 1000.0f;
+            player->camRoll = 0.0f;
+
+            D_ctx_80177A48[0] = 0.1f;
+
+            player->rot.y = 0.0f;
+            player->baseSpeed = 20.0f;
+            player->draw = true;
+            player->csState = 6;
+
+            player->csTimer = 1000;
+
+            gAqDrawMode = 0;
+            gFillScreenAlphaTarget = 0;
+
+            Object_Kill(&actor->obj, actor->sfxSource);
+
+            player->cam.eye.z = gCsCamEyeZ = 800.0f;
+            player->cam.at.z = gCsCamAtZ = 0.0f;
+
+        case 6:
+            player->xRock = SIN_DEG(player->rockPhase * 0.7f) * 0.5f;
+            player->bobPhase += 10.0f;
+            player->rockPhase += 8.0f;
+            player->yBob = -SIN_DEG(player->bobPhase) * 0.5f;
+            player->rockAngle = SIN_DEG(player->rockPhase) * 1.5f;
+
+            gCsCamEyeX = player->pos.x * (600.0f / player->pathWidth);
+            gCsCamEyeY = player->pos.y * (740.0f / player->pathHeight);
+            gCsCamEyeY -= -50.0f;
+
+            gCsCamAtX = player->pos.x * (600.0f / player->pathWidth);
+            gCsCamAtY = player->pos.y * (750.0f / player->pathHeight);
+            gCsCamAtY += player->xRock * 10.0f;
+
+            Math_SmoothStepToF(&player->pos.z, 0.0f, 0.1f, 40.0f, 0.1f);
+
+            D_ctx_80177A48[0] = 0.03f;
+            gCsCamEyeZ = 240.0f;
+            gCsCamAtZ = player->pos.z + (gPathProgress - 1.0f);
+
+            if (((player->csTimer % 2) == 0) && (player->csTimer > 962)) {
+                Aquas_Effect363_Spawn(player->pos.x, player->pos.y, player->pos.z + 50.0f, 20.0f);
+            }
+
+            if (player->csTimer <= 900) {
+                gLevelStartStatusScreenTimer = 50;
+
+                player->state = PLAYERSTATE_ACTIVE;
+                player->csState = 0;
+                player->csTimer = 0;
+
+                gLoadLevelObjects = 1;
+                SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 50);
+                SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_FANFARE, 50);
+                AUDIO_PLAY_BGM(NA_BGM_STAGE_AQ);
+            }
+
+            Aquas_Effect366_Spawn(player->pos.x + RAND_FLOAT_CENTERED(10.0f),
+                                  player->pos.y + RAND_FLOAT_CENTERED(10.0f),
+                                  player->pos.z - 65.0f + RAND_FLOAT_CENTERED(10.0f), 0.4f, 1);
+            break;
+
+        default:
+            break;
+    }
+
+    Matrix_RotateY(gCalcMatrix, M_DTOR * (player->rot.y + player->yRot_114 + 180.0f), MTXF_NEW);
+    Matrix_RotateX(gCalcMatrix, -(M_DTOR * player->rot.x), MTXF_APPLY);
+
+    src.x = 0.0f;
+    src.y = 0.0f;
+    src.z = player->baseSpeed;
+
+    Matrix_MultVec3fNoTranslate(gCalcMatrix, &src, &dest);
+
+    player->vel.x = dest.x;
+    player->vel.y = dest.y;
+    player->vel.z = dest.z;
+
+    player->pos.x += player->vel.x;
+    player->pos.y += player->vel.y;
+    gPathTexScroll -= player->vel.z;
+
+    player->bankAngle = player->rot.z + player->zRotBank + player->zRotBarrelRoll;
+
+    Math_SmoothStepToF(&player->cam.eye.x, gCsCamEyeX, D_ctx_80177A48[0], 50000.0f, 0.0f);
+    Math_SmoothStepToF(&player->cam.eye.y, gCsCamEyeY, D_ctx_80177A48[0], 50000.0f, 0.0f);
+    Math_SmoothStepToF(&player->cam.eye.z, gCsCamEyeZ, D_ctx_80177A48[0], 50000.0f, 0.0f);
+    Math_SmoothStepToF(&player->cam.at.x, gCsCamAtX, D_ctx_80177A48[0], 50000.0f, 0.0f);
+    Math_SmoothStepToF(&player->cam.at.y, gCsCamAtY, D_ctx_80177A48[0], 50000.0f, 0.0f);
+    Math_SmoothStepToF(&player->cam.at.z, gCsCamAtZ, D_ctx_80177A48[0], 50000.0f, 0.0f);
+}
+
 // unused data
 s32 D_800D24A0[] = { 60, 200 };
 f32 D_800D24A8[] = { 0.0f, 10.0f, 20.0f, 5.0f, 7.0f, 13.0f };
@@ -5854,7 +6213,11 @@ void Aquas_CsLevelComplete(Player* player) {
             player->boostSpeed = player->yRot_114 = 0.0f;
             player->baseSpeed = 3.6f;
             player->trueZpos = player->pos.z = 0.0f;
-            player->pos.y = 100.0f;
+            if (gTurretModeEnabled) {
+                player->pos.y = 200.0f;
+            } else {
+                player->pos.y = 100.0f;
+            }
             player->pos.x = -100.0f;
             player->barrelRollAlpha = 0;
             player->unk_17C = player->unk_180 = 0.0f;

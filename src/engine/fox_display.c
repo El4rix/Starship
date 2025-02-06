@@ -610,7 +610,10 @@ void Display_ArwingWings(ArwingInfo* arwing) {
         Animation_DrawSkeleton(1, D_arwing_3016610, gPlayer[0].jointTable, Display_ArwingWingsOverrideLimbDraw, NULL,
                                arwing, &gIdentityMatrix);
     } else if ((gGameState == GSTATE_PLAY) && (gTurretModeEnabled)) {
-        if (arwing->drawFace == 1) {
+        if ((gCurrentLevel == LEVEL_FORTUNA) && (gPlayer[0].csState == -1)) {
+            Animation_DrawSkeleton(1, D_arwing_3016610, gPlayer[0].jointTable, Display_ArwingWingsOverrideLimbDraw, NULL,
+                                arwing, &gIdentityMatrix);
+        } else if ((arwing->drawFace == 1) && (gPlayer[0].draw)) {
             Cutscene_DrawGreatFox();
         } else {
             Animation_DrawSkeleton(1, D_arwing_3016610, gPlayer[0].jointTable, Display_ArwingWingsOverrideLimbDraw, NULL,
@@ -1406,7 +1409,7 @@ void Display_Player_Update(Player* player, s32 reflectY) {
 
     if (player->draw) {
         Matrix_Push(&gGfxMatrix);
-        if (player->form == FORM_LANDMASTER) {
+        if ((player->form == FORM_LANDMASTER) && (!gTurretModeEnabled)) {
             if (player->grounded) {
                 Matrix_Translate(gGfxMatrix, 0.0f, gCameraShakeY, 0.0f, MTXF_APPLY);
             }
@@ -1464,7 +1467,16 @@ void Display_Player_Update(Player* player, s32 reflectY) {
                            MTXF_APPLY);
             Matrix_Translate(gCalcMatrix, player->xShake, player->yBob, 0.0f, MTXF_APPLY);
         } else {
-            Matrix_Translate(gGfxMatrix, player->pos.x, player->pos.y, player->trueZpos + player->zPath, MTXF_APPLY);
+            if ((!gTurretModeEnabled) || ((gCurrentLevel == LEVEL_CORNERIA) && (player->state == PLAYERSTATE_LEVEL_INTRO)) || (player->state == PLAYERSTATE_START_360) || ((gCurrentLevel == LEVEL_FORTUNA) && (player->csState == -1)) || ((gCurrentLevel == LEVEL_AQUAS) && (player->state == PLAYERSTATE_LEVEL_COMPLETE))) {
+                Matrix_Translate(gGfxMatrix, player->pos.x, player->pos.y, player->trueZpos + player->zPath, MTXF_APPLY);
+                if ((gCurrentLevel == LEVEL_AQUAS) && (player->state == PLAYERSTATE_LEVEL_COMPLETE)) {
+                    Matrix_Scale(gGfxMatrix, 0.1f, 0.1f, 0.1f, MTXF_APPLY);
+                }
+            } else if (player->state != PLAYERSTATE_ACTIVE) {
+                Matrix_Translate(gGfxMatrix, player->pos.x + (1400 * SIN_DEG(player->rot.y)), player->pos.y - (1400 * SIN_DEG(player->rot.x)), player->trueZpos + player->zPath + (1400 * COS_DEG(player->rot.y)), MTXF_APPLY);
+            } else {
+                Matrix_Translate(gGfxMatrix, player->pos.x, player->pos.y + 25, player->trueZpos + player->zPath + 1075, MTXF_APPLY);
+            }
             if (gVersusMode) {
                 for (i = 0; i < gCamCount; i++) {
                     if (gVsLockOnTimers[player->num][i] != 0) {
@@ -1484,14 +1496,25 @@ void Display_Player_Update(Player* player, s32 reflectY) {
                 Matrix_Pop(&gGfxMatrix);
                 return;
             }
-            Matrix_RotateY(gGfxMatrix, (player->yRot_114 + player->rot.y + player->damageShake + 180.0f) * M_DTOR,
+            if (!gTurretModeEnabled) {
+                Matrix_RotateY(gGfxMatrix, (player->yRot_114 + player->rot.y + player->damageShake + 180.0f) * M_DTOR,
                            MTXF_APPLY);
-            Matrix_RotateX(
-                gGfxMatrix,
-                -((player->xRot_120 + player->rot.x + player->aerobaticPitch + player->damageShake) * M_DTOR),
-                MTXF_APPLY);
-            Matrix_RotateZ(gGfxMatrix, -((player->bankAngle + player->rockAngle + player->damageShake) * M_DTOR),
+                Matrix_RotateX(
+                    gGfxMatrix,
+                    -((player->xRot_120 + player->rot.x + player->aerobaticPitch + player->damageShake) * M_DTOR),
+                    MTXF_APPLY);
+                Matrix_RotateZ(gGfxMatrix, -((player->bankAngle + player->rockAngle + player->damageShake) * M_DTOR),
+                            MTXF_APPLY);
+            } else if ((gTurretModeEnabled) && (player->state != PLAYERSTATE_ACTIVE)) {
+                Matrix_RotateY(gGfxMatrix, (player->yRot_114 + player->rot.y + player->damageShake + 180.0f) * M_DTOR,
                            MTXF_APPLY);
+                Matrix_RotateX(
+                    gGfxMatrix,
+                    -((player->xRot_120 + player->rot.x + player->aerobaticPitch + player->damageShake) * M_DTOR),
+                    MTXF_APPLY);
+            } else if ((gTurretModeEnabled) && (player->state == PLAYERSTATE_ACTIVE)) {
+                Matrix_RotateY(gGfxMatrix, ((player->pos.x - turretDestX) / 2.5 + 180.0f) * M_DTOR, MTXF_APPLY);
+            }
             Matrix_Translate(gGfxMatrix, player->xShake, player->yBob, 0.0f, MTXF_APPLY);
             Matrix_SetGfxMtx(&gMasterDisp);
         }

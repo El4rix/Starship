@@ -411,6 +411,9 @@ void Katina_LevelStart(Player* player) {
 
             if (gCsFrameCount == 120) {
                 ActorAllRange_SpawnTeam();
+                if (gTurretModeEnabled) {
+                    player->draw = true;
+                }
                 player->csState = 13;
                 player->pos.x = 0.0f;
                 player->pos.y = 1300.0f;
@@ -430,16 +433,23 @@ void Katina_LevelStart(Player* player) {
             break;
 
         case 13:
+            if (gTurretModeEnabled) {
+                player->cam.eye.x = gCsCamEyeX = 500.0f;
+            } else {
+                player->cam.eye.x = gCsCamEyeX = 100.0f;
+            }
             player->cam.at.x = gCsCamAtX = player->pos.x;
             player->cam.at.y = gCsCamAtY = player->pos.y;
             player->cam.at.z = gCsCamAtZ = player->pos.z;
-            player->cam.eye.x = gCsCamEyeX = 100.0f;
             player->cam.eye.z = gCsCamEyeZ = 7000.0f;
 
             if (gCsFrameCount == 240) {
                 Object_Kill(&gActors[4].obj, gActors[4].sfxSource);
                 Object_Kill(&gActors[6].obj, gActors[6].sfxSource);
                 player->state = PLAYERSTATE_ACTIVE;
+                if (gTurretModeEnabled) {
+                    player->draw = false;
+                }
                 player->unk_014 = 0.0001f;
 
                 AUDIO_PLAY_BGM(gBgmSeqId);
@@ -1783,10 +1793,20 @@ void Katina_SFTeam_LevelComplete_Update(void) {
             actor->obj.pos.z = (sCsLevelCompleteActorPos[i].z + gPlayer[0].pos.z) + RAND_FLOAT_SEEDED(1000.0f);
 
             actor->rot_0F4.z = RAND_FLOAT_CENTERED_SEEDED(200.0f);
-
-            actor->vwork[0].x = (sCsLevelCompleteActorPos[i].x * 0.5f) + gPlayer[0].pos.x;
-            actor->vwork[0].y = sCsLevelCompleteActorPos[i].y + gPlayer[0].pos.y;
-            actor->vwork[0].z = sCsLevelCompleteActorPos[i].z + gPlayer[0].pos.z;
+            
+            if ((gTurretModeEnabled)) {
+                actor->vwork[0].x = (sCsLevelCompleteActorPos[i].x * 0.5f) + gPlayer[0].pos.x;
+                actor->vwork[0].y = sCsLevelCompleteActorPos[i].y + gPlayer[0].pos.y - 200;
+                if (i == 2) {
+                    actor->vwork[0].z = sCsLevelCompleteActorPos[i].z + gPlayer[0].pos.z - 1500;
+                } else {
+                    actor->vwork[0].z = sCsLevelCompleteActorPos[i].z + gPlayer[0].pos.z - 500;
+                }
+            } else {
+                actor->vwork[0].x = (sCsLevelCompleteActorPos[i].x * 0.5f) + gPlayer[0].pos.x;
+                actor->vwork[0].y = sCsLevelCompleteActorPos[i].y + gPlayer[0].pos.y;
+                actor->vwork[0].z = sCsLevelCompleteActorPos[i].z + gPlayer[0].pos.z;
+            }            
 
             actor->state = 1;
 
@@ -1830,7 +1850,9 @@ void Katina_LevelComplete(Player* player) {
         case 0:
             Audio_StopSfxByBankAndSource(1, &player->sfxSource[0]);
             gCsFrameCount = 0;
-            player->draw = true;
+            if (!gTurretModeEnabled) {
+                player->draw = true;
+            }
 
             player->pos.x = boss->obj.pos.x;
             player->pos.y = 800.0f;
@@ -1917,6 +1939,10 @@ void Katina_LevelComplete(Player* player) {
         case 2:
             if (player->csTimer == 0) {
                 player->hideShadow = true;
+
+                if (gTurretModeEnabled) {
+                    player->draw = true;
+                }
 
                 player->pos.x = 0.0f;
                 player->pos.y = 3500.0f;
@@ -2050,7 +2076,9 @@ void Katina_LevelComplete(Player* player) {
             break;
 
         case 100:
-            Katina_SFTeamFleeUpdate(&gActors[1], 0);
+            if (!gTurretModeEnabled) {
+                Katina_SFTeamFleeUpdate(&gActors[1], 0);
+            }
             if (gTeamShields[TEAM_ID_FALCO] > 0) {
                 Katina_SFTeamFleeUpdate(&gActors[2], 1);
             }

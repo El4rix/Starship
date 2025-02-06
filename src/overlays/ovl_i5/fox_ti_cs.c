@@ -29,7 +29,11 @@ void Titania_801875D0(ActorCutscene* this, s32 arg1) {
     this->obj.id = OBJ_ACTOR_CUTSCENE;
 
     this->obj.pos.x = D_i5_801B72A0[arg1].x;
-    this->obj.pos.y = D_i5_801B72A0[arg1].y + 3000.0f;
+    if (gTurretModeEnabled) {
+        this->obj.pos.y = gPlayer[0].pos.y - 1000;
+    } else {
+        this->obj.pos.y = D_i5_801B72A0[arg1].y + 3000.0f;
+    }
     this->obj.pos.z = D_i5_801B72A0[arg1].z;
 
     this->obj.rot.y = 180.0f;
@@ -52,7 +56,11 @@ void Titania_LevelStart(Player* player) {
             gTiStartLandmaster = 1;
             player->gravity = 0.0f;
 
-            Titania_80187530(&gActors[3]);
+            if (gTurretModeEnabled) {
+                player->draw = true;
+            } else {
+                Titania_80187530(&gActors[3]);
+            }
 
             if (gTeamShields[TEAM_ID_FALCO] > 0) {
                 Titania_801875D0(&gActors[10], 0);
@@ -87,7 +95,7 @@ void Titania_LevelStart(Player* player) {
             gCsCamEyeY = actor->obj.pos.y - 500.0f;
             gCsCamEyeZ = actor->obj.pos.z - 750.0f;
 
-            if (gCsFrameCount == 330) {
+            if ((gCsFrameCount == 330) && (!gTurretModeEnabled)) {
                 Radio_PlayMessage(gMsg_ID_4113, RCID_FOX);
             }
 
@@ -208,6 +216,13 @@ void Titania_LevelStart(Player* player) {
                     D_ctx_80177A10[0]++;
                     AUDIO_PLAY_SFX(NA_SE_TANK_GO_UP, player->sfxSource, 0);
                 }
+
+                if ((gTurretModeEnabled) && (player->pos.y < 150.0f)) {
+                    player->pos.y = 150.0f;
+                    Effect_Effect359_Spawn(RAND_FLOAT_CENTERED(30.0f) + player->pos.x, 30.0f,
+                                       RAND_FLOAT_CENTERED(30.0f) + player->trueZpos, RAND_FLOAT(2.0f) + 3.5f, 255, 12,
+                                       1);
+                }
             }
 
             if (player->pos.y < 100.0f) {
@@ -228,6 +243,9 @@ void Titania_LevelStart(Player* player) {
                 D_ctx_8017782C = true;
                 Play_InitEnvironment();
                 D_ctx_8017782C = false;
+                if (gTurretModeEnabled) {
+                    Audio_KillSfxById(NA_SE_TANK_GO_UP);
+                }
                 if ((gControllerHold[player->num].button & Z_TRIG) && (gControllerHold[player->num].button & R_TRIG)) {
                     Audio_KillSfxBySourceAndId(player->sfxSource, NA_SE_TANK_GO_UP);
                 }
@@ -506,6 +524,243 @@ void Titania_LevelComplete(Player* player) {
     }
 
     Math_SmoothStepToF(&player->cam.eye.x, gCsCamEyeX, D_ctx_80177A48[0], 20000.0f, 0.00f);
+    Math_SmoothStepToF(&player->cam.eye.y, gCsCamEyeY, D_ctx_80177A48[0], 20000.0f, 0.00f);
+    Math_SmoothStepToF(&player->cam.eye.z, gCsCamEyeZ, D_ctx_80177A48[0], 20000.0f, 0.00f);
+    Math_SmoothStepToF(&player->cam.at.x, gCsCamAtX, D_ctx_80177A48[0], 20000.0f, 0.00f);
+    Math_SmoothStepToF(&player->cam.at.y, gCsCamAtY, D_ctx_80177A48[0], 20000.0f, 0.00f);
+    Math_SmoothStepToF(&player->cam.at.z, gCsCamAtZ, D_ctx_80177A48[0], 20000.0f, 0.00f);
+
+    player->cam.at.y += camAtY;
+
+    if (gCsFrameCount == 1380) {
+        SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 60);
+        SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_FANFARE, 60);
+    }
+
+    if (gCsFrameCount > 1440) {
+        gFillScreenRed = gFillScreenGreen = gFillScreenBlue = 0;
+        gFillScreenAlphaTarget = 255;
+
+        if (gFillScreenAlpha == 255) {
+            player->state = PLAYERSTATE_NEXT;
+            gFadeoutType = 4;
+            Play_ClearObjectData();
+            Audio_FadeOutAll(10);
+            gLeveLClearStatus[LEVEL_TITANIA] = Play_CheckMedalStatus(150) + 1;
+        }
+    }
+}
+
+void Turret_Titania_LevelComplete(Player* player) {
+    f32 x;
+    f32 camAtY = 0.0f;
+    Vec3f src;
+    Vec3f dest;
+    s32 i;
+
+    switch (player->csState) {
+        case 0:
+            gCsFrameCount = gBossActive = gLoadLevelObjects = 0;
+
+            Play_ClearObjectData();
+
+            player->csState = 1;
+
+            D_ctx_80177A48[0] = 0.0f;
+            D_ctx_80177A48[1] = 0.0f;
+            D_ctx_80177A48[2] = 0.0f;
+            D_ctx_80177A48[3] = 250.0f;
+
+            Titania_80188108(&gActors[0], 0);
+
+            if (gTeamShields[TEAM_ID_FALCO] > 0) {
+                Titania_80188108(&gActors[1], 1);
+            }
+            if (gTeamShields[TEAM_ID_PEPPY] > 0) {
+                Titania_80188108(&gActors[2], 2);
+            }
+
+            Audio_KillSfxBySourceAndId(player->sfxSource, NA_SE_TANK_BURNER_HALF);
+
+        case 1:
+            Math_SmoothStepToF(D_ctx_80177A48, 0.1f, 1.0f, 0.01f, 0.0f);
+            Math_SmoothStepToF(&player->baseSpeed, 4.9f, 0.1f, 1.0f, 0.0f);
+            Math_SmoothStepToF(&player->camDist, 0.0f, 0.1f, 1.0f, 0.0f);
+
+            if (gCsFrameCount < 1120) {
+                Math_SmoothStepToF(&D_ctx_80177A48[1], 0.65f, 0.1f, 0.01f, 0.0f);
+            } else {
+                Math_SmoothStepToF(&D_ctx_80177A48[1], 0.0f, 0.1f, 0.02f, 0.0f);
+            }
+
+            D_ctx_80177A48[2] = D_ctx_80177A48[1] + D_ctx_80177A48[2];
+
+            Matrix_RotateX(gCalcMatrix, -10.0f * M_DTOR, MTXF_NEW);
+            Matrix_RotateY(gCalcMatrix, D_ctx_80177A48[2] * M_DTOR, MTXF_APPLY);
+
+            src.x = 0.0f;
+            src.y = 0.0f;
+            src.z = D_ctx_80177A48[3];
+
+            Matrix_MultVec3f(gCalcMatrix, &src, &dest);
+
+            gCsCamEyeX = player->pos.x + dest.x;
+            gCsCamEyeY = player->pos.y + dest.y;
+            gCsCamEyeZ = player->pos.z + player->zPath + dest.z + 50.0f;
+
+            if (gCsCamEyeY < 5.0f) {
+                gCsCamEyeY = 5.0f;
+            }
+
+            gCsCamAtX = player->pos.x;
+            gCsCamAtY = player->pos.y;
+            gCsCamAtZ = player->pos.z + player->zPath;
+
+            func_tank_80045130(player);
+            func_tank_80044868(player);
+            func_tank_80045678(player);
+            func_tank_80045E7C(player);
+            Player_UpdatePath(player);
+            Player_CollisionCheck(player);
+            Math_SmoothStepToF(&player->pos.y, 400.0f, 1.0f, 0.2f, 0.0f);
+            player->pos.y = 400;
+            break;
+
+        case 2:
+            Math_SmoothStepToF(D_ctx_80177A48, 0.1f, 1.0f, 0.01f, 0.0f);
+            gCsCamEyeX -= 2.5f;
+            gCsCamEyeZ -= 1.0f;
+
+            gCsCamAtX = player->pos.x;
+            gCsCamAtY = player->pos.y + 30.0f;
+            gCsCamAtZ = player->pos.z + player->zPath;
+
+            if (player->pos.y < 100.0f) {
+                camAtY = SIN_DEG(gGameFrameCount * 130.0f) * 3.0f;
+            }
+
+            Math_SmoothStepToF(&player->unk_170, 2.0f, 1.0f, 0.2f, 0.0f);
+            Math_SmoothStepToF(&player->unk_16C, 2.0f, 1.0f, 0.2f, 0.0f);
+
+            if (gCsFrameCount < 1470) {
+                Effect_Effect359_Spawn(RAND_FLOAT_CENTERED(30.0f) + (player->pos.x + 30.0f), 30.0f,
+                                       RAND_FLOAT_CENTERED(30.0f) + player->trueZpos, RAND_FLOAT(2.0f) + 3.5f, 255, 12,
+                                       1);
+            }
+
+            Effect_Effect359_Spawn(RAND_FLOAT_CENTERED(30.0f) + (player->pos.x - 30.0f), 30.0f,
+                                   RAND_FLOAT_CENTERED(30.0f) + player->trueZpos, RAND_FLOAT(2.0f) + 3.5f, 255, 12, 1);
+            Math_SmoothStepToF(&player->rockAngle, SIN_DEG(gGameFrameCount * 6.0f) * 18.0f, 0.1f, 100.0f, 0.0f);
+            Math_SmoothStepToF(&player->yBob, SIN_DEG(gGameFrameCount * 3.0f) * 5.0f, 0.1f, 100.0f, 0.0f);
+
+            x = SIN_DEG(gGameFrameCount * 4.0f) * -1.5f;
+
+            player->vel.x = x;
+            player->vel.y += 0.1f;
+            player->vel.z -= 0.17f;
+
+            player->pos.x += x;
+            player->pos.y += player->vel.y;
+            player->pos.z += player->vel.z;
+
+            player->trueZpos = player->pos.z;
+            break;
+    }
+
+    switch (gCsFrameCount) {
+        case 831:
+            gShowLevelClearStatusScreen = true;
+            break;
+
+        case 1031:
+            gShowLevelClearStatusScreen = false;
+            break;
+
+        case 50:
+            AUDIO_PLAY_BGM(NA_BGM_COURSE_CLEAR);
+            break;
+
+        case 80:
+            gLevelClearScreenTimer = 100;
+            break;
+
+        case 160:
+            Radio_PlayMessage(gMsg_ID_20010, RCID_FOX);
+            break;
+
+        case 248:
+            Radio_PlayMessage(gMsg_ID_4100, RCID_SLIPPY);
+            break;
+
+        case 380:
+            switch (gTeamShields[TEAM_ID_FALCO]) {
+                case -1:
+                    Radio_PlayMessage(gMsg_ID_20331, RCID_ROB64);
+                    break;
+
+                case 0:
+                    Radio_PlayMessage(gMsg_ID_20343, RCID_ROB64);
+                    break;
+
+                default:
+                    Radio_PlayMessage(gMsg_ID_4101, RCID_FALCO);
+                    break;
+            }
+
+            break;
+
+        case 525:
+            switch (gTeamShields[TEAM_ID_PEPPY]) {
+                case -1:
+                    Radio_PlayMessage(gMsg_ID_20332, RCID_ROB64);
+                    break;
+
+                case 0:
+                    Radio_PlayMessage(gMsg_ID_20344, RCID_ROB64);
+                    break;
+
+                default:
+                    Radio_PlayMessage(gMsg_ID_4102, RCID_PEPPY);
+                    break;
+            }
+            break;
+
+        case 671:
+            Radio_PlayMessage(gMsg_ID_4103, RCID_FOX);
+            break;
+
+        case 1200:
+            gActors[0].state++;
+            break;
+
+        case 1220:
+            gActors[1].state++;
+            break;
+
+        case 1240:
+            gActors[2].state++;
+            break;
+
+        case 1280:
+            gSceneSetup = 5;
+            break;
+
+        case 1300:
+            player->csState++;
+            D_ctx_80177A48[0] = 0.0f;
+            player->vel.z = 0.0f;
+            player->vel.y = 0.0f;
+            if (!gTurretModeEnabled) {
+                Titania_80188108(&gActors[3], 3);
+            }
+            gProjectFar = 30000.0f;
+            player->hideShadow = true;
+            Audio_StopPlayerNoise(0);
+            AUDIO_PLAY_SFX(NA_SE_TANK_GO_UP, player->sfxSource, 0);
+            break;
+    }
+
+    Math_SmoothStepToF(&player->cam.eye.x, gCsCamEyeX * 5.0f, D_ctx_80177A48[0], 20000.0f, 0.00f);
     Math_SmoothStepToF(&player->cam.eye.y, gCsCamEyeY, D_ctx_80177A48[0], 20000.0f, 0.00f);
     Math_SmoothStepToF(&player->cam.eye.z, gCsCamEyeZ, D_ctx_80177A48[0], 20000.0f, 0.00f);
     Math_SmoothStepToF(&player->cam.at.x, gCsCamAtX, D_ctx_80177A48[0], 20000.0f, 0.00f);

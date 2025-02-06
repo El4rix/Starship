@@ -1122,6 +1122,9 @@ void Solar_LevelStart(Player* player) {
             }
 
             if (gCsFrameCount == 410) {
+                if (gTurretModeEnabled) {
+                    player->draw = true;
+                }
                 player->csState++;
                 player->cam.eye.x = 200.0f;
                 gCsCamEyeX = 800.0f;
@@ -3159,6 +3162,10 @@ void Solar_LevelComplete(Player* player) {
                 player->arwing.bottomLeftFlapYrot = player->zRotBarrelRoll = player->zRotBank = player->boostSpeed =
                     0.0f;
             player->draw = true;
+            if (gTurretModeEnabled) {
+                player->pos.z -= 2700;
+                player->pos.y += 400;
+            }
 
             gCsCamEyeX = player->cam.eye.x;
             gCsCamEyeY = player->cam.eye.y;
@@ -3192,7 +3199,11 @@ void Solar_LevelComplete(Player* player) {
             gPathTexScroll += 30.0f;
 
             Math_SmoothStepToF(&player->rot.x, 0.0f, 0.1f, 5.0f, 0.0f);
-            Math_SmoothStepToF(&player->pos.y, 200.0f, 0.05f, 10.0f, 0.0f);
+            if (gTurretModeEnabled) {
+                Math_SmoothStepToF(&player->pos.y, 1500.0f, 1.0f, 5.0f, 0.0f);
+            } else {
+                Math_SmoothStepToF(&player->pos.y, 200.0f, 0.05f, 10.0f, 0.0f);
+            }
 
             dx = player->pos.x - boss->obj.pos.x;
             dz = (player->pos.z - boss->obj.pos.z) * 0.05f;
@@ -3201,7 +3212,11 @@ void Solar_LevelComplete(Player* player) {
             Math_SmoothStepToF(&gCsCamEyeY, 300.0f, 1.0f, 20.0f, 0.0f);
             Math_SmoothStepToF(&gCsCamAtY, 290.0f, 1.0f, 20.0f, 0.0f);
 
-            sp74 = Math_SmoothStepToAngle(&player->rot.y, sp78, 0.5f, 2.0f, 0.0001f) * 30.0f;
+            if (gTurretModeEnabled) {
+                sp74 = 30.0f;
+            } else {
+                sp74 = Math_SmoothStepToAngle(&player->rot.y, sp78, 0.5f, 2.0f, 0.0001f) * 30.0f;
+            }
 
             if (gCsFrameCount >= 14) {
                 Math_SmoothStepToAngle(&player->rot.z, sp74, 0.1f, 5.0f, 0.0001f);
@@ -3345,7 +3360,11 @@ void Solar_LevelComplete(Player* player) {
                 Math_SmoothStepToF(&player->cam.eye.z, (player->pos.z + gPathProgress) - 50.0f, 1.0f, 21.5f, 0.0f);
             }
             player->cam.at.x = gCsCamAtX = player->pos.x;
-            player->cam.at.y = gCsCamAtY = player->pos.y;
+            if (gTurretModeEnabled) {
+                player->cam.at.y = gCsCamAtY = player->pos.y + 28;
+            } else {
+                player->cam.at.y = gCsCamAtY = player->pos.y;
+            }
             player->cam.at.z = gCsCamAtZ = player->pos.z + gPathProgress;
             break;
 

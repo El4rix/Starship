@@ -1011,6 +1011,9 @@ void SectorY_8019AEEC(SyShogun* this) {
     if ((this->obj.pos.y != 365.0f) && (this->swork[21] != 1)) {
         if (this->work_04A != 0) {
             if (this->work_04A == 1) {
+                if (gTurretModeEnabled) {
+                    gPlayer[0].draw = true;
+                }
                 Audio_PlaySequence(SEQ_PLAYER_BGM, NA_BGM_REAL_BOSS, 0, 0);
                 this->work_04A++;
                 gPlayer[0].cam.eye.x = 0.0f;
@@ -2056,6 +2059,10 @@ void SectorY_8019EB80(void) {
         actor->vwork[0].y = D_i6_801A69FC[i].y + gPlayer[0].pos.y;
         actor->vwork[0].z = D_i6_801A69FC[i].z + gPlayer[0].pos.z;
 
+        if ((gTurretModeEnabled) && (i == 0)) {
+            actor->vwork[0].z -= 800;
+        }
+
         actor->state = 1;
         Object_SetInfo(&actor->info, actor->obj.id);
 
@@ -2679,6 +2686,9 @@ void SectorY_801A0AC0(Player* player) {
 
     switch (player->csState) {
         case 0:
+            if (gTurretModeEnabled) {
+            player->draw = true;
+            }
             gCsFrameCount = 0;
             for (i = 0; i < 5; i++) {
                 SectorY_801A0510(&gActors[i + 5], i);
