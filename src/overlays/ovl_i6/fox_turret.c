@@ -724,7 +724,7 @@ void Turret_Update360(Player* player) {
     Player_LowHealthAlarm(player);
 
     // Kill
-    if ((player->shields <= 0)/*  && (player->radioDamageTimer != 0) */) {
+    if ((player->shields <= 0) || (player->damage >= player->shields)/*  && (player->radioDamageTimer != 0) */) {
         Player_Down(player);
         player->vel.x *= 0.2f;
         player->vel.y = 5.0f;
@@ -808,21 +808,33 @@ void Turret_Update360(Player* player) {
 
     // the B button recenters the view straight ahead
     if (gControllerPress[player->num].button & B_BUTTON) {
-        player->unk_008 = 0.0f;
         player->unk_00C = 0.0f;
+        if (gCurrentLevel != LEVEL_SECTOR_Z) {
+            player->unk_008 = 0.0f;
+        }
     }
 
     // Quick look around
     if ((gControllerPress[player->num].button & R_JPAD) || (gControllerPress[player->num].button & R_CBUTTONS)) {
-        player->unk_008 += 90.0f;
-        player->unk_180 -= 30.0f;
+        if (gCurrentLevel == LEVEL_SECTOR_Z) {
+            player->unk_008 += 45.0f;
+            player->unk_180 -= 30.0f;
+        } else {
+            player->unk_008 += 90.0f;
+            player->unk_180 -= 30.0f;
+        }
     }
     if ((gControllerPress[player->num].button & L_JPAD) || (gControllerPress[player->num].button & L_CBUTTONS)) {
-        player->unk_008 -= 90.0f;
-        player->unk_180 += 30.0f;
+        if (gCurrentLevel == LEVEL_SECTOR_Z) {
+            player->unk_008 -= 45.0f;
+            player->unk_180 += 30.0f;
+        } else {
+            player->unk_008 -= 90.0f;
+            player->unk_180 += 30.0f;
+        }
     }
 
-    // Orbit Radius
+    // Change Orbit Radius
     if (turret360Speed != 0) {
         if ((turret360RadiusMod > (1000 - turret360Radius)) && ((gControllerHold[player->num].button & U_JPAD) || (gControllerHold[player->num].button & U_CBUTTONS))) {
             turret360RadiusMod -= 30.0f;
@@ -1260,7 +1272,7 @@ void Turret_Cutscene_LevelComplete(Player* player) {
                 Zoness_LevelComplete(player);
                 Player_FloorCheck(player);
             } else if (gCurrentLevel == LEVEL_VENOM_2) {
-                Venom2_LevelComplete(player);
+                Turret_Venom2_LevelComplete(player);
                 Player_FloorCheck(player);
             } else if (gCurrentLevel == LEVEL_METEO) {
                 if (gLevelPhase == 0) {
@@ -1276,7 +1288,6 @@ void Turret_Cutscene_LevelComplete(Player* player) {
                     AUDIO_PLAY_BGM(NA_BGM_COURSE_CLEAR);
                 }
                 Turret_Cutscene_CoComplete2(player);
-                //Cutscene_CoComplete2(player);
                 Player_FloorCheck(player);
             }
             Player_UpdateArwingRoll(player);

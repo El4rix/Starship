@@ -560,6 +560,11 @@ void ActorAllRange_UpdateStarWolfEvents(ActorAllRange* this) {
                             case AI360_PEPPY:
                                 ActorAllRange_PlayMessage(gMsg_ID_9180, RCID_PEPPY);
                                 break;
+                            case AI360_KATT:
+                                if (gTurretModeEnabled) {
+                                    ActorAllRange_PlayMessage(gMsg_ID_6042, RCID_KATT);
+                                }
+                                break;
                         }
                         gActors[actor->aiIndex].iwork[3] = 200;
                     }
@@ -929,11 +934,16 @@ void ActorAllRange_ApplyDamage(ActorAllRange* this) {
                 if (this->aiType == AI360_MISSILE) {
                     SectorZ_MissileExplode(this, true);
                     if (this->dmgSource == AI360_FOX + 1) {
-                        if (gActors[AI360_KATT].obj.status == OBJ_ACTIVE) {
+                        if ((gActors[AI360_KATT].obj.status == OBJ_ACTIVE) && (gTurretModeEnabled)) {
                             Radio_PlayMessage(gMsg_ID_16140, RCID_KATT);
                         }
-                        BonusText_Display(this->obj.pos.x, this->obj.pos.y, this->obj.pos.z, 10);
-                        gHitCount += 11;
+                        if (gTurretModeEnabled) {
+                            BonusText_Display(this->obj.pos.x, this->obj.pos.y, this->obj.pos.z, 5);
+                            gHitCount += 6;
+                        } else {
+                            BonusText_Display(this->obj.pos.x, this->obj.pos.y, this->obj.pos.z, 10);
+                            gHitCount += 11;
+                        }
                         D_ctx_80177850 = 15;
                     } else {
                         switch (this->dmgSource) {
@@ -1761,6 +1771,17 @@ void ActorAllRange_Update(ActorAllRange* this) {
                                         if ((gTeamHelpActor == NULL) || (gTeamShields[this->aiIndex] <= 50)) {
                                             gTeamHelpActor = &gActors[this->aiIndex];
                                             gTeamHelpTimer = 320;
+                                        }
+                                        break;
+
+                                    case AI360_KATT:
+                                        if (gTurretModeEnabled) {
+                                            ActorAllRange_PlayMessage(gMsg_ID_6041, RCID_KATT);
+                                            gActors[this->aiIndex].iwork[2] = this->aiType;
+                                            if ((gTeamHelpActor == NULL) || (gTeamShields[this->aiIndex] <= 50)) {
+                                                gTeamHelpActor = &gActors[this->aiIndex];
+                                                gTeamHelpTimer = 320;
+                                            }
                                         }
                                         break;
 

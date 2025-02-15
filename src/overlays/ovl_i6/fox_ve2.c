@@ -240,6 +240,13 @@ void Venom2_LevelStart(Player* player) {
         gFillScreenAlphaStep = 3;
         gFillScreenAlphaTarget = 0;
     }
+    if (gTurretModeEnabled) {
+        player->draw = true;
+        if (gCsFrameCount == 50) {
+            player->pos.z += 3000;
+            player->pos.y += 1000;
+        }
+    }
     Matrix_RotateY(gCalcMatrix, (player->yRot_114 + player->rot.y + 180.0f) * M_DTOR, MTXF_NEW);
     Matrix_RotateX(gCalcMatrix, -((player->xRot_120 + player->rot.x + player->aerobaticPitch) * M_DTOR), MTXF_APPLY);
     vec.x = 0.0f;
@@ -256,8 +263,13 @@ void Venom2_LevelStart(Player* player) {
     player->bankAngle = player->rot.z + player->zRotBank + player->zRotBarrelRoll;
     player->trueZpos = player->pos.z;
     player->cam.eye.x = 50.0f;
-    player->cam.eye.y = 1800.0f;
-    player->cam.eye.z = 9000.0f;
+    if (gTurretModeEnabled) {
+        player->cam.eye.y = 2400.0f;
+        player->cam.eye.z = 12000.0f;
+    } else {
+        player->cam.eye.y = 1800.0f;
+        player->cam.eye.z = 9000.0f;
+    }
     player->cam.at.x = player->pos.x;
     player->cam.at.y = player->pos.y;
     player->cam.at.z = player->pos.z;
@@ -504,6 +516,189 @@ void Venom2_LevelComplete(Player* player) {
     Math_SmoothStepToF(&player->cam.at.x, gCsCamAtX, D_ctx_80177A48[1], 100.0f, 0);
     Math_SmoothStepToF(&player->cam.at.y, gCsCamAtY, D_ctx_80177A48[1], 100.0f, 0);
     Math_SmoothStepToF(&player->cam.at.z, gCsCamAtZ, D_ctx_80177A48[1], 100.0f, 0);
+
+    player->bobPhase += 10.0f;
+    player->yBob = -SIN_DEG(player->bobPhase) * 0.3f;
+    player->rockPhase += 8.0f;
+    player->rockAngle = SIN_DEG(player->rockPhase);
+}
+
+void Turret_Venom2_LevelComplete(Player* player) {
+    s32 i;
+    s32 pad;
+    f32 sp94;
+    f32 sp90;
+    f32 sp8C;
+    f32 pad88;
+    f32 sp84;
+    f32 pad80;
+    f32 var_fa0;
+    f32 temp_fv1;
+    f32 sp74;
+    f32 sp70;
+    Vec3f sp64;
+    Vec3f sp58;
+    s32 pad2;
+
+    switch (player->csState) {
+        case 0:
+            gCsFrameCount = 0;
+            player->csState++;
+            player->arwing.drawFace = true;
+            player->draw = true;
+
+            player->pos.z = 15000;
+            player->pos.x = 0;
+            player->pos.y = 2000;
+
+            player->cam.at.z = gCsCamAtZ = player->pos.z;
+            player->cam.at.x = gCsCamAtX = player->pos.x;
+            player->cam.at.y = gCsCamAtY = player->pos.y;
+
+            player->cam.eye.z = gCsCamEyeZ = player->pos.z + 4000;
+            player->cam.eye.x = gCsCamEyeX = player->pos.x;
+            player->cam.eye.y = gCsCamEyeY = player->pos.y;
+
+            if (gLevelPhase == 2) {
+                player->csEventTimer = 240;
+            } else {
+                player->csEventTimer = 180;
+            }
+            SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 60);
+            SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_FANFARE, 60);
+            break;
+            
+        case 1:
+            if (gLevelPhase == 2) {
+                gFillScreenAlphaStep = 2;
+                gFillScreenAlphaTarget = 0;
+                gFillScreenRed = gFillScreenGreen = gFillScreenBlue = 255;
+            }
+
+            player->pos.y += 8;
+
+            if (gCsFrameCount == 50) {
+                AUDIO_PLAY_BGM(NA_BGM_DASH_INTO_BASE);
+            }
+
+            if (gCsFrameCount == 100) {
+                Radio_PlayMessage(gMsg_ID_8215, RCID_FOX);
+            }
+
+            if ((gCsFrameCount > 100) && (player->rot.x < 271)) {
+                Math_SmoothStepToF(&player->rot.x, 270, 0.75f, 1.0f, 0);
+                gBosses[0].obj.pos.z = player->pos.z;
+                gBosses[0].obj.pos.x = player->pos.x;
+            }
+            
+            gCsCamAtX = player->pos.x;
+            gCsCamAtY = player->pos.y;
+            gCsCamAtZ = player->pos.z;
+
+            gCsCamEyeZ = player->pos.z + ((5000 - (gCsFrameCount * 10)) * COS_DEG(gCsFrameCount * 1.3));
+            gCsCamEyeX = player->pos.x + ((5000 - (gCsFrameCount * 10)) * SIN_DEG(gCsFrameCount * 1.3));
+            Math_SmoothStepToF(&gCsCamEyeY, player->pos.y, 1.0, 10.0f, 0);
+
+            if (gCsFrameCount == 350) {
+                if ((gTeamShields[TEAM_ID_SLIPPY] > 0) || (gTeamShields[TEAM_ID_FALCO] > 0) ||
+                    (gTeamShields[TEAM_ID_PEPPY] > 0)) {
+                    Radio_PlayMessage(gMsg_ID_8230, RCID_FALCO);
+                    Radio_PlayMessage(gMsg_ID_8220, RCID_PEPPY);
+                    Radio_PlayMessage(gMsg_ID_8240, RCID_SLIPPY);
+                } else {
+                    Radio_PlayMessage(gMsg_ID_8205, RCID_FOX);
+                }
+            }
+
+            if (gCsFrameCount == 430) {
+                Audio_SetBgmParam(0);
+            }
+
+            if (gCsFrameCount > 480) {
+                player->csState++;
+                gCsCamEyeY = 4000;
+                AUDIO_PLAY_SFX(NA_SE_ARWING_BOOST, player->sfxSource, 0);
+            }
+
+            break;
+        
+        case 2:
+            player->draw = player->arwing.drawFace = false;
+
+            /* player->cam.eye.x = gCsCamEyeX = gBosses[0].obj.pos.x;
+            player->cam.eye.y = gCsCamEyeY -= 80;
+            player->cam.eye.z = gCsCamEyeZ = gBosses[0].obj.pos.z;
+
+            player->cam.at.x = gCsCamAtX = gBosses[0].obj.pos.x;
+            player->cam.at.y = gCsCamAtY = -5000;
+            player->cam.at.z = gCsCamAtZ = gBosses[0].obj.pos.z; */
+
+            gCsCamEyeY -= 80;
+
+            Math_SmoothStepToF(&gCsCamEyeX, gBosses[0].obj.pos.x - 10, 1.0, 10.0f, 0);
+            Math_SmoothStepToF(&gCsCamEyeZ, gBosses[0].obj.pos.z, 1.0, 10.0f, 0);
+
+            Math_SmoothStepToF(&gCsCamAtX, gBosses[0].obj.pos.x, 1.0, 10.0f, 0);
+            Math_SmoothStepToF(&gCsCamAtY, -1000, 1.0, 100.0f, 0);
+            Math_SmoothStepToF(&gCsCamAtZ, gBosses[0].obj.pos.z, 1.0, 10.0f, 0);
+
+            gBosses[0].fwork[1] = 150.0f;
+
+            gFillScreenAlphaTarget = 255;
+            gFillScreenAlphaStep = 4;
+            gFillScreenRed = gFillScreenGreen = gFillScreenBlue = 0;
+            if (gFillScreenAlpha == 255) {
+
+                for (i = 1; i < ARRAY_COUNT(gTeamShields); i++) {
+                    gPrevPlanetTeamShields[i] = gSavedTeamShields[i];
+                    gPrevPlanetSavedTeamShields[i] = gSavedTeamShields[i];
+                    gSavedTeamShields[i] = gTeamShields[i];
+                }
+
+                gNextGameState = GSTATE_PLAY;
+                gNextLevel = LEVEL_VENOM_ANDROSS;
+                if (gLeveLClearStatus[gCurrentLevel] != 0) {
+                    gNextLevelPhase = 1;
+                }
+                Audio_StopPlayerNoise(0);
+                Audio_KillSfxBySource(player->sfxSource);
+
+                for (i = 0; i < 200; i++) {
+                    gScenery360[i].obj.status = OBJ_FREE;
+                }
+            }
+            break;
+    }
+
+    Matrix_RotateY(gCalcMatrix, (player->yRot_114 + player->rot.y + 180.0f) * M_DTOR, MTXF_NEW);
+    Matrix_RotateX(gCalcMatrix, -((player->xRot_120 + player->rot.x + player->aerobaticPitch) * M_DTOR), MTXF_APPLY);
+
+    sp64.x = 0.0f;
+    sp64.y = 0.0f;
+
+    sp64.z = player->baseSpeed + player->boostSpeed;
+
+    Matrix_MultVec3fNoTranslate(gCalcMatrix, &sp64, &sp58);
+
+    player->vel.x = sp58.x;
+    player->vel.z = sp58.z;
+    player->vel.y = sp58.y;
+    player->pos.x += player->vel.x;
+    player->pos.y += player->vel.y;
+    player->pos.z += player->vel.z;
+    player->trueZpos = player->pos.z;
+    player->bankAngle = player->rot.z + player->zRotBank + player->zRotBarrelRoll;
+
+    Math_SmoothStepToF(&player->zRotBarrelRoll, 0.0f, 0.1f, 15.0f, 0.0f);
+    Math_SmoothStepToAngle(&player->aerobaticPitch, 0.0f, 0.1f, 5.0f, 0.0f);
+
+    Math_SmoothStepToF(&player->cam.eye.x, gCsCamEyeX, 1.0, 100.0f, 0);
+    Math_SmoothStepToF(&player->cam.eye.y, gCsCamEyeY, 1.0, 100.0f, 0);
+    Math_SmoothStepToF(&player->cam.eye.z, gCsCamEyeZ, 1.0, 100.0f, 0);
+
+    Math_SmoothStepToF(&player->cam.at.x, gCsCamAtX, 1.0, 100.0f, 0);
+    Math_SmoothStepToF(&player->cam.at.y, gCsCamAtY, 1.0, 100.0f, 0);
+    Math_SmoothStepToF(&player->cam.at.z, gCsCamAtZ, 1.0, 100.0f, 0);
 
     player->bobPhase += 10.0f;
     player->yBob = -SIN_DEG(player->bobPhase) * 0.3f;

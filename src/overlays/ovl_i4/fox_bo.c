@@ -118,11 +118,7 @@ void Bolse_8018BD60(ActorEvent* this) {
                 actor->aiIndex = -1;
                 actor->health = 24;
                 actor->iwork[11] = 1;
-                if (gTurretModeEnabled) {
-                    actor->itemDrop = DROP_SILVER_RING_10p;
-                } else {
-                    actor->itemDrop = DROP_SILVER_RING_50p;
-                }
+                actor->itemDrop = DROP_SILVER_RING_50p;
                 actor->aiType = i;
                 Object_SetInfo(&actor->info, actor->obj.id);
                 AUDIO_PLAY_SFX(NA_SE_ARWING_ENGINE_FG, actor->sfxSource, 4);
@@ -1212,6 +1208,11 @@ void Bolse_LevelStart(Player* player) {
 
             D_ctx_80177A48[0] = 1.0f;
             gFillScreenAlpha = gFillScreenAlphaTarget = 255;
+
+            if (gTurretModeEnabled) {
+                player->draw = true;
+                player->pos.x += 1000;
+            }
             break;
 
         case 1:
@@ -1219,6 +1220,9 @@ void Bolse_LevelStart(Player* player) {
             gCsCamAtX = 0.0f;
             gCsCamAtY = player->pos.y;
             gCsCamAtZ = player->pos.z;
+            if (gTurretModeEnabled) {
+                gCsCamAtX += 1000;
+            }
             D_ctx_80177A48[2] += 4.5f;
             sp60 = SIN_DEG(D_ctx_80177A48[2]) * 10.0f;
             player->rot.z = SIN_DEG(D_ctx_80177A48[2]) * -60.0f;
@@ -1286,6 +1290,9 @@ void Bolse_LevelStart(Player* player) {
                     }
 
                     gCsCamEyeX = -200.0f;
+                    if (gTurretModeEnabled) {
+                        gCsCamEyeX -= 300;
+                    }
                     gCsCamEyeY = 700.0f;
                     gCsCamEyeZ = 12000.0f;
                     gCsCamAtX = player->pos.x;
@@ -1319,6 +1326,9 @@ void Bolse_LevelStart(Player* player) {
             }
 
             if (gCsFrameCount == 270) {
+                if (gTurretModeEnabled) {
+                    player->draw = false;
+                }
                 player->state = PLAYERSTATE_ACTIVE;
                 player->baseSpeed = gArwingSpeed;
                 player->unk_014 = 0.0001f;
@@ -1435,6 +1445,9 @@ void Bolse_LevelComplete(Player* player) {
 
             if (player->csTimer == 0) {
                 player->csState = 5;
+                if (gTurretModeEnabled) {
+                    player->draw = true;
+                }
                 player->csTimer = 1000;
                 Audio_StopPlayerNoise(0);
                 Audio_KillSfxBySource(player->sfxSource);
@@ -1448,6 +1461,9 @@ void Bolse_LevelComplete(Player* player) {
 
                 player->pos.x = actor50->obj.pos.x;
                 player->pos.y = actor50->obj.pos.y;
+                if (gTurretModeEnabled) {
+                    player->pos.y += 600;
+                }
                 player->pos.z = actor50->obj.pos.z - 1000.0f;
 
                 player->rot.x = 0.0f;
@@ -1608,7 +1624,9 @@ void Bolse_LevelComplete(Player* player) {
             sp74.z = 800.0f;
 
             Matrix_MultVec3fNoTranslate(gCalcMatrix, &sp74, &sp68);
-
+            if (gTurretModeEnabled) {
+                sp68.x = 600.0f;
+            }
             gCsCamEyeX = gPlayer[0].pos.x + sp68.x;
             gCsCamEyeY = gPlayer[0].pos.y + sp68.y;
             gCsCamEyeZ = gPlayer[0].pos.z + 200.0f + sp68.z;

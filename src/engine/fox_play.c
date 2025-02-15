@@ -2983,13 +2983,13 @@ void Play_Init(void) {
 
             case LEVEL_KATINA:
                 Katina_Init();
-                if ((!D_ctx_8017782C) || (gTurretModeEnabled)) {
+                if (!D_ctx_8017782C) {
                     ActorAllRange_SpawnTeam();
                 }
                 break;
 
             case LEVEL_BOLSE:
-                if ((!D_ctx_8017782C) || (gTurretModeEnabled)) {
+                if (!D_ctx_8017782C) {
                     Bolse_LoadLevelObjects();
                     ActorAllRange_SpawnTeam();
                 }

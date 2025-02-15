@@ -6539,6 +6539,9 @@ void Venom1_LevelStart2(Player* player) {
                 player->csState = 2;
                 D_ctx_80177A48[1] = 400.0f;
                 AUDIO_PLAY_SFX(NA_SE_ARWING_DASH, player->sfxSource, 0);
+                if (gTurretModeEnabled) {
+                    player->draw = true;
+                }
             }
             break;
 
@@ -6555,7 +6558,9 @@ void Venom1_LevelStart2(Player* player) {
             player->boostMeter = 1;
             player->csTimer = 60;
 
-            Player_ArwingBoost(player);
+            if (!gTurretModeEnabled) {
+                Player_ArwingBoost(player);
+            }
 
             gControllerRumbleFlags[0] = 0;
             gControllerHold[player->num].button = button;
@@ -6573,6 +6578,9 @@ void Venom1_LevelStart2(Player* player) {
                 gLevelStartStatusScreenTimer = 50;
                 player->state = PLAYERSTATE_ACTIVE;
                 player->baseSpeed = gArwingSpeed;
+                if (gTurretModeEnabled) {
+                    gPlayer[0].baseSpeed = 40.0f;
+                }
                 player->csState = 0;
                 player->csTimer = 0;
                 player->unk_014 = 0.0f;

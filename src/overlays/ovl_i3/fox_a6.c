@@ -2799,7 +2799,9 @@ void Area6_LevelComplete(Player* player) {
             }
 
             if (gCsFrameCount == 300) {
-                player->draw = true;
+                if (!gTurretModeEnabled) {
+                    player->draw = true;
+                }
 
                 player->pos.x = 0.0f;
                 player->pos.y = 200.0f;

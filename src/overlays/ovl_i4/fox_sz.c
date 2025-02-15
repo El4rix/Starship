@@ -13,13 +13,11 @@
 
 typedef enum SzActors {
     /* 0 */ SZ_GREAT_FOX,
+
     /* 10 */ SZ_MISSILE_CENTER = AI360_ENEMY,
     /* 11 */ SZ_MISSILE_LEFT,
     /* 12 */ SZ_MISSILE_RIGHT,
-    /* 13 */ SZ_ESCORT_1,
-    /* 14 */ SZ_ESCORT_2,
-    /* 15 */ SZ_ESCORT_3,
-    /* 16 */ SZ_ESCORT_4,
+
     /* 10 */ SZ_MISSILE_DR_CENTER,
     /* 11 */ SZ_MISSILE_DR_LEFT,
     /* 12 */ SZ_MISSILE_DR_RIGHT,
@@ -41,6 +39,12 @@ typedef enum SzActors {
     /* 10 */ SZ_MISSILE_DL_CENTER,
     /* 11 */ SZ_MISSILE_DL_LEFT,
     /* 12 */ SZ_MISSILE_DL_RIGHT,
+
+    /* 13 */ SZ_ESCORT_1,
+    /* 14 */ SZ_ESCORT_2,
+    /* 15 */ SZ_ESCORT_3,
+    /* 16 */ SZ_ESCORT_4,
+    
 } SzActors;
 
 s32 sMissileDestroyCount;
@@ -114,7 +118,7 @@ void SectorZ_MissileExplode(ActorAllRange* this, bool shotDown) {
 
     if (shotDown) {
         sMissileDestroyCount++;
-        if ((sMissileDestroyCount >= 39) &&
+        if ((sMissileDestroyCount >= 6) && (!gTurretModeEnabled) &&
             ((gPlayer[0].state == PLAYERSTATE_ACTIVE) || (gPlayer[0].state == PLAYERSTATE_U_TURN))) {
             gCsFrameCount = 0;
             gPlayer[0].state = PLAYERSTATE_LEVEL_COMPLETE;
@@ -125,11 +129,45 @@ void SectorZ_MissileExplode(ActorAllRange* this, bool shotDown) {
             AUDIO_PLAY_SFX(NA_SE_GREATFOX_BURNER, gActors[SZ_GREAT_FOX].sfxSource, 0);
             SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 1);
             SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_FANFARE, 1);
-        }
+        } else if ((gTurretModeEnabled) && (sMissileDestroyCount >= 39) && (gPlayer[0].state == PLAYERSTATE_ACTIVE)) {
+            if (gActors[AI360_KATT].obj.status == OBJ_ACTIVE) {
+                Radio_PlayMessage(gMsg_ID_16140, RCID_KATT);
+            } else if (gTeamShields[AI360_SLIPPY] > 0) {
+                Radio_PlayMessage(gMsg_ID_15252, RCID_SLIPPY);
+            } else if (gTeamShields[AI360_FALCO] > 0) {
+                Radio_PlayMessage(gMsg_ID_7100, RCID_FALCO);
+            } else if (gTeamShields[AI360_PEPPY] > 0) {
+                Radio_PlayMessage(gMsg_ID_17160, RCID_PEPPY);
+            }
+            gCsFrameCount = 0;
+            gPlayer[0].state = PLAYERSTATE_LEVEL_COMPLETE;
+            gPlayer[0].csState = 1000;
+            gActors[SZ_GREAT_FOX].state = 6;
+            gPlayer[0].csTimer = 30;
+            AUDIO_PLAY_SFX(NA_SE_GREATFOX_ENGINE, gActors[SZ_GREAT_FOX].sfxSource, 0);
+            AUDIO_PLAY_SFX(NA_SE_GREATFOX_BURNER, gActors[SZ_GREAT_FOX].sfxSource, 0);
+            SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 1);
+            SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_FANFARE, 1);
+        } 
 
         // Check for Katt's appearance
-        if ((sMissileDestroyCount == 3) && (gLeveLClearStatus[LEVEL_ZONESS] != 0)) {
+        if ((sMissileDestroyCount == 3) && (gLeveLClearStatus[LEVEL_ZONESS] == 0)) {
             gAllRangeSpawnEvent = gAllRangeEventTimer + 110;
+        }
+    }
+
+    if (gTurretModeEnabled) {
+        if (this->aiIndex == gActors[AI360_FALCO].aiIndex) {
+            gActors[AI360_FALCO].aiIndex += 24;
+        }
+        if (this->aiIndex == gActors[AI360_SLIPPY].aiIndex) {
+            gActors[AI360_SLIPPY].aiIndex += 24;
+        }
+        if (this->aiIndex == gActors[AI360_PEPPY].aiIndex) {
+            gActors[AI360_PEPPY].aiIndex += 24;
+        }
+        if (this->aiIndex == gActors[AI360_KATT].aiIndex) {
+            gActors[AI360_KATT].aiIndex += 24;
         }
     }
 }
@@ -240,6 +278,55 @@ void SectorZ_Missile_Update(ActorAllRange* this) {
                 }
             }
         }
+
+        if ((gPlayer[0].state == PLAYERSTATE_ACTIVE) && (this->aiIndex > 5)){
+            //AUDIO_PLAY_SFX(NA_SE_ARWING_WING_BROKEN, gDefaultSfxSource, 4);
+            if ((this->aiIndex % 3 == 1) && (this->aiIndex <= gActors[AI360_FALCO].aiIndex) && (gTeamShields[AI360_FALCO] > 0)) {
+                if (this->obj.status == 2) {
+                    if (gActors[AI360_FALCO].iwork[2] == AI360_FOX) {
+                        if (gActors[AI360_FALCO].aiIndex != this->aiIndex) {
+                            Radio_PlayMessage(gMsg_ID_16040, RCID_FALCO);
+                            if (sKattEnabled) {
+                                Radio_PlayMessage(gMsg_ID_16135, RCID_KATT);
+                            }
+                        }
+                        gActors[AI360_FALCO].aiIndex = gActors[AI360_KATT].aiIndex = this->aiIndex;
+                    } else {
+                        gActors[AI360_FALCO].aiIndex = -1;
+                    }
+                }
+            } else if ((this->aiIndex % 3 == 1) && (this->aiIndex <= gActors[AI360_KATT].aiIndex) && (gTeamShields[AI360_FALCO] <= 0)) {
+                if (gActors[AI360_KATT].iwork[2] == AI360_FOX) {
+                    if (gActors[AI360_KATT].aiIndex != this->aiIndex) {
+                        Radio_PlayMessage(gMsg_ID_16135, RCID_KATT);
+                    }
+                    gActors[AI360_KATT].aiIndex = gActors[AI360_KATT].aiIndex = this->aiIndex;
+                } else {
+                    gActors[AI360_KATT].aiIndex = -1;
+                }
+            }
+            if ((this->aiIndex % 3 == 2) && (this->aiIndex <= gActors[AI360_SLIPPY].aiIndex) && (gTeamShields[AI360_SLIPPY] > 0)) {
+                if (gActors[AI360_SLIPPY].iwork[2] == AI360_FOX) {
+                    if (gActors[AI360_SLIPPY].aiIndex != this->aiIndex) {
+                        Radio_PlayMessage(gMsg_ID_16047, RCID_SLIPPY);
+                    }
+                    gActors[AI360_SLIPPY].aiIndex = this->aiIndex;
+                } else {
+                    gActors[AI360_SLIPPY].aiIndex = -1;
+                }
+            }
+            if (((this->aiIndex + 3) % 3 == 0) && (this->aiIndex <= gActors[AI360_PEPPY].aiIndex) && (gTeamShields[AI360_PEPPY] > 0)) {
+                if (gActors[AI360_PEPPY].iwork[2] == AI360_FOX) {
+                    if (gActors[AI360_PEPPY].aiIndex != this->aiIndex) {
+                        Radio_PlayMessage(gMsg_ID_16046, RCID_PEPPY);
+                    }
+                    gActors[AI360_PEPPY].aiIndex = this->aiIndex;
+                } else {
+                    gActors[AI360_PEPPY].aiIndex = -1;
+                }
+            }
+        }
+
     } else {
         this->fwork[MISSILE_TARGET_X] = gBosses[SZ_GREAT_FOX].obj.pos.x + xPitch + 400.0f;
         this->fwork[MISSILE_TARGET_Y] = gBosses[SZ_GREAT_FOX].obj.pos.y + yPitch + 100.0f;
@@ -300,8 +387,8 @@ void SectorZ_SpawnMissile(ActorAllRange* this, s32 missileWaveIdx) {
         this->obj.pos.x = sTurretMissileWaveInitPos[missileWaveIdx].x;
         this->obj.pos.y = sTurretMissileWaveInitPos[missileWaveIdx].y;
         this->obj.pos.z = sTurretMissileWaveInitPos[missileWaveIdx].z;
+        this->aiIndex = missileWaveIdx + AI360_ENEMY;
     }
-    
 
     this->state = 5;
     this->rot_0F4.y = 180.0f;
@@ -326,7 +413,11 @@ void SectorZ_SpawnMissileEscort(ActorAllRange* this, s32 enemyIndex) {
     Actor_Initialize(this);
     this->obj.status = OBJ_INIT;
     this->obj.id = OBJ_ACTOR_ALLRANGE;
-    this->aiType = enemyIndex + AI360_ENEMY + 3;
+    if (gTurretModeEnabled) {
+        this->aiType = enemyIndex + AI360_ENEMY + 24;
+    } else {
+        this->aiType = enemyIndex + AI360_ENEMY + 3;
+    }
 
     this->obj.pos.x = gActors[SZ_MISSILE_CENTER].obj.pos.x + sMissileEscortOffsetPos[enemyIndex].x;
     this->obj.pos.y = gActors[SZ_MISSILE_CENTER].obj.pos.y + sMissileEscortOffsetPos[enemyIndex].y;
@@ -400,7 +491,12 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
     Vec3f dest;
     ActorAllRange* actor;
 
-    if (gAllRangeEventTimer >= 0) {
+    /* if (gAllRangeEventTimer < 1450) { // Skip ahead for testing
+        gAllRangeEventTimer = 1450;
+    } */
+
+
+    if ((gAllRangeEventTimer >= 0) && (!gTurretModeEnabled)) {
         if (gTeamShields[AI360_FALCO] > 0) {
             if (gActors[AI360_FALCO].iwork[2] == AI360_FOX) {
                 if (gActors[AI360_ENEMY].obj.status == 2) {
@@ -454,6 +550,7 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
                 gActors[AI360_SLIPPY].aiIndex = -1;
             }
         }
+
     }
 
     if (gAllRangeEventTimer == 100) {
@@ -486,7 +583,11 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
 
                 actor->rot_0F4.y = this->counter_04E * 18.0f;
                 actor->state = 3;
-                actor->aiType = i + AI360_ENEMY + 3;
+                if (gTurretModeEnabled) {
+                    actor->aiType = i + AI360_ENEMY + 24;
+                } else {
+                    actor->aiType = i + AI360_ENEMY + 3;
+                }
                 actor->aiIndex = -1;
 
                 if (gAllRangeEventTimer >= 0) {
@@ -505,6 +606,12 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
                     if ((i + 13) == 28) {
                         actor->aiIndex = AI360_FALCO;
                         actor->state = 2;
+                    }
+                    if (gTurretModeEnabled) {
+                        if ((i + 13) == 27) {
+                            actor->aiIndex = AI360_KATT;
+                            actor->state = 2;
+                        }
                     }
                 }
                 actor->health = 24;
@@ -526,7 +633,8 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
     if (gTurretModeEnabled) {
         switch (gAllRangeEventTimer) {
             // Wave 1 ========================================================================
-            case 1500:
+            case 1300:
+                Radio_PlayMessage(gMsg_ID_3026, RCID_PEPPY);
                 gRadarMissileAlarmTimer = 490;
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_CENTER], 0);
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_RIGHT], 1);
@@ -569,27 +677,28 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
 
             case 2500:
                 gRadarMissileAlarmTimer = 580;
-                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_CENTER], 0);
-                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_RIGHT], 1);
-                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_LEFT], 2);
+                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_DR_CENTER], 3);
+                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_DR_RIGHT], 4);
+                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_DR_LEFT], 5);
                 break;
                 
             case 2650:
-                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_R_CENTER], 6);
-                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_R_RIGHT], 7);
-                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_R_LEFT], 8);
+                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_UR_CENTER], 9);
+                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_UR_RIGHT], 10);
+                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_UR_LEFT], 11);
                 break;
                 
             case 2800:
-                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_U_CENTER], 12);
-                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_U_RIGHT], 13);
-                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_U_LEFT], 14);
+                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_UL_CENTER], 15);
+                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_UL_RIGHT], 16);
+                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_UL_LEFT], 17);
                 break;
                 
             case 2950:
-                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_L_CENTER], 18);
-                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_L_RIGHT], 19);
-                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_L_LEFT], 20);
+                Radio_PlayMessage(gMsg_ID_14050, RCID_PEPPY);
+                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_DL_CENTER], 21);
+                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_DL_RIGHT], 22);
+                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_DL_LEFT], 23);
                 break;
 
             // Wave 3 ==================================================================================
@@ -601,6 +710,7 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_CENTER], 0);
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_RIGHT], 1);
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_LEFT], 2);
+                gRadarMissileAlarmTimer = 580;
                 break;
 
             case 4600:
@@ -640,10 +750,14 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
                 break;
                 
             case 5200:
+                Radio_PlayMessage(gMsg_ID_5420, RCID_PEPPY);
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_DL_CENTER], 21);
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_DL_RIGHT], 22);
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_DL_LEFT], 23);
-                gRadarMissileAlarmTimer = 580;
+                break;
+
+            case 6200:
+                gAllRangeEventTimer = 2500;
                 break;
         }
     } else {
@@ -779,6 +893,10 @@ void SectorZ_UpdateEvents(ActorAllRange* this) {
             break;
 
         case 3:
+            if (gTurretModeEnabled) {
+                gAllRangeEventTimer--;
+            }
+
             katt = &gActors[AI360_KATT];
 
             gCsFrameCount++;
@@ -1715,7 +1833,7 @@ void SectorZ_LevelComplete(Player* player) {
             gCsCamEyeY = greatFox->obj.pos.y;
             gCsCamEyeZ = greatFox->obj.pos.z + 4000.0f;
             if (gTurretModeEnabled) {
-                gCsCamEyeY += 2000;
+                gCsCamEyeY += 10000;
             }
 
             gCsCamAtX = greatFox->obj.pos.x;
@@ -1743,7 +1861,7 @@ void SectorZ_LevelComplete(Player* player) {
             gCsCamEyeY = greatFox->obj.pos.y;
             gCsCamEyeZ = greatFox->obj.pos.z + 4000.0f;
             if (gTurretModeEnabled) {
-                gCsCamEyeY += 2000;
+                gCsCamEyeY += 10000;
             }
 
             D_ctx_80177A48[0] = 1.0f;
@@ -2360,7 +2478,7 @@ void SectorZ_SzGreatFox_Update(SzGreatFox* this) {
         Math_SmoothStepToAngle(&this->rot_078.x, 20.0f, 0.03f, this->fwork[1], 0.0f);
         Math_SmoothStepToAngle(&this->rot_078.y, 180.0f, 0.03f, this->fwork[2], 0.0f);
         Math_SmoothStepToAngle(&this->rot_078.z, 30.0f, 0.03f, this->fwork[3], 0.0f);
-        Math_SmoothStepToF(&this->fwork[0], 20.0f, 0.05f, 0.3f, 0.0f);
+        //Math_SmoothStepToF(&this->fwork[0], 20.0f, 0.05f, 0.3f, 0.0f);
         Math_SmoothStepToF(&this->fwork[1], 0.07f, 1.0f, 0.07f, 0.0f);
         Math_SmoothStepToF(&this->fwork[2], 0.5f, 1.0f, 0.05f, 0.0f);
         Math_SmoothStepToF(&this->fwork[3], 0.7f, 1.0f, 0.7f, 0.0f);
@@ -2371,6 +2489,7 @@ void SectorZ_SzGreatFox_Update(SzGreatFox* this) {
 
         if (this->timer_052 == 31) {
             gPlayer[0].state = PLAYERSTATE_ACTIVE;
+            //this->fwork[0] = 0.0f;
         }
     }
 
@@ -2434,7 +2553,7 @@ void SectorZ_SzGreatFox_Update(SzGreatFox* this) {
 
     if (gTurretModeEnabled) {
         if (gPlayer[0].state == PLAYERSTATE_ACTIVE) {
-            this->obj.pos.y = -2000;
+            this->obj.pos.y = -10000;
         } else if (gPlayer[0].state == PLAYERSTATE_STANDBY) {
             this->obj.pos.y = 0;
         }
@@ -2521,7 +2640,7 @@ void SectorZ_LoadLevelObjects(void) {
 
     greatFox->obj.pos.x = 0.0f;
     if (gTurretModeEnabled) {
-        greatFox->obj.pos.y = -2000.0f;
+        greatFox->obj.pos.y = -10000.0f;
     } else {
         greatFox->obj.pos.y = 0.0f;
     }
