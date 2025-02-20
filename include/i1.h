@@ -7,6 +7,8 @@
 #include "sf64player.h"
 #include "sf64mesg.h"
 
+s32 sCoGrangaLimbs;
+
 extern Gfx* D_VE1_8019A008[];
 extern f32 aVe1GolemechHitbox[];
 

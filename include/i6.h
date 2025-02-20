@@ -18,6 +18,8 @@ extern f32 turretDestZ;
 extern f32 turret360Radius;
 extern f32 turret360Speed;
 extern f32 turret360Height;
+extern f32 turret360RadiusMod;
+extern f32 turret360SpeedMod;
 
 void Andross_80187530(Actor*);
 void Andross_80193C4C(Player*);

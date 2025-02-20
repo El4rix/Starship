@@ -2630,6 +2630,9 @@ void Play_InitLevel(void) {
     s32 i;
     f32* fptr;
 
+    turret360RadiusMod = 0;
+    turret360SpeedMod = 0;
+
     switch (gCurrentLevel) {
         case LEVEL_TRAINING:
             AUDIO_SET_SPEC(SFXCHAN_0, AUDIOSPEC_28);
@@ -5029,8 +5032,10 @@ void Player_Setup(Player* playerx) {
 
     if (gTurretModeEnabled) {
         player->unk_180 = 180.0f;
-        //player->pos.y = 350;
         turretDestY = player->pos.y = ((player->pathHeight + player->pathFloor)/2);
+        if (gCurrentLevel == LEVEL_BOLSE) {
+            player->pos.y = 1300;
+        }
         turretDestX = player->pos.x = 0;
         Audio_StartEngineNoise();
     }

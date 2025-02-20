@@ -584,12 +584,17 @@ void Ending_80189108(void) {
                     break;
                 case 170:
                     D_ending_80196F94 = 20;
+                    if ((gTurretModeEnabled) && (gVenomHardClear == false)) {
+                        gFillScreenAlphaTarget = 255;
+                    }
                     break;
             }
 
             if ((D_ending_80196D08[4].unk_38 == 0) && (gCsFrameCount == 180)) {
-                gCallTimer = 120;
-                gRadioState = 0;
+                if ((!gTurretModeEnabled) || (gVenomHardClear == true)) {
+                    gCallTimer = 120;
+                    gRadioState = 0;
+                }
             }
 
             if (Ending_80188634() || (gCsFrameCount == 230)) {
@@ -614,7 +619,12 @@ void Ending_80189108(void) {
         case 1:
             gHideRadio = false;
             if (gCsFrameCount == 20) {
-                Radio_PlayMessage(gMsg_ID_21050, RCID_ROB64_TITLE);
+                if (!gTurretModeEnabled) {
+                    Radio_PlayMessage(gMsg_ID_21050, RCID_ROB64_TITLE);
+                } else if (gVenomHardClear == true) {
+                    Radio_PlayMessage(gMsg_ID_21050, RCID_ROB64_TITLE);
+                    gGreatFoxIntact = false;
+                }
             }
             if (gCsFrameCount == 130) {
                 D_ending_80196D08[4].unk_34 = 0;
@@ -628,7 +638,9 @@ void Ending_80189108(void) {
             gHideRadio = true;
             switch (gCsFrameCount) {
                 case 20:
-                    Radio_PlayMessage(gMsg_ID_21060, RCID_FOX);
+                    if ((!gTurretModeEnabled) || (gVenomHardClear == true)) {
+                        Radio_PlayMessage(gMsg_ID_21060, RCID_FOX);
+                    }
                     break;
                 case 80:
                     gFillScreenAlphaTarget = 255;
@@ -1822,6 +1834,10 @@ void Ending_8018C21C(void) {
                         Matrix_RotateZ(gGfxMatrix, gActors[i].obj.rot.z * M_DTOR, MTXF_APPLY);
                         Matrix_SetGfxMtx(&gMasterDisp);
 
+                        if (gTurretModeEnabled) {
+                            break;
+                        }
+
                         if (gGreatFoxIntact) {
                             gSPDisplayList(gMasterDisp++, aGreatFoxIntactDL);
                         }
@@ -1862,7 +1878,9 @@ void Ending_8018C21C(void) {
                         Matrix_RotateX(gGfxMatrix, gActors[i].obj.rot.x * M_DTOR, MTXF_APPLY);
                         Matrix_RotateZ(gGfxMatrix, gActors[i].obj.rot.z * M_DTOR, MTXF_APPLY);
                         Matrix_SetGfxMtx(&gMasterDisp);
-                        Cutscene_DrawGreatFox();
+                        if (!gTurretModeEnabled) {
+                            Cutscene_DrawGreatFox();
+                        }
                     }
                     break;
 

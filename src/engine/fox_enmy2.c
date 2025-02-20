@@ -2355,6 +2355,7 @@ void ActorEvent_ProcessTriggers(ActorEvent* this) {
     s32 i;
     s32 teamAliveCount = 0;
     s32 ringRequirement;
+    s32 billMessage;
     Actor* otherActor;
 
     for (i = TEAM_ID_FALCO; i <= TEAM_ID_PEPPY; i++) {
@@ -2697,6 +2698,18 @@ void ActorEvent_ProcessTriggers(ActorEvent* this) {
                 gCallVoiceParam = 0;
                 gCallTimer = 0;
                 ActorEvent_TriggerBranch(this);
+                if (gTurretModeEnabled) {
+                    if ((gCurrentLevel == LEVEL_AREA_6) && (gPlayer[0].pos.z < 195000)) {
+                        Radio_PlayMessage(gMsg_ID_20279, RCID_ROB64);
+                    } else {
+                        billMessage = RAND_INT(1.9f) + 1;
+                        if (billMessage = 1) {
+                            Radio_PlayMessage(gMsg_ID_10200, RCID_BILL);
+                        } else {
+                            Radio_PlayMessage(gMsg_ID_18140, RCID_BILL);
+                        }
+                    }
+                }
             }
             break;
 

@@ -606,10 +606,7 @@ void Display_ArwingWings(ArwingInfo* arwing) {
         arwing->laserGunsXpos = (-arwing->laserGunsYpos - 7.0f) * 2.5f;
     }
 
-    if ((gGameState == GSTATE_PLAY) && (!gTurretModeEnabled)) {
-        Animation_DrawSkeleton(1, D_arwing_3016610, gPlayer[0].jointTable, Display_ArwingWingsOverrideLimbDraw, NULL,
-                               arwing, &gIdentityMatrix);
-    } else if ((gGameState == GSTATE_PLAY) && (gTurretModeEnabled)) {
+    if (gTurretModeEnabled) {
         if ((gCurrentLevel == LEVEL_FORTUNA) && (gPlayer[0].csState == -1)) {
             Animation_DrawSkeleton(1, D_arwing_3016610, gPlayer[0].jointTable, Display_ArwingWingsOverrideLimbDraw, NULL,
                                 arwing, &gIdentityMatrix);
@@ -619,6 +616,9 @@ void Display_ArwingWings(ArwingInfo* arwing) {
             Animation_DrawSkeleton(1, D_arwing_3016610, gPlayer[0].jointTable, Display_ArwingWingsOverrideLimbDraw, NULL,
                                 arwing, &gIdentityMatrix);
         }
+    } else if (gGameState == GSTATE_PLAY) {
+        Animation_DrawSkeleton(1, D_arwing_3016610, gPlayer[0].jointTable, Display_ArwingWingsOverrideLimbDraw, NULL,
+                               arwing, &gIdentityMatrix);
     } else {
         if (gGameState == GSTATE_MENU) {
             Animation_GetFrameData(&D_arwing_3015AF4, 0, frameTable);
@@ -1467,10 +1467,13 @@ void Display_Player_Update(Player* player, s32 reflectY) {
                            MTXF_APPLY);
             Matrix_Translate(gCalcMatrix, player->xShake, player->yBob, 0.0f, MTXF_APPLY);
         } else {
-            if ((!gTurretModeEnabled) || ((gCurrentLevel == LEVEL_CORNERIA) && (player->state == PLAYERSTATE_LEVEL_INTRO)) || (player->state == PLAYERSTATE_START_360) || ((gCurrentLevel == LEVEL_FORTUNA) && (player->csState == -1)) || ((gCurrentLevel == LEVEL_AQUAS) && (player->state == PLAYERSTATE_LEVEL_COMPLETE))) {
+            if ((!gTurretModeEnabled) || ((gCurrentLevel == LEVEL_CORNERIA) && (player->state == PLAYERSTATE_LEVEL_INTRO)) || (player->state == PLAYERSTATE_START_360) || ((gCurrentLevel == LEVEL_FORTUNA) && (player->csState == -1)) || ((gCurrentLevel == LEVEL_AQUAS) && (player->state == PLAYERSTATE_LEVEL_COMPLETE)) || ((gCurrentLevel == LEVEL_VENOM_ANDROSS) && (player->state == PLAYERSTATE_LEVEL_COMPLETE))) {
                 Matrix_Translate(gGfxMatrix, player->pos.x, player->pos.y, player->trueZpos + player->zPath, MTXF_APPLY);
                 if ((gCurrentLevel == LEVEL_AQUAS) && (player->state == PLAYERSTATE_LEVEL_COMPLETE)) {
                     Matrix_Scale(gGfxMatrix, 0.1f, 0.1f, 0.1f, MTXF_APPLY);
+                }
+                if ((gCurrentLevel == LEVEL_VENOM_ANDROSS) && (player->state == PLAYERSTATE_LEVEL_COMPLETE)) {
+                    Matrix_Scale(gGfxMatrix, 0.15f, 0.15f, 0.15f, MTXF_APPLY);
                 }
             } else if (player->state != PLAYERSTATE_ACTIVE) {
                 Matrix_Translate(gGfxMatrix, player->pos.x + (1400 * SIN_DEG(player->rot.y)), player->pos.y - (1400 * SIN_DEG(player->rot.x)), player->trueZpos + player->zPath + (1400 * COS_DEG(player->rot.y)), MTXF_APPLY);
@@ -1512,8 +1515,12 @@ void Display_Player_Update(Player* player, s32 reflectY) {
                     gGfxMatrix,
                     -((player->xRot_120 + player->rot.x + player->aerobaticPitch + player->damageShake) * M_DTOR),
                     MTXF_APPLY);
+                if ((gCurrentLevel != LEVEL_SECTOR_Y) && (gCurrentLevel != LEVEL_ZONESS) && (gCurrentLevel != LEVEL_SOLAR) && (gCurrentLevel != LEVEL_TITANIA) && (gCurrentLevel != LEVEL_MACBETH) && (gCurrentLevel != LEVEL_BOLSE)) {
+                    Matrix_RotateZ(gGfxMatrix, -((player->bankAngle + player->rockAngle + player->damageShake) * M_DTOR),
+                        MTXF_APPLY);
+                }
             } else if ((gTurretModeEnabled) && (player->state == PLAYERSTATE_ACTIVE)) {
-                Matrix_RotateY(gGfxMatrix, ((player->pos.x - turretDestX) / 2.5 + 180.0f) * M_DTOR, MTXF_APPLY);
+                Matrix_RotateY(gGfxMatrix, (180.0f) * M_DTOR, MTXF_APPLY);
             }
             Matrix_Translate(gGfxMatrix, player->xShake, player->yBob, 0.0f, MTXF_APPLY);
             Matrix_SetGfxMtx(&gMasterDisp);

@@ -14,6 +14,8 @@ f32 turret360Speed = 0.0f;
 f32 turret360SpeedMod = 0.0f;
 f32 turret360Height = 0.0f;
 f32 turret360HeightMod = 0.0f;
+f32 turretXPositionMod = 0.0f;
+f32 turretZPositionMod = 0.0f;
 
 u64 Guns_D_GREAT_FOX_E00B4B0_rgba16_png_019_rgba16[] = {
 	0x0001000100010001, 0x0001000100010001, 0x0001000100010001, 0x0001000100010001, 0x0001000100010001, 0x0001000100010001, 0x0001000100010843, 0x0843000100010001, 
@@ -249,12 +251,10 @@ void Turret_GreatFoxLaser(Player* player, f32 xOffset) {
         if (gPlayerShots[i].obj.status == SHOT_FREE) {
             Turret_SetupShot(player, &gPlayerShots[i], xOffset, -130.0f, 250.0f, PLAYERSHOT_GFOX_LASER, 100.0f);
             //Play_PlaySfxFirstPlayer(gPlayerShots[i].sfxSource, NA_SE_GREATFOX_SHOT_DEMO); //NA_SE_TURRET_SHOT
-            if (gCurrentLevel == LEVEL_AQUAS) {
-                AUDIO_PLAY_SFX(NA_SE_MAR_TWIN_LASER, gDefaultSfxSource, 4);
-            } else if (gCurrentLevel == LEVEL_SOLAR) {
-                AUDIO_PLAY_SFX(NA_SE_GREATFOX_SHOT_DEMO, gDefaultSfxSource, 4);
+            if ((gCurrentLevel == LEVEL_AQUAS) || (gCurrentLevel == LEVEL_SOLAR) || ((gCurrentLevel == LEVEL_VENOM_ANDROSS) && (gLevelMode == LEVELMODE_ALL_RANGE))) {
+                AUDIO_PLAY_SFX(NA_SE_MAR_TWIN_LASER, gPlayerShots[i].sfxSource, 0);
             } else {
-                AUDIO_PLAY_SFX(NA_SE_GREATFOX_SHOT_DEMO, gPlayerShots[i].sfxSource, 4);
+                AUDIO_PLAY_SFX(NA_SE_GREATFOX_SHOT_DEMO, gPlayerShots[i].sfxSource, 0);
             }
             break;
         }
@@ -567,7 +567,7 @@ void Turret_UpdateRails(Player* player) {
     }
     
     // Resets position
-    if ((gControllerHold[player->num].button & B_BUTTON) && (gCurrentLevel != LEVEL_TITANIA) && (gCurrentLevel != LEVEL_MACBETH)) {
+    if ((gControllerHold[player->num].button & B_BUTTON) && (gCurrentLevel != LEVEL_TITANIA) && (gCurrentLevel != LEVEL_MACBETH) && !((gCurrentLevel == LEVEL_VENOM_ANDROSS) && (!gBossActive))) {
         if (turretDestY > ((player->pathHeight + player->pathFloor)/2) + player->yPathTarget + 50){
             turretDestY -= 100.0f;
         }
@@ -653,21 +653,23 @@ void Turret_UpdateRails(Player* player) {
     player->vel.y = (sp5C.y + sp50.y) * player->unk_150;
     player->vel.z = sp5C.z + sp50.z; */
 
-    // Keep up with Andross
-    if (gCurrentLevel == LEVEL_VENOM_ANDROSS) {
-        player->vel.z += D_Andross_801A7F58;
-    }
-
-    if ((gCurrentLevel == LEVEL_AQUAS) && (gBossActive) && (fabsf(gBosses[0].obj.pos.z - gPlayer[0].trueZpos) <= 3000.0f)) {
-        player->vel.z = 0;
-    }
-
     // Correct for Tank collision sending you backwards
     if ((player->form == FORM_LANDMASTER) && (player->baseSpeed != 15)) {
         Math_SmoothStepToF(&player->baseSpeed, 15, 0.1f, 1.0f, 0.00001f);
     }
 
     player->vel.z = -player->baseSpeed - player->boostSpeed;
+
+    // Keep up with Andross
+    if (gCurrentLevel == LEVEL_VENOM_ANDROSS) {
+        player->vel.z += D_Andross_801A7F58;
+    }
+
+    // Stop for Bacoon
+    if ((gCurrentLevel == LEVEL_AQUAS) && (gBossActive) && (fabsf(gBosses[0].obj.pos.z - gPlayer[0].trueZpos) <= 3000.0f)) {
+        player->vel.z = 0;
+    }
+
     player->pos.z += player->vel.z;
 
     // Move Around
@@ -685,6 +687,9 @@ void Turret_UpdateRails(Player* player) {
     if ((gControllerHold[player->num].button & R_JPAD) || (gControllerHold[player->num].button & R_CBUTTONS)) {
         if (player->pos.x < (player->xPath + player->pathWidth)) {
             turretDestX += 20.0f;
+            if ((gCallTimer != 0) && (gControllerHold[player->num].button & R_CBUTTONS)) {
+                turretDestX -= 60.0f;
+            }
         }
     }
     if ((gControllerHold[player->num].button & L_JPAD) || (gControllerHold[player->num].button & L_CBUTTONS)) {
@@ -719,7 +724,12 @@ void Turret_Update360(Player* player) {
 
     //Player_MoveArwing360(player);
     //Player_Shoot(player);
-    Player_CollisionCheck(player);
+    /* if (((gCurrentLevel == LEVEL_KATINA) || (gCurrentLevel == LEVEL_BOLSE)) && (player->pos.x > 50) && (player->pos.x < -50) && (player->pos.z > 50) && (player->pos.z < -50)) {
+        Player_CollisionCheck(player);
+    } */
+    if (gGameFrameCount > 50) {
+        Player_CollisionCheck(player);
+    }
     Player_FloorCheck(player);
     Player_LowHealthAlarm(player);
 
@@ -806,7 +816,7 @@ void Turret_Update360(Player* player) {
         player->flags_228 |= PFLAG_228_2;
     }
 
-    // the B button recenters the view straight ahead
+    // the B button recenters the view
     if (gControllerPress[player->num].button & B_BUTTON) {
         player->unk_00C = 0.0f;
         if (gCurrentLevel != LEVEL_SECTOR_Z) {
@@ -815,7 +825,7 @@ void Turret_Update360(Player* player) {
     }
 
     // Quick look around
-    if ((gControllerPress[player->num].button & R_JPAD) || (gControllerPress[player->num].button & R_CBUTTONS)) {
+    if ((gControllerPress[player->num].button & R_JPAD) || ((gControllerPress[player->num].button & R_CBUTTONS) && (gCallTimer == 0))) {
         if (gCurrentLevel == LEVEL_SECTOR_Z) {
             player->unk_008 += 45.0f;
             player->unk_180 -= 30.0f;
@@ -837,12 +847,35 @@ void Turret_Update360(Player* player) {
     // Change Orbit Radius
     if (turret360Speed != 0) {
         if ((turret360RadiusMod > (1000 - turret360Radius)) && ((gControllerHold[player->num].button & U_JPAD) || (gControllerHold[player->num].button & U_CBUTTONS))) {
-            turret360RadiusMod -= 30.0f;
-            turret360SpeedMod += 0.005f;
+            if ((player->unk_008 > -60) && (player->unk_008 < 60)) {
+                turret360RadiusMod -= 30.0f;
+                turret360SpeedMod += 0.005f;
+                if (gCurrentLevel == LEVEL_BOLSE) {
+                    turret360SpeedMod += 0.002f;
+                }
+            } else {
+                turret360RadiusMod += 30.0f;
+                turret360SpeedMod -= 0.005f;
+                if (gCurrentLevel == LEVEL_BOLSE) {
+                    turret360SpeedMod -= 0.002f;
+                }
+            }
+            
         }
         if ((turret360RadiusMod < (turret360Radius + 2000)) && ((gControllerHold[player->num].button & D_JPAD) || (gControllerHold[player->num].button & D_CBUTTONS))) {
-            turret360RadiusMod += 30.0f;
-            turret360SpeedMod -= 0.005f;
+            if ((player->unk_008 > -60) && (player->unk_008 < 60)) {
+                turret360RadiusMod += 30.0f;
+                turret360SpeedMod -= 0.005f;
+                if (gCurrentLevel == LEVEL_BOLSE) {
+                    turret360SpeedMod -= 0.002f;
+                }
+            } else {
+                turret360RadiusMod -= 30.0f;
+                turret360SpeedMod += 0.005f;
+                if (gCurrentLevel == LEVEL_BOLSE) {
+                    turret360SpeedMod += 0.002f;
+                }
+            }
         }
     }
     
@@ -894,18 +927,23 @@ void Turret_Update360(Player* player) {
 
     //Fortuna, Venom II, Corneria: 3000, 0.5, 350
 
-    turret360Radius = 3000;
+    if ((sCoGrangaLimbs <= 3) || (gCurrentLevel != LEVEL_CORNERIA)) {
+        turret360Radius = 3000;
+    }
     turret360Speed = 1.0f;
     turret360Height = 450;
 
     switch (gCurrentLevel) {
         case LEVEL_SECTOR_Y:
-            turret360Height = 450;
+            turret360Height = 500;
             break;
         case LEVEL_SECTOR_Z:
             turret360Radius = 0;
             turret360Speed = 0;
             turret360Height = 300;
+            break;
+        case LEVEL_BOLSE:
+            turret360Height = 500;
             break;
         case LEVEL_VENOM_ANDROSS:
             turret360Radius = 0;
@@ -914,10 +952,20 @@ void Turret_Update360(Player* player) {
             break;
     }
 
+    // Center to Granga if he falls
+    if ((sCoGrangaLimbs > 3) && (gCurrentLevel == LEVEL_CORNERIA)) {
+        Math_SmoothStepToF(&turretZPositionMod, gBosses[0].obj.pos.z, 0.5f, 25.0f, 0.00001f);
+        Math_SmoothStepToF(&turretXPositionMod, gBosses[0].obj.pos.x, 0.5f, 25.0f, 0.00001f);
+        Math_SmoothStepToF(&turret360Radius, 1500, 0.5f, 25.0f, 0.00001f);
+    } else {
+        turretXPositionMod = 0;
+        turretZPositionMod = 0;
+    }
+
     //Updates XYZ
     Math_SmoothStepToF(&player->pos.y, turret360Height + turret360RadiusMod / 10, 0.5f, 25.0f, 0.00001f);
-    player->trueZpos = player->pos.z = (turret360Radius + turret360RadiusMod) * COS_DEG(turret360Speed * player->unk_000);
-                       player->pos.x = (turret360Radius + turret360RadiusMod) * SIN_DEG(turret360Speed * player->unk_000);
+    player->trueZpos = player->pos.z = (turret360Radius + turret360RadiusMod) * COS_DEG(turret360Speed * player->unk_000) + turretZPositionMod;
+                       player->pos.x = (turret360Radius + turret360RadiusMod) * SIN_DEG(turret360Speed * player->unk_000) + turretXPositionMod;
 
     //Updates rotation
     Math_SmoothStepToF(&player->unk_180, -player->unk_008 + 180, 0.5f, 3.0f, 0.00001f);

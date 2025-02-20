@@ -679,12 +679,22 @@ bool AllRange_SupplyEvent(void) {
 void ActorAllRange_SpawnSupplies(Actor* this) {
     ActorSupplies* supplies;
     s32 i;
+    s32 billMessage;
 
     if ((gCallTimer != 0) && (gControllerPress[gMainController].button & R_CBUTTONS)) {
         Audio_SetUnkVoiceParam(0);
         gCallVoiceParam = 0;
         gCallTimer = 0;
-        Radio_PlayMessage(gMsg_ID_20230, RCID_ROB64);
+        if (gTurretModeEnabled) {
+            billMessage = RAND_INT(1.9f) + 1;
+            if (billMessage = 1) {
+                Radio_PlayMessage(gMsg_ID_10200, RCID_BILL);
+            } else {
+                Radio_PlayMessage(gMsg_ID_18140, RCID_BILL);
+            }
+        } else {
+            Radio_PlayMessage(gMsg_ID_20230, RCID_ROB64);
+        }
         gAllRangeSupplyTimer = 160;
     }
 

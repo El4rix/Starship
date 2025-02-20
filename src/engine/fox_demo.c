@@ -3316,6 +3316,12 @@ void Cutscene_DrawGreatFox(void) {
     f32 sp9C[4];
     Gfx* dList;
 
+    if (gTurretModeEnabled) {
+        if ((gCurrentLevel == LEVEL_TITANIA) && (gPlayer[0].state == PLAYERSTATE_ACTIVE)) {
+            return;
+        }
+    }
+
     PRINTF("Demo_Time=%d\n");
     PRINTF("Demo_Time=%d\n");
     PRINTF("d Enm->wrk0 %d\n");

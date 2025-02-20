@@ -302,6 +302,7 @@ bool Ending_8018DCB4(void) {
     }
 }
 
+// Arwing engine glow
 void Ending_8018E1B8(u32 arg0, AssetInfo* asset) {
     f32 temp;
 
@@ -361,8 +362,13 @@ void Ending_8018E1B8(u32 arg0, AssetInfo* asset) {
     gSPDisplayList(gMasterDisp++, D_END_7010970);
 }
 
+// Great Fox engine glow in running scene
 void Ending_8018E7B8(u32 arg0, AssetInfo* asset) {
     f32 temp;
+
+    if ((gTurretModeEnabled) && (gVenomHardClear == false)) {
+        return;
+    }
 
     if ((asset->unk_18.z + (arg0 - asset->unk_0C) * asset->unk_3C.z) < D_ending_801985D0.z) {
         RCP_SetupDL(&gMasterDisp, SETUPDL_67);
@@ -466,35 +472,36 @@ void Ending_8018EDB8(u32 arg0, AssetInfo* asset) {
 void Ending_8018F2A8(u32 arg0, AssetInfo* asset) {
     f32 temp;
 
-    RCP_SetupDL(&gMasterDisp, asset->unk_08);
-
-    gSPFogPosition(gMasterDisp++, asset->fogNear, asset->fogFar);
-    gDPSetFogColor(gMasterDisp++, asset->fog.r, asset->fog.g, asset->fog.b, 0);
-    gDPSetPrimColor(gMasterDisp++, 0, 0, asset->prim.r, asset->prim.g, asset->prim.b, asset->prim.a);
-
-    Matrix_Translate(gGfxMatrix, asset->unk_18.x + (arg0 - asset->unk_0C) * asset->unk_3C.x,
-                     asset->unk_18.y + (arg0 - asset->unk_0C) * asset->unk_3C.y,
-                     asset->unk_18.z + (arg0 - asset->unk_0C) * asset->unk_3C.z, MTXF_APPLY);
-
-    Matrix_Scale(gGfxMatrix, asset->unk_30.x, asset->unk_30.y, asset->unk_30.z, MTXF_APPLY);
-
-    temp = __sinf(arg0 * 0.1f + asset->unk_70);
-
-    Matrix_RotateY(gGfxMatrix,
-                   M_DTOR * (asset->unk_24.y + temp * asset->unk_54.y + (arg0 - asset->unk_0C) * asset->unk_48.y),
-                   MTXF_APPLY);
-    Matrix_RotateX(gGfxMatrix,
-                   M_DTOR * (asset->unk_24.x + temp * asset->unk_54.x + (arg0 - asset->unk_0C) * asset->unk_48.x),
-                   MTXF_APPLY);
-    Matrix_RotateZ(gGfxMatrix,
-                   M_DTOR * (asset->unk_24.z + temp * asset->unk_54.z + (arg0 - asset->unk_0C) * asset->unk_48.z),
-                   MTXF_APPLY);
-
-    Matrix_SetGfxMtx(&gMasterDisp);
-
     gCurrentLevel = LEVEL_UNK_M1;
 
-    Cutscene_DrawGreatFox();
+    if (!gTurretModeEnabled || ((gVenomHardClear) && (gGreatFoxIntact == false))) {
+        RCP_SetupDL(&gMasterDisp, asset->unk_08);
+
+        gSPFogPosition(gMasterDisp++, asset->fogNear, asset->fogFar);
+        gDPSetFogColor(gMasterDisp++, asset->fog.r, asset->fog.g, asset->fog.b, 0);
+        gDPSetPrimColor(gMasterDisp++, 0, 0, asset->prim.r, asset->prim.g, asset->prim.b, asset->prim.a);
+
+        Matrix_Translate(gGfxMatrix, asset->unk_18.x + (arg0 - asset->unk_0C) * asset->unk_3C.x,
+                        asset->unk_18.y + (arg0 - asset->unk_0C) * asset->unk_3C.y,
+                        asset->unk_18.z + (arg0 - asset->unk_0C) * asset->unk_3C.z, MTXF_APPLY);
+
+        Matrix_Scale(gGfxMatrix, asset->unk_30.x, asset->unk_30.y, asset->unk_30.z, MTXF_APPLY);
+
+        temp = __sinf(arg0 * 0.1f + asset->unk_70);
+
+        Matrix_RotateY(gGfxMatrix,
+                    M_DTOR * (asset->unk_24.y + temp * asset->unk_54.y + (arg0 - asset->unk_0C) * asset->unk_48.y),
+                    MTXF_APPLY);
+        Matrix_RotateX(gGfxMatrix,
+                    M_DTOR * (asset->unk_24.x + temp * asset->unk_54.x + (arg0 - asset->unk_0C) * asset->unk_48.x),
+                    MTXF_APPLY);
+        Matrix_RotateZ(gGfxMatrix,
+                    M_DTOR * (asset->unk_24.z + temp * asset->unk_54.z + (arg0 - asset->unk_0C) * asset->unk_48.z),
+                    MTXF_APPLY);
+
+        Matrix_SetGfxMtx(&gMasterDisp);
+        Cutscene_DrawGreatFox();
+    }
 }
 
 void Ending_8018F64C(u32 arg0, AssetInfo* asset) {

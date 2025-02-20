@@ -2012,44 +2012,44 @@ void Item_CheckBounds(Item* this) {
         Math_SmoothStepToF(&this->obj.pos.y, gPlayer[0].pos.y, 0.2f, 30.0f, 0.01f);
         Math_SmoothStepToF(&this->obj.pos.z, gPlayer[0].pos.z, 0.2f, 50.0f, 0.01f); */
         if (gPlayer[0].state == PLAYERSTATE_ACTIVE) {
-            if ((gControllerHold[0].button & R_TRIG)) {
-                if (((sin((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) + 0.3f) 
-                        > ((this->obj.pos.x - gPlayer[0].pos.x) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2)))) 
-                        && ((sin((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) - 0.3f) 
-                        < ((this->obj.pos.x - gPlayer[0].pos.x) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2)))) 
-                        && ((cos((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) + 0.3f) 
-                        > ((this->obj.pos.z - gPlayer[0].pos.z) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2)))) 
-                        && ((cos((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) - 0.3f) 
-                        < ((this->obj.pos.z - gPlayer[0].pos.z) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2))))) {
-                    this->obj.pos.x -= ((this->obj.pos.x - (gPlayer[0].pos.x)) * 0.1f);
-                    this->obj.pos.z -= ((this->obj.pos.z - (gPlayer[0].pos.z)) * 0.1f);
-                    this->obj.pos.y -= ((this->obj.pos.y - (gPlayer[0].pos.y)) * 0.1f);
-                    Math_SmoothStepToF(&this->obj.pos.x, gPlayer[0].pos.x, 1.0f, 20.0f, 10.0f);
-                    Math_SmoothStepToF(&this->obj.pos.y, gPlayer[0].pos.y, 1.0f, 15.0f, 7.0f);
-                    Math_SmoothStepToF(&this->obj.pos.z, gPlayer[0].pos.z, 1.0f, 20.0f, 10.0f);
-                }
+            if (((sin((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) + 0.3f) 
+                    > ((this->obj.pos.x - gPlayer[0].pos.x) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2)))) 
+                    && ((sin((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) - 0.3f) 
+                    < ((this->obj.pos.x - gPlayer[0].pos.x) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2)))) 
+                    && ((cos((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) + 0.3f) 
+                    > ((this->obj.pos.z - gPlayer[0].pos.z) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2)))) 
+                    && ((cos((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) - 0.3f) 
+                    < ((this->obj.pos.z - gPlayer[0].pos.z) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2))))
+                    || ((this->obj.pos.z < gPlayer[0].pos.z + 500) && (this->obj.pos.z > gPlayer[0].pos.z - 500) 
+                    && (this->obj.pos.x < gPlayer[0].pos.x + 500) && (this->obj.pos.x > gPlayer[0].pos.x - 500))) {
+                this->obj.pos.x -= ((this->obj.pos.x - (gPlayer[0].pos.x)) * 0.1f);
+                this->obj.pos.z -= ((this->obj.pos.z - (gPlayer[0].pos.z)) * 0.1f);
+                this->obj.pos.y -= ((this->obj.pos.y - (gPlayer[0].pos.y)) * 0.1f);
+                Math_SmoothStepToF(&this->obj.pos.x, gPlayer[0].pos.x, 1.0f, 20.0f, 10.0f);
+                Math_SmoothStepToF(&this->obj.pos.y, gPlayer[0].pos.y, 1.0f, 15.0f, 7.0f);
+                Math_SmoothStepToF(&this->obj.pos.z, gPlayer[0].pos.z, 1.0f, 20.0f, 10.0f);
             }
         }
     }
 
     if ((gLevelMode != LEVELMODE_ALL_RANGE) && (gTurretModeEnabled) && (gControllerHold[0].button & R_TRIG)) {
         if (gPlayer[0].state == PLAYERSTATE_ACTIVE) {
-            if ((gControllerHold[0].button & R_TRIG)) {
-                if (((sin((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) + 0.1f) 
-                        > ((this->obj.pos.x - gPlayer[0].pos.x) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2)))) 
-                        && ((sin((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) - 0.1f) 
-                        < ((this->obj.pos.x - gPlayer[0].pos.x) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2)))) 
-                        && ((cos((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) + 0.1f) 
-                        > ((this->obj.pos.z - gPlayer[0].pos.z) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2)))) 
-                        && ((cos((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) - 0.1f) 
-                        < ((this->obj.pos.z - gPlayer[0].pos.z) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2))))) {
-                    this->obj.pos.x -= ((this->obj.pos.x - (gPlayer[0].pos.x)) * 0.1f);
-                    this->obj.pos.z -= ((this->obj.pos.z - (gPlayer[0].pos.z)) * 0.1f);
-                    this->obj.pos.y -= ((this->obj.pos.y - (gPlayer[0].pos.y)) * 0.1f);
-                    Math_SmoothStepToF(&this->obj.pos.x, gPlayer[0].pos.x, 1.0f, 20.0f, 10.0f);
-                    Math_SmoothStepToF(&this->obj.pos.y, gPlayer[0].pos.y, 1.0f, 15.0f, 7.0f);
-                    Math_SmoothStepToF(&this->obj.pos.z, gPlayer[0].pos.z, 1.0f, 20.0f, 10.0f);
-                }
+            if (((sin((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) + 0.15f) 
+                    > ((this->obj.pos.x - gPlayer[0].pos.x) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2)))) 
+                    && ((sin((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) - 0.15f) 
+                    < ((this->obj.pos.x - gPlayer[0].pos.x) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2)))) 
+                    && ((cos((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) + 0.15f) 
+                    > ((this->obj.pos.z - gPlayer[0].pos.z) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2)))) 
+                    && ((cos((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) - 0.15f) 
+                    < ((this->obj.pos.z - gPlayer[0].pos.z) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2))))
+                    || ((this->obj.pos.z < gPlayer[0].pos.z + 500) && (this->obj.pos.z > gPlayer[0].pos.z - 500) 
+                    && (this->obj.pos.x < gPlayer[0].pos.x + 500) && (this->obj.pos.x > gPlayer[0].pos.x - 500))) {
+                this->obj.pos.x -= ((this->obj.pos.x - (gPlayer[0].pos.x)) * 0.1f);
+                this->obj.pos.z -= ((this->obj.pos.z - (gPlayer[0].pos.z)) * 0.1f);
+                this->obj.pos.y -= ((this->obj.pos.y - (gPlayer[0].pos.y)) * 0.1f);
+                Math_SmoothStepToF(&this->obj.pos.x, gPlayer[0].pos.x, 1.0f, 20.0f, 10.0f);
+                Math_SmoothStepToF(&this->obj.pos.y, gPlayer[0].pos.y, 1.0f, 15.0f, 7.0f);
+                Math_SmoothStepToF(&this->obj.pos.z, gPlayer[0].pos.z, 1.0f, 20.0f, 10.0f);
             }
         }
     }

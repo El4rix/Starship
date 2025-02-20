@@ -11,6 +11,7 @@
 #include "port/hooks/Events.h"
 
 u8 sFightCarrier;
+s32 sCoGrangaLimbs;
 f32 sCoGrangaWork[68];
 
 void Corneria_CoBuildingOnFire_Update(CoBuildingOnFire* this) {
@@ -101,6 +102,12 @@ void Corneria_Granga_SpawnItem(Boss* this, f32 x, f32 y, f32 z, ObjectId itemId)
 void Corneria_Granga_Init(CoGranga* this) {
     s32 i;
 
+    if (gTurretModeEnabled) {
+        sCoGrangaLimbs = 0;
+    } else {
+        sCoGrangaLimbs = 5;
+    }
+
     gBossFrameCount = 0;
 
     if (gLevelMode == LEVELMODE_ON_RAILS) {
@@ -150,7 +157,7 @@ void Corneria_CoGranga_HandleDamage(CoGranga* this) {
     if (this->dmgType != DMG_NONE) {
         this->dmgType = DMG_NONE;
 
-        if (this->dmgPart == GRANGA_DMG_BACKPACK) {
+        if ((this->dmgPart == GRANGA_DMG_BACKPACK) && (sCoGrangaLimbs > 4)) {
             this->swork[GRANGA_BACKPACK_DMG_IND] = DMG_FLICKER_15;
             this->swork[GRANGA_BACKPACK_HP] -= this->damage;
 
@@ -223,6 +230,7 @@ void Corneria_CoGranga_HandleDamage(CoGranga* this) {
             if (this->swork[GRANGA_PLASMA_GUN_HP] <= 0) {
                 this->swork[GRANGA_GUN_DMG_IND] = DMG_DESTROYED;
                 this->info.hitbox[1 + 18] = 100000.0f;
+                sCoGrangaLimbs++;
                 Corneria_8018798C(this, sCoGrangaWork[GRANGA_WORK_12], sCoGrangaWork[GRANGA_WORK_13],
                                   sCoGrangaWork[GRANGA_WORK_14], 10.0f);
             }
@@ -242,6 +250,7 @@ void Corneria_CoGranga_HandleDamage(CoGranga* this) {
             if (this->swork[GRANGA_LEFT_ARM_HP] <= 0) {
                 this->swork[GRANGA_LEFT_ARM_DMG_IND] = DMG_DESTROYED;
                 this->info.hitbox[1 + 6] = 100000.0f;
+                sCoGrangaLimbs++;
                 Corneria_8018798C(this, sCoGrangaWork[GRANGA_WORK_06], sCoGrangaWork[GRANGA_WORK_07],
                                   sCoGrangaWork[GRANGA_WORK_08], 7.0f);
             }
@@ -250,6 +259,7 @@ void Corneria_CoGranga_HandleDamage(CoGranga* this) {
             this->swork[GRANGA_SWK_22] = 30;
             this->swork[GRANGA_RIGHT_ARM_HP] -= this->damage;
 
+            
             Corneria_801879F0(this, sCoGrangaWork[GRANGA_WORK_00] + RAND_FLOAT_CENTERED(60.0f),
                               sCoGrangaWork[GRANGA_WORK_01], sCoGrangaWork[GRANGA_WORK_02] + RAND_FLOAT_CENTERED(60.0f),
                               2.0f);
@@ -259,14 +269,21 @@ void Corneria_CoGranga_HandleDamage(CoGranga* this) {
             if (this->swork[GRANGA_RIGHT_ARM_HP] <= 0) {
                 this->swork[GRANGA_RIGHT_ARM_DMG_IND] = DMG_DESTROYED;
                 this->info.hitbox[1 + 12] = 100000.0f;
+                sCoGrangaLimbs++;
                 Corneria_8018798C(this, sCoGrangaWork[GRANGA_WORK_00], sCoGrangaWork[GRANGA_WORK_01],
                                   sCoGrangaWork[GRANGA_WORK_02], 7.0f);
             }
         } else if ((this->dmgPart == GRANGA_DMG_LEFT_LEG) || (this->dmgPart == GRANGA_DMG_RIGHT_LEG)) {
-            AUDIO_PLAY_SFX(NA_SE_EN_DAMAGE_S, this->sfxSource, 4);
-            this->swork[GRANGA_SWK_23] = 200;
 
-            if (this->dmgPart == GRANGA_DMG_LEFT_LEG) {
+            if (sCoGrangaLimbs > 2) {
+                AUDIO_PLAY_SFX(NA_SE_EN_DAMAGE_S, this->sfxSource, 4);
+                this->swork[GRANGA_SWK_23] = 200;
+            } else {
+                AUDIO_PLAY_SFX(NA_SE_EN_REFLECT, this->sfxSource, 4);
+            }
+            
+
+            if ((this->dmgPart == GRANGA_DMG_LEFT_LEG) && (sCoGrangaLimbs > 2)) {
                 this->swork[GRANGA_LEFT_LEG_HP] -= this->damage;
                 this->swork[GRANGA_LEFT_LEG_DMG_IND] = this->swork[GRANGA_LEFT_LEG_DMG_IND + 1] =
                     this->swork[GRANGA_LEFT_LEG_DMG_IND + 2] = DMG_FLICKER_5;
@@ -276,6 +293,7 @@ void Corneria_CoGranga_HandleDamage(CoGranga* this) {
                     this->swork[GRANGA_LEFT_LEG_DMG_IND] = this->swork[GRANGA_LEFT_LEG_DMG_IND + 1] =
                         this->swork[GRANGA_LEFT_LEG_DMG_IND + 2] = DMG_DESTROYED;
                     this->info.hitbox[1 + 24] = 100000.0f;
+                    sCoGrangaLimbs++;
 
                     for (i = 3; i < 6; i++) {
                         Boss_SpawnDebris(sCoGrangaWork[18 + i + 2], sCoGrangaWork[24 + i + 2],
@@ -289,7 +307,7 @@ void Corneria_CoGranga_HandleDamage(CoGranga* this) {
                         this->timer_050 = 60;
                     }
                 }
-            } else { // (this->dmgPart == GRANGA_DMG_RIGHT_LEG)
+            } else if ((this->dmgPart == GRANGA_DMG_RIGHT_LEG) && (sCoGrangaLimbs > 2)) {
                 this->swork[GRANGA_RIGHT_LEG_HP] -= this->damage;
                 this->swork[GRANGA_RIGHT_LEG_DMG_IND] = this->swork[GRANGA_RIGHT_LEG_DMG_IND + 1] =
                     this->swork[GRANGA_RIGHT_LEG_DMG_IND + 2] = DMG_FLICKER_5;
@@ -299,6 +317,7 @@ void Corneria_CoGranga_HandleDamage(CoGranga* this) {
                     this->swork[GRANGA_RIGHT_LEG_DMG_IND] = this->swork[GRANGA_RIGHT_LEG_DMG_IND + 1] =
                         this->swork[GRANGA_RIGHT_LEG_DMG_IND + 2] = DMG_DESTROYED;
                     this->info.hitbox[1 + 30] = 100000.0f;
+                    sCoGrangaLimbs++;
 
                     for (i = 0; i < 3; i++) {
                         Boss_SpawnDebris(sCoGrangaWork[18 + i + 2], sCoGrangaWork[24 + i + 2],
@@ -399,6 +418,8 @@ ObjectId Corneria_CoGranga_ChooseMissileTarget(CoGranga* this) {
      */
     if (this->swork[GRANGA_MISSILE_COUNT] >= 5) {
         this->swork[GRANGA_MISSILE_COUNT] = 0;
+        return OBJ_ACTOR_MISSILE_SEEK_PLAYER;
+    } else if (gTurretModeEnabled) {
         return OBJ_ACTOR_MISSILE_SEEK_PLAYER;
     } else if (ActorMissileSeek_ModeCheck(0) < 4) {
         return OBJ_ACTOR_MISSILE_SEEK_TEAM;
@@ -632,12 +653,21 @@ void Corneria_CoGranga_Update(CoGranga* this) {
 
             this->drawShadow = true;
 
-            this->swork[GRANGA_LEFT_LEG_HP] = 150;
-            this->swork[GRANGA_RIGHT_LEG_HP] = 150;
-            this->swork[GRANGA_LEFT_ARM_HP] = 40;
-            this->swork[GRANGA_RIGHT_ARM_HP] = 40;
-            this->swork[GRANGA_PLASMA_GUN_HP] = 40;
-            this->swork[GRANGA_BACKPACK_HP] = 130;
+            if (gTurretModeEnabled) {
+                this->swork[GRANGA_LEFT_LEG_HP] = 150;
+                this->swork[GRANGA_RIGHT_LEG_HP] = 150;
+                this->swork[GRANGA_LEFT_ARM_HP] = 140;
+                this->swork[GRANGA_RIGHT_ARM_HP] = 140;
+                this->swork[GRANGA_PLASMA_GUN_HP] = 140;
+                this->swork[GRANGA_BACKPACK_HP] = 200;
+            } else {
+                this->swork[GRANGA_LEFT_LEG_HP] = 150;
+                this->swork[GRANGA_RIGHT_LEG_HP] = 150;
+                this->swork[GRANGA_LEFT_ARM_HP] = 40;
+                this->swork[GRANGA_RIGHT_ARM_HP] = 40;
+                this->swork[GRANGA_PLASMA_GUN_HP] = 40;
+                this->swork[GRANGA_BACKPACK_HP] = 130;
+            }            
 
             this->info.hitbox[1 + 0] = -241.0f;
             this->info.hitbox[1 + 6] = 0.0f;
@@ -932,6 +962,9 @@ void Corneria_CoGranga_Update(CoGranga* this) {
 
                         if ((gGameFrameCount % 512U) == 0) {
                             Radio_PlayMessage(gMsg_ID_2275, RCID_BOSS_CORNERIA);
+                            if (gTurretModeEnabled) {
+                                Radio_PlayMessage(gMsg_ID_2263, RCID_BOSS_CORNERIA);
+                            }
                         }
 
                         if ((gGameFrameCount % 512U) == 256) {
@@ -947,6 +980,9 @@ void Corneria_CoGranga_Update(CoGranga* this) {
 
                         if ((gGameFrameCount % 512U) == 0) {
                             Radio_PlayMessage(gMsg_ID_2275, RCID_BOSS_CORNERIA);
+                            if (gTurretModeEnabled) {
+                                Radio_PlayMessage(gMsg_ID_2263, RCID_BOSS_CORNERIA);
+                            }
                         }
                         if ((gGameFrameCount % 512U) == 256) {
                             Radio_PlayMessage(gMsg_ID_2220, RCID_BOSS_CORNERIA);
@@ -1648,7 +1684,7 @@ void Corneria_CoCarrier_ChooseMissileTarget(CoCarrier* this, f32 xPos, f32 yPos,
                                             s32 eventType) {
     ObjectId objId = OBJ_ACTOR_MISSILE_SEEK_PLAYER;
 
-    if (ActorMissileSeek_ModeCheck(0) < 4) {
+    if ((ActorMissileSeek_ModeCheck(0) < 4) && (!gTurretModeEnabled)) {
         objId = OBJ_ACTOR_MISSILE_SEEK_TEAM;
     }
 
@@ -1665,7 +1701,11 @@ void Corneria_CoCarrier_Init(CoCarrier* this) {
 
     this->drawShadow = true;
     this->timer_050 = 354;
-    this->health = 601;
+    if (gTurretModeEnabled) {
+        this->health = 1000;
+    } else {
+        this->health = 601;
+    }
     this->fwork[18] = -gArwingSpeed - 10.0f;
 
     if (fabsf(gPlayer[0].xPath) < 1.0f) {
@@ -1695,7 +1735,11 @@ void Corneria_CoCarrier_Init(CoCarrier* this) {
         gBosses[i].obj.pos.x = this->obj.pos.x;
         gBosses[i].obj.pos.y = this->obj.pos.y;
         gBosses[i].obj.pos.z = this->obj.pos.z;
-        gBosses[i].health = 200;
+        if (gTurretModeEnabled) {
+            gBosses[i].health = 500;
+        } else {
+            gBosses[i].health = 200;
+        }
         gBosses[i].drawShadow = true;
         gBosses[i].timer_05A = timer;
         Object_SetInfo(&gBosses[i].info, gBosses[i].obj.id);
@@ -1800,7 +1844,7 @@ void Corneria_CoCarrier_Update(CoCarrier* this) {
         Matrix_MultVec3f(gCalcMatrix, &D_i1_801998D8, &sp84[1]);
         Matrix_MultVec3f(gCalcMatrix, &D_i1_801998E4, &sp84[2]);
 
-        if (this->health != 601) {
+        if ((!gTurretModeEnabled) && (this->health != 601)) {
             k = this->health - 601;
 
             if (k < 0) {
@@ -1810,6 +1854,26 @@ void Corneria_CoCarrier_Update(CoCarrier* this) {
             for (i = 0; k >= 60; i++, k -= 60) {}
 
             for (j = 0, k = 13; j < i; j++, k++) {
+                if ((gGameFrameCount % 16U) == (j % 16U)) {
+                    Matrix_MultVec3f(gCalcMatrix, &D_i1_8019995C[j], &sp84[k]);
+                    func_effect_8007D0E0(sp84[k].x + this->obj.pos.x, sp84[k].y + this->obj.pos.y,
+                                         sp84[k].z + this->obj.pos.z, this->fwork[17]);
+                    Effect_Effect390_Spawn(sp84[k].x + this->obj.pos.x, sp84[k].y + this->obj.pos.y,
+                                           sp84[k].z + this->obj.pos.z, this->vel.x, this->vel.y, this->vel.z, 0.1f, 7);
+                }
+            }
+        }
+
+        if ((gTurretModeEnabled) && (this->health != 1000)) {
+            k = this->health - 1000;
+
+            if (k < 0) {
+                k *= -1;
+            }
+
+            for (i = 0; k >= 100; i++, k -= 100) {}
+
+            for (j = 0, k = 20; j < i; j++, k++) {
                 if ((gGameFrameCount % 16U) == (j % 16U)) {
                     Matrix_MultVec3f(gCalcMatrix, &D_i1_8019995C[j], &sp84[k]);
                     func_effect_8007D0E0(sp84[k].x + this->obj.pos.x, sp84[k].y + this->obj.pos.y,

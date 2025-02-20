@@ -245,6 +245,7 @@ void Titania_LevelStart(Player* player) {
                 D_ctx_8017782C = false;
                 if (gTurretModeEnabled) {
                     Audio_KillSfxById(NA_SE_TANK_GO_UP);
+                    AUDIO_PLAY_BGM(NA_BGM_STAGE_TI);
                 }
                 if ((gControllerHold[player->num].button & Z_TRIG) && (gControllerHold[player->num].button & R_TRIG)) {
                     Audio_KillSfxBySourceAndId(player->sfxSource, NA_SE_TANK_GO_UP);

@@ -1265,7 +1265,7 @@ void Texture_BlendRGBA16(f32 weight, u16 size, u16* src1, u16* src2, u16* dst) {
     f32 red;
     f32 grn;
     f32 blu;
-    g2 = RGBA16_GRN(temp2); // mega fake
+    //g2 = RGBA16_GRN(temp2); // mega fake
 
     for (i = 0; i < size; i++) {
         temp1 = var_a1[i];

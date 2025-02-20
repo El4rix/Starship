@@ -647,7 +647,6 @@ void Andross_AndRadio_Update(AndRadio* this) {
             SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 1);
             switch (this->counter_04E) {
                 case 50:
-                    gStartAndrossFightTimer = 50;
                     AUDIO_PLAY_SFX(NA_SE_VO_ANDROSS_LAUGH, this->sfxSource, 4);
                     AUDIO_PLAY_SFX(NA_SE_EN_HEARTBEAT, this->sfxSource, 4);
                     return;
@@ -1097,11 +1096,19 @@ void Andross_AndBrain_Update(AndBrain* this) {
                     break;
 
                 case 350:
-                    Radio_PlayMessage(gMsg_ID_19468, RCID_JAMES);
+                    if (gTurretModeEnabled) {
+                        Radio_PlayMessage(gMsg_ID_20278, RCID_ROB64);
+                    } else {
+                        Radio_PlayMessage(gMsg_ID_19468, RCID_JAMES);
+                    }
                     break;
 
                 case 500:
-                    Radio_PlayMessage(gMsg_ID_19350, RCID_FOX);
+                    if (gTurretModeEnabled) {
+                        Radio_PlayMessage(gMsg_ID_19205, RCID_FOX);
+                    } else {
+                        Radio_PlayMessage(gMsg_ID_19350, RCID_FOX);
+                    }
                     gAllRangeCheckpoint = 1;
                     break;
 
@@ -3176,6 +3183,9 @@ void Andross_AndAndross_Update(AndAndross* this) {
                     break;
 
                 case 180:
+                    if (gTurretModeEnabled) {
+                        gBlurAlpha = 255;
+                    }
                     boss1 = &gBosses[1];
                     Boss_Initialize(boss1);
                     boss1->obj.status = OBJ_INIT;
@@ -3935,6 +3945,10 @@ void Andross_80193AE4(s32 actorIndex) {
     Object_SetInfo(&actor->info, actor->obj.id);
 
     if (actorIndex == 0) {
+        if (gTurretModeEnabled) {
+            Object_Kill(&actor->obj, &actor->sfxSource);
+            return;
+        }
         actor->state = 200;
         actor->animFrame = ACTOR_CS_GREAT_FOX;
         AUDIO_PLAY_SFX(NA_SE_GREATFOX_ENGINE, actor->sfxSource, 0);
@@ -4177,7 +4191,7 @@ void Andross_80193C4C(Player* player) {
                 gFillScreenAlpha = gFillScreenAlphaTarget = 255;
             }
 
-            if ((gCsFrameCount == 20) && (gVenomHardClear != 0)) {
+            if ((gCsFrameCount == 20) && (gVenomHardClear != 0) && (!gTurretModeEnabled)) {
                 Andross_801939A0(1);
             }
             if (gCsFrameCount == 40) {

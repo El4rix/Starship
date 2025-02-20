@@ -1158,6 +1158,10 @@ void Bolse_LevelStart(Player* player) {
     ActorCutscene* actor;
     s32 pad[4];
 
+    if (gTurretModeEnabled) {
+        gGameFrameCount--;
+    }
+
     switch (player->csState) {
         case 0:
             gLight1R = 100;
@@ -1330,6 +1334,9 @@ void Bolse_LevelStart(Player* player) {
                     player->draw = false;
                 }
                 player->state = PLAYERSTATE_ACTIVE;
+                if (gTurretModeEnabled) {
+                    player->pos.y = 1300;
+                }
                 player->baseSpeed = gArwingSpeed;
                 player->unk_014 = 0.0001f;
 

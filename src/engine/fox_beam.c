@@ -698,15 +698,20 @@ void PlayerShot_ApplyDamageToActor(PlayerShot* shot, Actor* actor, s32 hitIndex)
     }
     if (shot->obj.id == PLAYERSHOT_GFOX_LASER) {
         if ((gTurretModeEnabled)) {
-            if ((actor->eventType == EVID_TEAMMATE) || (actor->obj.id == OBJ_ACTOR_TEAM_BOSS) || (actor->obj.id == OBJ_ACTOR_TEAM_ARWING) || (gCurrentLevel == LEVEL_VENOM_2)) {
-                actor->damage = 10;
-            } else if ((gCurrentLevel == LEVEL_FORTUNA) || (gCurrentLevel == LEVEL_BOLSE) || (gCurrentLevel == LEVEL_KATINA)) {
+            if ((actor->eventType == EVID_TEAMMATE) 
+            || (actor->obj.id == OBJ_ACTOR_TEAM_BOSS) 
+            || (actor->obj.id == OBJ_ACTOR_TEAM_ARWING) 
+            || (gCurrentLevel == LEVEL_VENOM_2)) {
+                actor->damage = 4;
+            } else if ((gCurrentLevel == LEVEL_FORTUNA) 
+            || (gCurrentLevel == LEVEL_BOLSE) 
+            || (gCurrentLevel == LEVEL_KATINA)) {
                 actor->damage = 10;
                 actor->dmgType = DMG_EXPLOSION;
             } else if (gCurrentLevel == LEVEL_SECTOR_Z) {
                 actor->damage = 25;
-                //actor->dmgType = DMG_EXPLOSION;
-            } else if ((gCurrentLevel == LEVEL_ZONESS) || (gCurrentLevel == LEVEL_AQUAS)) {
+            } else if ((gCurrentLevel == LEVEL_ZONESS) 
+            || (gCurrentLevel == LEVEL_AQUAS)) {
                 actor->dmgType = RAND_INT(5);
                 if (actor->dmgType == 4) {
                     actor->dmgType = DMG_EXPLOSION;
@@ -715,6 +720,8 @@ void PlayerShot_ApplyDamageToActor(PlayerShot* shot, Actor* actor, s32 hitIndex)
                     actor->dmgType = DMG_BEAM;
                     actor->damage = 10;
                 }
+            /* } else if ((gCurrentLevel == LEVEL_CORNERIA) && (gBossActive)) {
+                actor->damage = 1; */
             } else {
                 actor->damage = 25;
             }
