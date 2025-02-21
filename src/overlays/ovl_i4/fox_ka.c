@@ -702,6 +702,9 @@ void Katina_BossHandleDamage(KaSaucerer* this) {
                 if ((this->swork[BOSS_CORE_HP] > 0) && (this->state > 10)) {
                     this->swork[BOSS_CORE_FLASH_TIMER] = 20;
                     this->swork[BOSS_CORE_HP] -= this->damage;
+                    if (gTurretModeEnabled) {
+                        this->swork[BOSS_CORE_HP] += (this->damage * 0.5f);
+                    }
 
                     if (this->swork[BOSS_CORE_HP] < 100) {
                         Effect_SpawnTimedSfxAtPos(&this->obj.pos, NA_SE_EN_KNOCK_DOWN);
@@ -2649,6 +2652,22 @@ void Katina_EnemyUpdate(ActorAllRange* this) {
 
     if (this->iwork[KA_ACTOR_IWORK_8] != 0) {
         this->iwork[KA_ACTOR_IWORK_8]--;
+    }
+
+    if ((gTurretModeEnabled) && (gCurrentLevel != LEVEL_SECTOR_Z) && (gPlayer[0].state == PLAYERSTATE_ACTIVE) && (this->animFrame != 1)) {
+        if ((gControllerHold[0].button & R_TRIG)) {
+            if (((sin((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) + 0.3f) 
+                    > ((this->obj.pos.x - gPlayer[0].pos.x) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2)))) 
+                    && ((sin((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) - 0.3f) 
+                    < ((this->obj.pos.x - gPlayer[0].pos.x) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2)))) 
+                    && ((cos((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) + 0.3f) 
+                    > ((this->obj.pos.z - gPlayer[0].pos.z) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2)))) 
+                    && ((cos((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) - 0.3f) 
+                    < ((this->obj.pos.z - gPlayer[0].pos.z) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2))))) {
+                this->obj.pos.x -= ((this->obj.pos.x - gPlayer[0].pos.x) * 0.025f);
+                this->obj.pos.z -= ((this->obj.pos.z - gPlayer[0].pos.z) * 0.025f);
+            }
+        }
     }
 }
 

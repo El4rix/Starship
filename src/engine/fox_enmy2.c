@@ -1933,12 +1933,38 @@ void ActorEvent_ProcessActions(ActorEvent* this) {
                 break;
 
             case EVACT_9:
-                if (gCurrentLevel == LEVEL_AQUAS) {
-                    ActorEvent_SpawnEffect394(this->obj.pos.x, this->obj.pos.y, this->obj.pos.z, 12.0f);
+                if ((gTurretModeEnabled) && (this->obj.pos.x > gPlayer[0].pos.x - 500) 
+                                         && (this->obj.pos.x < gPlayer[0].pos.x + 500)
+                                         && (this->obj.pos.y > gPlayer[0].pos.y - 500)
+                                         && (this->obj.pos.y < gPlayer[0].pos.y + 500)) {
+                    if (gCurrentLevel == LEVEL_AQUAS) {
+                        if (this->obj.pos.z < gPlayer[0].pos.z - 200) {
+                            AUDIO_PLAY_SFX(NA_SE_EN_HEART_OPEN, this->sfxSource, 0);
+                        }
+                        this->obj.pos.z = gPlayer[0].pos.z - 200;
+                        this->obj.pos.x += (turretDestX - gPlayer[0].pos.x + gPlayer[0].knockback.x);
+                        this->obj.pos.y += (turretDestY - gPlayer[0].pos.y + gPlayer[0].knockback.y);
+
+                        this->rot_0F4.x = -90;
+                        this->obj.rot.z = 0;
+                        this->rot_0F4.z += Rand_ZeroOne();
+                        if (gGameFrameCount % 50 == 0) {
+                            AUDIO_PLAY_SFX(NA_SE_EN_ANDROSS_EYE, this->sfxSource, 0);
+                        }
+                    } else {
+                        ActorEvent_SpawnEffect347(this->obj.pos.x, this->obj.pos.y, this->obj.pos.z, 40.0f);
+                        Object_Kill(&this->obj, this->sfxSource);
+                    }
                 } else {
-                    ActorEvent_SpawnEffect347(this->obj.pos.x, this->obj.pos.y, this->obj.pos.z, 40.0f);
+                    if (gCurrentLevel == LEVEL_AQUAS) {
+                        ActorEvent_SpawnEffect394(this->obj.pos.x, this->obj.pos.y, this->obj.pos.z, 12.0f);
+                    } else {
+                        ActorEvent_SpawnEffect347(this->obj.pos.x, this->obj.pos.y, this->obj.pos.z, 40.0f);
+                    }
+                    Object_Kill(&this->obj, this->sfxSource);
                 }
-                Object_Kill(&this->obj, this->sfxSource);
+
+                
                 break;
 
             case EVACT_10:

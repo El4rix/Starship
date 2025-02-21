@@ -1515,7 +1515,7 @@ void Display_Player_Update(Player* player, s32 reflectY) {
                     gGfxMatrix,
                     -((player->xRot_120 + player->rot.x + player->aerobaticPitch + player->damageShake) * M_DTOR),
                     MTXF_APPLY);
-                if ((gCurrentLevel != LEVEL_SECTOR_Y) && (gCurrentLevel != LEVEL_ZONESS) && (gCurrentLevel != LEVEL_SOLAR) && (gCurrentLevel != LEVEL_TITANIA) && (gCurrentLevel != LEVEL_MACBETH) && (gCurrentLevel != LEVEL_BOLSE)) {
+                if ((gCurrentLevel != LEVEL_SECTOR_Y) && (gCurrentLevel != LEVEL_ZONESS) && (gCurrentLevel != LEVEL_SOLAR) && (gCurrentLevel != LEVEL_TITANIA) && (gCurrentLevel != LEVEL_MACBETH) && (gCurrentLevel != LEVEL_BOLSE) && (gCurrentLevel != LEVEL_KATINA)) {
                     Matrix_RotateZ(gGfxMatrix, -((player->bankAngle + player->rockAngle + player->damageShake) * M_DTOR),
                         MTXF_APPLY);
                 }

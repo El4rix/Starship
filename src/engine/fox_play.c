@@ -6005,6 +6005,9 @@ void Player_Update(Player* player) {
             player->draw = false;
             gShowHud = false;
             gPauseEnabled = false;
+            if (gTurretModeEnabled) {
+                Audio_KillSfxBySourceAndId(gDefaultSfxSource, NA_SE_EN_A6BOSS_CHARGE);
+            }
             break;
 
         case PLAYERSTATE_INIT:
@@ -6100,6 +6103,9 @@ void Player_Update(Player* player) {
 
         case PLAYERSTATE_DOWN:
             Cutscene_PlayerDown(player);
+            if (gTurretModeEnabled) {
+                Audio_KillSfxBySourceAndId(gDefaultSfxSource, NA_SE_EN_A6BOSS_CHARGE);
+            }
             break;
 
         case PLAYERSTATE_U_TURN:
@@ -6126,6 +6132,9 @@ void Player_Update(Player* player) {
             break;
 
         case PLAYERSTATE_LEVEL_COMPLETE:
+            if (gTurretModeEnabled) {
+                Audio_KillSfxBySourceAndId(gDefaultSfxSource, NA_SE_EN_A6BOSS_CHARGE);
+            }
             player->alternateView = false;
             gPauseEnabled = false;
             Player_UpdateShields(player);

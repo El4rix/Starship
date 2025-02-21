@@ -252,7 +252,7 @@ void Turret_GreatFoxLaser(Player* player, f32 xOffset) {
             Turret_SetupShot(player, &gPlayerShots[i], xOffset, -130.0f, 250.0f, PLAYERSHOT_GFOX_LASER, 100.0f);
             //Play_PlaySfxFirstPlayer(gPlayerShots[i].sfxSource, NA_SE_GREATFOX_SHOT_DEMO); //NA_SE_TURRET_SHOT
             if ((gCurrentLevel == LEVEL_AQUAS) || (gCurrentLevel == LEVEL_SOLAR) || ((gCurrentLevel == LEVEL_VENOM_ANDROSS) && (gLevelMode == LEVELMODE_ALL_RANGE))) {
-                AUDIO_PLAY_SFX(NA_SE_MAR_TWIN_LASER, gPlayerShots[i].sfxSource, 0);
+                AUDIO_PLAY_SFX(NA_SE_MAR_TWIN_LASER, gPlayerShots[i].sfxSource, 0);                
             } else {
                 AUDIO_PLAY_SFX(NA_SE_GREATFOX_SHOT_DEMO, gPlayerShots[i].sfxSource, 0);
             }
