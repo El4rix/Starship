@@ -579,6 +579,11 @@ void Cutscene_EnterWarpZone(Player* player) {
                 player->unk_018 = 0.0f;
                 gDrawSmallRocks = 0;
                 gLoadLevelObjects = 1;
+                if (gTurretModeEnabled) {
+                    player->pos.x = 0;
+                    player->xPathTarget = 0;
+                    turretDestX = 0;
+                }
             }
             Math_SmoothStepToF(&player->cam.eye.y, (player->pos.y * player->unk_148) + 50.0f, 0.2f, 15.0f, 0.01f);
             Math_SmoothStepToF(&player->cam.at.y, (player->pos.y * player->unk_14C) + 20.0f, 0.2f, 15.0f, 0.01f);
@@ -3320,6 +3325,13 @@ void Cutscene_DrawGreatFox(void) {
         if ((gCurrentLevel == LEVEL_TITANIA) && (gPlayer[0].state == PLAYERSTATE_ACTIVE)) {
             return;
         }
+
+        if ((gGameState == GSTATE_TITLE) && (gStarCount == 801)) {
+            gGreatFoxIntact = true;
+            Matrix_Push(&gGfxMatrix);
+            Matrix_Scale(gGfxMatrix, 0.05f, 0.05f, 0.05f, MTXF_APPLY);
+            Matrix_SetGfxMtx(&gMasterDisp);
+        }
     }
 
     PRINTF("Demo_Time=%d\n");
@@ -3410,4 +3422,11 @@ void Cutscene_DrawGreatFox(void) {
     }
     // @port Pop the transform id.
     FrameInterpolation_RecordCloseChild();
+
+    if (gTurretModeEnabled) {
+        if ((gGameState == GSTATE_TITLE) && (gStarCount == 801)) {
+            gGreatFoxIntact = true;
+            Matrix_Pop(&gGfxMatrix);
+        }
+    }
 }

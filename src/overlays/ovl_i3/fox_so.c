@@ -1968,6 +1968,9 @@ void Solar_801A3C4C(SoVulkain* this) {
     if ((this->swork[SO_SWK_2] == 0) && (this->swork[SO_SWK_3] == 0) &&
         ((this->dmgPart == 8) || (this->dmgPart == -1))) {
         this->health -= this->damage;
+        if (gTurretModeEnabled) {
+            this->health += (this->damage * 0.5f);
+        }
         if (this->health < 0) {
             this->health = 0;
         }

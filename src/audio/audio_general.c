@@ -2370,7 +2370,9 @@ void Audio_StartPlayerNoise(u8 playerId) {
             }
             break;
         case FORM_LANDMASTER:
-            sfxId = NA_SE_TANK_ENGIN;
+            if (!gTurretModeEnabled) {
+                sfxId = NA_SE_TANK_ENGIN;
+            }
             break;
         case FORM_BLUE_MARINE:
             sfxId = NA_SE_MARINE_ENGINE00;

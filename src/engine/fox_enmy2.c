@@ -2648,6 +2648,13 @@ void ActorEvent_ProcessTriggers(ActorEvent* this) {
                     (fabsf(this->obj.pos.x - gPlayerShots[i].obj.pos.x) < 300.0f) &&
                     (fabsf(this->obj.pos.y - gPlayerShots[i].obj.pos.y) < 300.0f) &&
                     (fabsf(this->obj.pos.z - gPlayerShots[i].obj.pos.z) < 300.0f)) {
+                    if ((gTurretModeEnabled) && (gCurrentLevel == LEVEL_TITANIA)) {
+                        if (Rand_ZeroOne() > 0.5f) {
+                            this->itemDrop = DROP_SILVER_RING;
+                        } else {
+                            this->itemDrop = DROP_LASERS;
+                        }
+                    }
                     ActorEvent_TriggerBranch(this);
                     break;
                 }
@@ -3827,6 +3834,13 @@ void ActorEvent_Update(ActorEvent* this) {
             this->animFrame++;
             if (this->animFrame >= 6) {
                 this->animFrame = 0;
+            }
+            break;
+
+        case EVID_MA_BOULDER:
+            if (gTurretModeEnabled) {
+                this->work_04A++;
+                this->vel.y = 30 - (this->work_04A % 60);
             }
             break;
     }

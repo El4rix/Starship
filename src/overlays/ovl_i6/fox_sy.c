@@ -422,6 +422,9 @@ void SectorY_80198F5C(SyShogun* this) {
     Effect_Effect390_Spawn(this->obj.pos.x, this->obj.pos.y, this->obj.pos.z, this->vel.x, this->vel.y, this->vel.z,
                            0.1f, 10);
     this->health -= this->damage;
+    if (gTurretModeEnabled) {
+        this->health += (this->damage * 0.5);
+    }
 
     if (this->health < 0) {
         this->health = 0;
@@ -3810,6 +3813,9 @@ void SectorY_SyRobot_Update(SyRobot* this) {
             Effect_Effect390_Spawn(this->hitPos.x, this->hitPos.y, this->hitPos.z, this->vel.x, this->vel.y,
                                    this->vel.z, 0.1f, 10);
             this->health -= this->damage;
+            if (gTurretModeEnabled) {
+                this->health += (this->damage * 0.5f);
+            }
 
             if (this->health <= 0) {
                 this->work_046 = 3;

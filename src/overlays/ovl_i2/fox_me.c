@@ -985,6 +985,9 @@ void Meteo_MeCrusher_Update(MeCrusher* this) {
 
                     this[0].swork[9 + this->dmgPart] = 20;
                     this[0].swork[2 + this->dmgPart] -= this->damage;
+                    if (gTurretModeEnabled) {
+                        this[0].swork[2 + this->dmgPart] += (this->damage * 0.5f);
+                    }
 
                     if (this[0].swork[2 + this->dmgPart] <= 0) {
                         this[0].swork[2 + this->dmgPart] = 0;
@@ -1011,6 +1014,9 @@ void Meteo_MeCrusher_Update(MeCrusher* this) {
                         AUDIO_PLAY_SFX(NA_SE_EN_KNOCK_DOWN, this->sfxSource, 4);
                         this->swork[14] = 20;
                         this->swork[7] -= this->damage;
+                        if (gTurretModeEnabled) {
+                            this->swork[7] += (this->damage * 0.5f);
+                        }
                         if (this->swork[7] <= 0) {
                             this->swork[7] = 0;
                             Meteo_801892F0(this, this->dmgPart);
@@ -1025,6 +1031,9 @@ void Meteo_MeCrusher_Update(MeCrusher* this) {
                         AUDIO_PLAY_SFX(NA_SE_EN_KNOCK_DOWN, this->sfxSource, 4);
                         this->swork[15] = 20;
                         this->swork[8] -= this->damage;
+                        if (gTurretModeEnabled) {
+                            this->swork[8] += (this->damage * 0.5f);
+                        }
                         if (this->swork[8] <= 0) {
                             this->swork[8] = 0;
                             Meteo_801892F0(this, this->dmgPart);
@@ -1150,7 +1159,7 @@ void Meteo_MeCrusher_Update(MeCrusher* this) {
     if (this->swork[18] != 0) {
         s32 objId;
 
-        if (ActorMissileSeek_ModeCheck(0) >= 4) {
+        if ((ActorMissileSeek_ModeCheck(0) >= 4) || (gTurretModeEnabled)) {
             objId = OBJ_ACTOR_MISSILE_SEEK_PLAYER;
         } else {
             objId = OBJ_ACTOR_MISSILE_SEEK_TEAM;

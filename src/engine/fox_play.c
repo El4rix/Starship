@@ -2828,8 +2828,7 @@ void Player_InitVersus(void) {
 
 void Play_Init(void) {
     s32 i;
-
-    gTurretModeEnabled = true;
+    
     if (gTurretModeEnabled) {
         gBrakeButton[0] = Z_TRIG;
     }
@@ -4687,7 +4686,11 @@ void Player_Setup(Player* playerx) {
                 player->pos.y = 0.0f;
             }
             if (gTurretModeEnabled) {
-                player->pathHeight = 650.0f;
+                if (gCurrentLevel == LEVEL_TITANIA) {
+                    player->pathHeight = 450.0f;
+                } else {
+                    player->pathHeight = 650.0f;
+                }
                 player->pathFloor = 100.0f;
             }
             break;
@@ -5328,8 +5331,8 @@ void Player_ArwingBrake(Player* player) {
     s32 stickY;
 
     if (gTurretModeEnabled) {
-        sp30 = 1.5f;
-        sp34 = 0.35f;
+        sp30 = 3.0f;
+        sp34 = 1.5f;
     } else if (gLevelMode == LEVELMODE_ON_RAILS) {
         sp30 = 3.0f;
         sp34 = 0.5f;
@@ -5386,7 +5389,7 @@ void Player_ArwingBrake(Player* player) {
             }
             player->boostMeter += sp30;
             if (player->boostMeter > 90.0f) {
-                player->boostCooldown = true;
+                //player->boostCooldown = true;
                 player->boostMeter = 90.0f;
             }
 

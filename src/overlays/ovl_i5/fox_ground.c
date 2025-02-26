@@ -366,6 +366,10 @@ void Ground_801B58AC(Gfx** dList, f32 arg1) {
     Vtx* temp_t1;
     Vtx* temp_v0;
 
+    if ((gTurretModeEnabled) && (gPlayer[0].state == PLAYERSTATE_LEVEL_COMPLETE) && (gCsFrameCount > 30)) {
+        return;
+    }
+
     RCP_SetupDL(dList, 0x1D);
     RCP_SetFog(dList, gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
 

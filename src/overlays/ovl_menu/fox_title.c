@@ -528,7 +528,12 @@ void Title_Screen_Setup(void) {
 
     D_menu_801B869C = 255;
 
-    gStarCount = 800;
+    if (gTurretModeEnabled) {
+        gStarCount = 801;
+    } else {
+        gStarCount = 800;
+    }
+    
 
     D_menu_801B9040 = 0;
     D_menu_801B86C8 = 0.0f;
@@ -574,21 +579,40 @@ void Title_Screen_Setup(void) {
 
     D_menu_801B84D4 = 0.5f;
 
-    sTitleArwing[TEAM_FOX].pos.x = -80.0f;
-    sTitleArwing[TEAM_FOX].pos.y = 220.0f;
-    sTitleArwing[TEAM_FOX].pos.z = -360.0f;
-    sTitleArwing[TEAM_FOX].scale = 4.0f;
-    sTitleArwing[TEAM_FOX].xRot = 35.0f;
-    sTitleArwing[TEAM_FOX].yRot = -90.0f;
-    sTitleArwing[TEAM_FOX].zRot = -15.0f;
-    sTitleArwing[TEAM_FOX].cockpitGlassXrot = 0.0f;
-    sTitleArwing[TEAM_FOX].laserGunsYpos = 0.0f;
-    sTitleArwing[TEAM_FOX].teamFaceXrot = 0.0f;
-    sTitleArwing[TEAM_FOX].teamFaceYrot = 0.0f;
-    sTitleArwing[TEAM_FOX].drawFace = 1;
-    sTitleArwing[TEAM_FOX].unk_3C = 0;
-    sTitleArwing[TEAM_FOX].unk_40 = 0;
-    sTitleArwing[TEAM_FOX].drawShadow = 0;
+    if (!gTurretModeEnabled) {
+        sTitleArwing[TEAM_FOX].pos.x = -80.0f;
+        sTitleArwing[TEAM_FOX].pos.y = 220.0f;
+        sTitleArwing[TEAM_FOX].pos.z = -360.0f;
+        sTitleArwing[TEAM_FOX].scale = 4.0f;
+        sTitleArwing[TEAM_FOX].xRot = 35.0f;
+        sTitleArwing[TEAM_FOX].yRot = -90.0f;
+        sTitleArwing[TEAM_FOX].zRot = -15.0f;
+        sTitleArwing[TEAM_FOX].cockpitGlassXrot = 0.0f;
+        sTitleArwing[TEAM_FOX].laserGunsYpos = 0.0f;
+        sTitleArwing[TEAM_FOX].teamFaceXrot = 0.0f;
+        sTitleArwing[TEAM_FOX].teamFaceYrot = 0.0f;
+        sTitleArwing[TEAM_FOX].drawFace = 1;
+        sTitleArwing[TEAM_FOX].unk_3C = 0;
+        sTitleArwing[TEAM_FOX].unk_40 = 0;
+        sTitleArwing[TEAM_FOX].drawShadow = 0;
+    } else {
+        sTitleArwing[TEAM_FOX].pos.x = -80.0f;
+        sTitleArwing[TEAM_FOX].pos.y = 220.0f;
+        sTitleArwing[TEAM_FOX].pos.z = -360.0f;
+        sTitleArwing[TEAM_FOX].scale = 4.0f;
+        sTitleArwing[TEAM_FOX].xRot = 35.0f;
+        sTitleArwing[TEAM_FOX].yRot = -90.0f;
+        sTitleArwing[TEAM_FOX].zRot = -15.0f;
+        sTitleArwing[TEAM_FOX].cockpitGlassXrot = 0.0f;
+        sTitleArwing[TEAM_FOX].laserGunsYpos = 0.0f;
+        sTitleArwing[TEAM_FOX].teamFaceXrot = 0.0f;
+        sTitleArwing[TEAM_FOX].teamFaceYrot = 0.0f;
+        sTitleArwing[TEAM_FOX].drawFace = 1;
+        sTitleArwing[TEAM_FOX].unk_3C = 0;
+        sTitleArwing[TEAM_FOX].unk_40 = 0;
+        sTitleArwing[TEAM_FOX].drawShadow = 0;
+    }
+    
 
     if (allExpertMedals) {
         sTitleTeam[TEAM_FOX].pos.x = -299.0f;

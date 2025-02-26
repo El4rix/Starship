@@ -3835,6 +3835,9 @@ void Zoness_ZoSpikeBall_Update(ZoSpikeBall* this) {
                 Zoness_Effect394_Spawn3(sZoFwork[ZO_BSF_65_X], sZoFwork[ZO_BSF_65_Y], sZoFwork[ZO_BSF_65_Z], 30.0f);
 
                 this->timer_0BC = (s32) ((fabsf(sZoFwork[ZO_BSF_28] - -2600.0f) / 100.0f) + 30.0f);
+                if (gTurretModeEnabled) {
+                    this->timer_0BC += 5;
+                }
                 this->timer_0C0 = 3;
                 AUDIO_PLAY_SFX(NA_SE_EN_M_BALL_SHOT, this->sfxSource, 4);
                 this->state++;

@@ -720,8 +720,14 @@ void PlayerShot_ApplyDamageToActor(PlayerShot* shot, Actor* actor, s32 hitIndex)
                     actor->dmgType = DMG_BEAM;
                     actor->damage = 10;
                 }
-            /* } else if ((gCurrentLevel == LEVEL_CORNERIA) && (gBossActive)) {
-                actor->damage = 1; */
+            } else if ((gCurrentLevel == LEVEL_TITANIA) && (gBossActive)) {
+                actor->damage = 1;
+            } else if (gCurrentLevel == LEVEL_MACBETH) {
+                if (gBossActive) {
+                    actor->damage = 10;
+                } else {
+                    actor->damage = 16;
+                }
             } else {
                 actor->damage = 25;
             }

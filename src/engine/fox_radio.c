@@ -157,6 +157,11 @@ void Radio_PlayMessage(u16* msg, RadioCharacterId character) {
 
     gRadioMsgId = Message_IdFromPtr(msg);
     Audio_PlayVoice(gRadioMsgId);
+
+    if ((gTurretModeEnabled) && (gGameState == GSTATE_PLAY) && (gPlayer[0].state == PLAYERSTATE_ACTIVE) && (character == RCID_ROB64)) {
+        if ((gCurrentLevel == LEVEL_SECTOR_Y) || (gCurrentLevel == LEVEL_SECTOR_X) || (gCurrentLevel == LEVEL_SOLAR))
+        Radio_PlayMessage(gMsg_ID_18140, RCID_BILL);
+    }
 }
 
 s32 sRadioUseRedBox;

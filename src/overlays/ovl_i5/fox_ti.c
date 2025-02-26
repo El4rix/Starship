@@ -604,6 +604,20 @@ void Titania_TiLandmine_Update(TiLandmine* this) {
     f32 sp38;
     f32 sp34;
 
+    if ((gTurretModeEnabled) && (this->obj.pos.z > gPlayer[0].pos.z - 700)) {
+
+        Math_SmoothStepToF(&this->obj.pos.x, gPlayer[0].pos.x, 1, 10.0f, 0.00001f);
+
+        if ((this->obj.pos.z < gPlayer[0].pos.z - 600) && (this->obj.pos.y < gPlayer[0].pos.y)) {
+            this->vel.y = 50.0f;
+        }
+        
+        if ((this->obj.pos.y >= gPlayer[0].pos.y - 150) && (this->vel.y >= 0.0f)) {
+            this->vel.y -= 3;
+            this->state = 0; 
+        }
+    }
+
     switch (this->state) {
         case 0:
             this->gravity = 1.0f;
@@ -954,6 +968,25 @@ void Titania_TiBomb_Update(TiBomb* this) {
     f32 temp_fa1;
 
     this->drawShadow = true;
+
+    if ((gTurretModeEnabled) && (this->obj.pos.z > gPlayer[0].pos.z - 700)) {
+
+        Math_SmoothStepToF(&this->obj.pos.x, gPlayer[0].pos.x, 1, 5.0f, 0.00001f);
+        if (gGameFrameCount % 5 == 0) {
+            AUDIO_PLAY_SFX(NA_SE_OB_BOMB_ALARM, this->sfxSource, 4);
+        }
+
+        if ((this->obj.pos.z < gPlayer[0].pos.z - 600) && (this->obj.pos.y < gPlayer[0].pos.y)) {
+            this->vel.y = 50.0f;
+        }
+        
+        if ((this->obj.pos.y >= gPlayer[0].pos.y - 150) && (this->vel.y >= 0.0f)) {
+            this->vel.y -= 3;
+            if ((this->obj.pos.y >= gPlayer[0].pos.y) && (this->obj.pos.x < gPlayer[0].pos.x + 300) && (this->obj.pos.x > gPlayer[0].pos.x - 300)) {
+                this->timer_0BE = 1;
+            }
+        }
+    }
 
     switch (this->state) {
         case 0:
@@ -1915,6 +1948,9 @@ void Titania_TiDelphorHead_Update(TiDelphorHead* this) {
             this->timer_0C6 = 10;
             if (this->health > 0) {
                 this->health -= this->damage;
+                if (gTurretModeEnabled) {
+                    this->health += (this->damage * 0.5f);
+                }
                 if (this->health <= 0) {
                     BonusText_Display(this->obj.pos.x, this->obj.pos.y, this->obj.pos.z + this->fwork[27], 2);
                     gHitCount += 2;
@@ -2271,6 +2307,13 @@ void Titania_TiGoras_Init(TiGoras* this) {
     this->swork[11] = 50;
     this->swork[12] = 50;
     this->swork[21] = 100;
+    if (gTurretModeEnabled) {
+        this->swork[9] = 200;
+        this->swork[10] = 200;
+        this->swork[11] = 200;
+        this->swork[12] = 200;
+        this->swork[21] = 450;
+    }
 
     sp1C = D_i5_801BBEF4 = Memory_Allocate(76 * sizeof(f32));
     var_a1_2 = D_i5_801BBEF0 = Memory_Allocate(50 * sizeof(s32));
@@ -3232,7 +3275,7 @@ void Titania_80192118(TiGoras* this) {
             Animation_GetFrameData(&D_TI_A000934, 0, &D_i5_801BC978[16]);
             Animation_GetFrameData(&D_TI_A000934, 0, &D_i5_801BCDC8[16]);
 
-            if (((gPlayer[0].trueZpos - this->obj.pos.z) <= 650.0f) && (gTurretModeEnabled)) {
+            if (((gPlayer[0].trueZpos - this->obj.pos.z) <= 780.0f) && (gTurretModeEnabled)) {
                 this->vel.z = gPlayer[0].vel.z;
                 gPlayer[0].unk_19C = -1;
                 gPlayer[0].unk_000 = 0.0f;
@@ -5194,6 +5237,14 @@ void Titania_TiGoras_Update(Boss* boss) {
         }
     }
     boss->swork[31]++;
+
+    if ((gTurretModeEnabled)) {
+        if (boss->state > 4) {
+            boss->obj.pos.z = gPlayer[0].trueZpos - 1500;
+        }
+
+        gBossHealthBar = (s32) ((boss->swork[21] * 255.0f) / 450.0f);
+    }
 }
 
 f32 D_i5_801B8D5C[2][25] = {

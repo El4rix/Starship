@@ -3298,8 +3298,23 @@ void Macbeth_MaBoulder_Update(MaBoulder* this) {
 
         case 2:
             func_effect_8007D2C8(this->obj.pos.x, this->obj.pos.y, this->obj.pos.z, 10.0f);
+            if (gTurretModeEnabled) {
+                if (Rand_ZeroOne() > 0.5f) {
+                    this->itemDrop = DROP_LASERS_25p;
+                    Actor_Despawn(this);
+                }
+            }
             Object_Kill(&this->obj, this->sfxSource);
             break;
+    }
+
+    if (gTurretModeEnabled) {
+        if (this->obj.pos.y < 80) {
+            this->obj.pos.y = 80;
+            this->vel.y = 80;
+            AUDIO_PLAY_SFX(NA_SE_OB_ROCK_BOUND, this->sfxSource, 0);
+        }
+        this->vel.y--;
     }
 }
 
@@ -4531,6 +4546,9 @@ void Macbeth_Actor207_Update(Actor207* this) {
                 this->iwork[9] = 15;
 
                 D_i5_801BE320[29] -= this->damage;
+                if (gTurretModeEnabled) {
+                    D_i5_801BE320[29] += (this->damage * 0.9f);
+                }
                 if (D_i5_801BE320[29] <= 0) {
                     SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 1);
                     SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_FANFARE, 1);
@@ -4900,7 +4918,11 @@ void Macbeth_Actor207_Update(Actor207* this) {
             Math_SmoothStepToAngle(&this->obj.rot.z, 0.0f, 0.1f, 20.0f, 0.01f);
 
             Math_SmoothStepToF(&this->obj.pos.z, gPlayer[0].trueZpos - 250.0f, 0.1f, 15.0f, 0.01f);
-            Math_SmoothStepToF(&this->obj.pos.y, 250.0f, 0.1f, 10.0f, 0.01f);
+            if (gTurretModeEnabled) {
+                Math_SmoothStepToF(&this->obj.pos.y, gPlayer[0].pos.y + 350.0f, 0.1f, 10.0f, 0.01f);
+            } else {
+                Math_SmoothStepToF(&this->obj.pos.y, 250.0f, 0.1f, 10.0f, 0.01f);
+            }
 
             if (D_i5_801BE320[3] < (Animation_GetFrameCount(&D_MA_6015C24) - 1)) {
                 D_i5_801BE320[3]++;
@@ -5115,17 +5137,28 @@ void Macbeth_Actor207_Update(Actor207* this) {
     if ((this->dmgType != DMG_NONE) && (this->state >= 2)) {
         this->dmgType = DMG_NONE;
         if ((this->dmgPart == 0) && (D_i5_801BE320[9] > 0) && ((gPlayer[0].trueZpos - this->obj.pos.z) > 200.0f)) {
-            AUDIO_PLAY_SFX(NA_SE_EN_DAMAGE_S, this->sfxSource, 4);
-
-            this->iwork[7] = 15;
-
-            D_i5_801BE320[9] -= this->damage;
-
-            Macbeth_Effect357_Spawn1(this->obj.pos.x, this->obj.pos.y + 80, this->obj.pos.z + 50.0f,
-                                     RAND_FLOAT_CENTERED(10.0f), RAND_FLOAT(5.0f), RAND_FLOAT_CENTERED(3.0f),
-                                     RAND_FLOAT(360.0f), RAND_FLOAT(360.0f), RAND_FLOAT(360.0f),
-                                     RAND_FLOAT_CENTERED(30.0f), RAND_FLOAT_CENTERED(30.0f), RAND_FLOAT_CENTERED(30.0f),
-                                     (s32) (RAND_FLOAT(50.0f) + 70.0f), 3, RAND_FLOAT(1.0f));
+            
+            if (gTurretModeEnabled) {
+                if (this->obj.pos.z < -100000) {
+                    AUDIO_PLAY_SFX(NA_SE_EN_DAMAGE_S, this->sfxSource, 4);
+                    this->iwork[7] = 15;
+                    D_i5_801BE320[9] -= (this->damage * 0.25f);
+                    Macbeth_Effect357_Spawn1(this->obj.pos.x, this->obj.pos.y + 80, this->obj.pos.z + 50.0f,
+                        RAND_FLOAT_CENTERED(10.0f), RAND_FLOAT(5.0f), RAND_FLOAT_CENTERED(3.0f),
+                        RAND_FLOAT(360.0f), RAND_FLOAT(360.0f), RAND_FLOAT(360.0f),
+                        RAND_FLOAT_CENTERED(30.0f), RAND_FLOAT_CENTERED(30.0f), RAND_FLOAT_CENTERED(30.0f),
+                        (s32) (RAND_FLOAT(50.0f) + 70.0f), 3, RAND_FLOAT(1.0f));
+                }
+            } else {
+                AUDIO_PLAY_SFX(NA_SE_EN_DAMAGE_S, this->sfxSource, 4);
+                this->iwork[7] = 15;
+                D_i5_801BE320[9] -= this->damage;
+                Macbeth_Effect357_Spawn1(this->obj.pos.x, this->obj.pos.y + 80, this->obj.pos.z + 50.0f,
+                    RAND_FLOAT_CENTERED(10.0f), RAND_FLOAT(5.0f), RAND_FLOAT_CENTERED(3.0f),
+                    RAND_FLOAT(360.0f), RAND_FLOAT(360.0f), RAND_FLOAT(360.0f),
+                    RAND_FLOAT_CENTERED(30.0f), RAND_FLOAT_CENTERED(30.0f), RAND_FLOAT_CENTERED(30.0f),
+                    (s32) (RAND_FLOAT(50.0f) + 70.0f), 3, RAND_FLOAT(1.0f));
+            }
 
             if (D_i5_801BE320[9] <= 0) {
                 AUDIO_PLAY_SFX(NA_SE_EN_EXPLOSION_M, this->sfxSource, 4);
@@ -5145,17 +5178,28 @@ void Macbeth_Actor207_Update(Actor207* this) {
             }
         } else if ((this->dmgPart == 1) && (D_i5_801BE320[10] > 0) &&
                    ((gPlayer[0].trueZpos - this->obj.pos.z) > 200.0f)) {
-            AUDIO_PLAY_SFX(NA_SE_EN_DAMAGE_S, this->sfxSource, 4);
-
-            this->iwork[8] = 16;
-
-            D_i5_801BE320[10] -= this->damage;
-
-            Macbeth_Effect357_Spawn1(this->obj.pos.x, this->obj.pos.y - 30.0f, this->obj.pos.z,
-                                     RAND_FLOAT_CENTERED(10.0f), RAND_FLOAT(7.0f) + 7.0f, RAND_FLOAT_CENTERED(3.0f),
-                                     RAND_FLOAT(360.0f), RAND_FLOAT(360.0f), RAND_FLOAT(360.0f),
-                                     RAND_FLOAT_CENTERED(30.0f), RAND_FLOAT_CENTERED(30.0f), RAND_FLOAT_CENTERED(30.0f),
-                                     (s32) (RAND_FLOAT(50.0f) + 70.0f), 3, RAND_FLOAT(1.0f));
+            
+            if (gTurretModeEnabled) {
+                if (this->obj.pos.z < -100000) {
+                    AUDIO_PLAY_SFX(NA_SE_EN_DAMAGE_S, this->sfxSource, 4);
+                    this->iwork[8] = 16;
+                    D_i5_801BE320[10] -= (this->damage * 0.25f);
+                    Macbeth_Effect357_Spawn1(this->obj.pos.x, this->obj.pos.y - 30.0f, this->obj.pos.z,
+                        RAND_FLOAT_CENTERED(10.0f), RAND_FLOAT(7.0f) + 7.0f, RAND_FLOAT_CENTERED(3.0f),
+                        RAND_FLOAT(360.0f), RAND_FLOAT(360.0f), RAND_FLOAT(360.0f),
+                        RAND_FLOAT_CENTERED(30.0f), RAND_FLOAT_CENTERED(30.0f), RAND_FLOAT_CENTERED(30.0f),
+                        (s32) (RAND_FLOAT(50.0f) + 70.0f), 3, RAND_FLOAT(1.0f));
+                }
+            } else {
+                AUDIO_PLAY_SFX(NA_SE_EN_DAMAGE_S, this->sfxSource, 4);
+                this->iwork[8] = 16;
+                D_i5_801BE320[10] -= this->damage;
+                Macbeth_Effect357_Spawn1(this->obj.pos.x, this->obj.pos.y - 30.0f, this->obj.pos.z,
+                    RAND_FLOAT_CENTERED(10.0f), RAND_FLOAT(7.0f) + 7.0f, RAND_FLOAT_CENTERED(3.0f),
+                    RAND_FLOAT(360.0f), RAND_FLOAT(360.0f), RAND_FLOAT(360.0f),
+                    RAND_FLOAT_CENTERED(30.0f), RAND_FLOAT_CENTERED(30.0f), RAND_FLOAT_CENTERED(30.0f),
+                    (s32) (RAND_FLOAT(50.0f) + 70.0f), 3, RAND_FLOAT(1.0f));
+            }
 
             if (D_i5_801BE320[10] <= 0) {
                 AUDIO_PLAY_SFX(NA_SE_EN_EXPLOSION_M, this->sfxSource, 4);
@@ -8804,11 +8848,12 @@ void Macbeth_LevelComplete1(Player* player) {
 void Turret_Macbeth_LevelComplete1(Player* player) {
     f32 zeroVar = 0.0f;
 
-    gCsCamEyeX = player->pos.x;
-    gCsCamEyeY = player->pos.y;
-    gCsCamEyeZ = player->pos.z + player->zPath + 50.0f;
     switch (player->csState) {
         case 0:
+            gCsCamEyeX = player->pos.x;
+            gCsCamEyeY = player->pos.y;
+            gCsCamEyeZ = player->pos.z + player->zPath + 50.0f;
+            
             gCsFrameCount = gBossActive = gLoadLevelObjects = 1;
             D_i5_801BA894[4] = 80.0f;
             D_i5_801BA894[3] = D_i5_801BA894[4];

@@ -2280,6 +2280,9 @@ void ItemPickup_Update(Item* this) {
                     this->state = 1;
                     this->timer_48 = 20;
                     this->unk_50 = 60.0f;
+                    if (gTurretModeEnabled) {
+                        gPlayer[this->playerNum].heal += 16;
+                    }
 
                     gLaserStrength[this->playerNum]++;
                     if (gLaserStrength[this->playerNum] > LASERS_HYPER) {

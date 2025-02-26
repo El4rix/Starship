@@ -290,7 +290,11 @@ void Titania_80188108(Actor* this, s32 index) {
 
     if (index < 3) {
         this->iwork[11] = 1;
-        this->drawShadow = true;
+        if (!gTurretModeEnabled) {
+            this->drawShadow = true;
+        } else {
+            this->drawShadow = false;
+        }
         this->fwork[3] = D_i5_801B7348[index];
         this->state = 30;
         AUDIO_PLAY_SFX(NA_SE_ARWING_ENGINE_FG, this->sfxSource, 4);
@@ -563,6 +567,9 @@ void Turret_Titania_LevelComplete(Player* player) {
         case 0:
             gCsFrameCount = gBossActive = gLoadLevelObjects = 0;
 
+            player->pos.y = 800;
+            gCsCamEyeX = player->pos.x = 0;
+
             Play_ClearObjectData();
 
             player->csState = 1;
@@ -605,26 +612,27 @@ void Turret_Titania_LevelComplete(Player* player) {
 
             Matrix_MultVec3f(gCalcMatrix, &src, &dest);
 
-            gCsCamEyeX = player->pos.x + dest.x;
-            gCsCamEyeY = player->pos.y + dest.y;
-            gCsCamEyeZ = player->pos.z + player->zPath + dest.z + 50.0f;
+            dest.x = SIN_DEG(gCsFrameCount / 2) * 250;
+            dest.z = COS_DEG(gCsFrameCount / 2) * 250;
 
-            if (gCsCamEyeY < 5.0f) {
-                gCsCamEyeY = 5.0f;
-            }
+            gCsCamEyeX = player->pos.x + dest.x;
+            gCsCamEyeZ = player->pos.z + player->zPath + dest.z + 50.0f;
+            Math_SmoothStepToF(&gCsCamEyeY, player->pos.y, 1, 5.0f, 0.0f);
 
             gCsCamAtX = player->pos.x;
-            gCsCamAtY = player->pos.y;
             gCsCamAtZ = player->pos.z + player->zPath;
+            Math_SmoothStepToF(&gCsCamAtY, player->pos.y, 1, 40.0f, 0.0f);
 
-            func_tank_80045130(player);
-            func_tank_80044868(player);
-            func_tank_80045678(player);
-            func_tank_80045E7C(player);
+            //func_tank_80045130(player);
+            //func_tank_80044868(player);
+            //func_tank_80045678(player);
+            //func_tank_80045E7C(player);
             Player_UpdatePath(player);
-            Player_CollisionCheck(player);
-            Math_SmoothStepToF(&player->pos.y, 400.0f, 1.0f, 0.2f, 0.0f);
-            player->pos.y = 400;
+            //Player_CollisionCheck(player);
+            gActors[0].obj.pos.y = player->pos.y + 100;
+            gActors[1].obj.pos.y = player->pos.y;
+            gActors[2].obj.pos.y = player->pos.y - 100;
+            
             break;
 
         case 2:
@@ -643,14 +651,14 @@ void Turret_Titania_LevelComplete(Player* player) {
             Math_SmoothStepToF(&player->unk_170, 2.0f, 1.0f, 0.2f, 0.0f);
             Math_SmoothStepToF(&player->unk_16C, 2.0f, 1.0f, 0.2f, 0.0f);
 
-            if (gCsFrameCount < 1470) {
+            /* if (gCsFrameCount < 1470) {
                 Effect_Effect359_Spawn(RAND_FLOAT_CENTERED(30.0f) + (player->pos.x + 30.0f), 30.0f,
                                        RAND_FLOAT_CENTERED(30.0f) + player->trueZpos, RAND_FLOAT(2.0f) + 3.5f, 255, 12,
                                        1);
             }
 
             Effect_Effect359_Spawn(RAND_FLOAT_CENTERED(30.0f) + (player->pos.x - 30.0f), 30.0f,
-                                   RAND_FLOAT_CENTERED(30.0f) + player->trueZpos, RAND_FLOAT(2.0f) + 3.5f, 255, 12, 1);
+                                   RAND_FLOAT_CENTERED(30.0f) + player->trueZpos, RAND_FLOAT(2.0f) + 3.5f, 255, 12, 1); */
             Math_SmoothStepToF(&player->rockAngle, SIN_DEG(gGameFrameCount * 6.0f) * 18.0f, 0.1f, 100.0f, 0.0f);
             Math_SmoothStepToF(&player->yBob, SIN_DEG(gGameFrameCount * 3.0f) * 5.0f, 0.1f, 100.0f, 0.0f);
 
@@ -751,9 +759,7 @@ void Turret_Titania_LevelComplete(Player* player) {
             D_ctx_80177A48[0] = 0.0f;
             player->vel.z = 0.0f;
             player->vel.y = 0.0f;
-            if (!gTurretModeEnabled) {
-                Titania_80188108(&gActors[3], 3);
-            }
+            //Titania_80188108(&gActors[3], 3);
             gProjectFar = 30000.0f;
             player->hideShadow = true;
             Audio_StopPlayerNoise(0);
@@ -787,4 +793,6 @@ void Turret_Titania_LevelComplete(Player* player) {
             gLeveLClearStatus[LEVEL_TITANIA] = Play_CheckMedalStatus(150) + 1;
         }
     }
+
+    gDrawGround = false;
 }

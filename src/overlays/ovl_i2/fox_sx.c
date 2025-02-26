@@ -416,6 +416,9 @@ void SectorX_SxSpyborg_Update(SxSpyborg* this) {
             if ((this->dmgPart == 0) && ((this->fwork[4] < 45.0f) || (this->fwork[4] > 315.0f))) {
                 AUDIO_PLAY_SFX(NA_SE_EN_DAMAGE_S, this->sfxSource, 4);
                 this->swork[3] -= this->damage;
+                if (gTurretModeEnabled) {
+                    this->swork[3] += (this->damage * 0.5f);
+                }
                 this->timer_054 = 20;
                 Effect_Effect390_Spawn(this->obj.pos.x, this->obj.pos.y + 334.0f, -237.0f + this->obj.pos.z,
                                        this->vel.x, this->vel.y, this->vel.z, 0.2f, 20);
@@ -459,6 +462,9 @@ void SectorX_SxSpyborg_Update(SxSpyborg* this) {
         if (this->swork[0] == 2) {
             if (this->dmgPart == 0) {
                 this->health -= this->damage;
+                if (gTurretModeEnabled) {
+                    this->health += (this->damage * 0.5f);
+                }
 
                 AUDIO_PLAY_SFX(NA_SE_EN_DAMAGE_S, this->sfxSource, 4);
 

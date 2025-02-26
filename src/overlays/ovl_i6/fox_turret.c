@@ -194,7 +194,8 @@ void Turret_SetupShot(Player* player, PlayerShot* shot, f32 xOffset, f32 yOffset
     Vec3f sp40;
     Vec3f sp34;
 
-    PlayerShot_Initialize(shot);
+    // ???
+    //PlayerShot_Initialize(shot);
     Matrix_RotateY(gCalcMatrix, player->unk_000 * M_DTOR, MTXF_NEW);
     Matrix_RotateX(gCalcMatrix, player->unk_004 * M_DTOR, MTXF_APPLY);
     Matrix_RotateZ(gCalcMatrix, player->rot.z * M_DTOR, MTXF_APPLY);
@@ -247,7 +248,7 @@ void Turret_GreatFoxLaser(Player* player, f32 xOffset) {
     s32 i;
     PlayerShot* shot;
 
-    for (i = 0; i < ARRAY_COUNT(gPlayerShots); i++) {
+    for (i = 0; i < ARRAY_COUNT(gPlayerShots) - 1; i++) {
         if (gPlayerShots[i].obj.status == SHOT_FREE) {
             Turret_SetupShot(player, &gPlayerShots[i], xOffset, -130.0f, 250.0f, PLAYERSHOT_GFOX_LASER, 100.0f);
             //Play_PlaySfxFirstPlayer(gPlayerShots[i].sfxSource, NA_SE_GREATFOX_SHOT_DEMO); //NA_SE_TURRET_SHOT
@@ -265,7 +266,7 @@ void Turret_Shoot(Player* player) {
     s32 i;
 
     if ((gControllerPress[player->num].button & A_BUTTON) && !((gControllerHold[player->num].button & R_TRIG) && (player->turretLockOnCount == ARRAY_COUNT(gActors))))  {
-        player->shotTimer = 0;
+        player->shotTimer = 8;
     }
     // Fires two great fox lasers. Offsets match up with the possible guns in Draw.
     if ((gControllerHold[player->num].button & A_BUTTON) && !((gControllerHold[player->num].button & R_TRIG) && (player->turretLockOnCount == ARRAY_COUNT(gActors))))  {
@@ -670,6 +671,10 @@ void Turret_UpdateRails(Player* player) {
         player->vel.z = 0;
     }
 
+    if (player->vel.z > 0) {
+        player->vel.z = 0;
+    }
+
     player->pos.z += player->vel.z;
 
     // Move Around
@@ -716,6 +721,12 @@ void Turret_UpdateRails(Player* player) {
     Math_SmoothStepToF(&player->unk_180, -player->unk_008 + 180, 0.5f, 3.0f, 0.00001f);
     Math_SmoothStepToF(&player->unk_17C, -player->unk_00C, 0.5f, 3.0f, 0.00001f);
     Turret_Shoot(player);
+
+    if ((gBossActive) && (gCurrentLevel == LEVEL_TITANIA)) {
+        if (turretDestY > 200) {
+            Math_SmoothStepToF(&turretDestY, 200, 0.5f, 5.0f, 0.00001f);
+        }
+    }
 }
 
 void Turret_Update360(Player* player) {

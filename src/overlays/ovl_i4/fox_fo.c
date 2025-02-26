@@ -278,6 +278,9 @@ void Fortuna_UpdateEvents(ActorEvent* this) {
                     team->state = 2;
                     this->state = 2;
                     player->state = PLAYERSTATE_ACTIVE;
+                    if (gTurretModeEnabled) {
+                        player->draw = false;
+                    }
                     player->unk_014 = 0.0001f;
                     AUDIO_PLAY_BGM(gBgmSeqId);
                     gLevelStartStatusScreenTimer = 80;
@@ -644,7 +647,7 @@ void Fortuna_LevelComplete_CsSpawnTeam(ActorCutscene* this, s32 actorIdx) {
         }
     } else {
         if (gTurretModeEnabled) {
-            this->obj.pos.x = 0;
+            this->obj.pos.x = -2000;
         }
         this->obj.pos.z = -9500.0f;
         this->animFrame = ACTOR_CS_GREAT_FOX;
@@ -663,6 +666,12 @@ void Fortuna_LevelComplete(Player* player) {
     ActorCutscene* peppy = &gActors[2];
     ActorCutscene* falco = &gActors[3];
     s32 pad[3];
+
+    gMissionStatus = MISSION_COMPLETE;
+
+    if ((gTurretModeEnabled) && (player->csState < 10)) {
+        player->draw = true;
+    }
 
     if ((player->csState < 10) && (player->csState >= 0)) {
         Math_SmoothStepToF(&player->zRotBarrelRoll, 0.0f, 0.1f, 15.0f, 0.0f);
@@ -1171,6 +1180,8 @@ void Fortuna_LevelComplete(Player* player) {
             player->csState = 21;
             if (!gTurretModeEnabled) {
                 player->draw = true;
+            } else {
+                player->draw = false;
             }
 
             for (i = 0; i < 9; i++) {
