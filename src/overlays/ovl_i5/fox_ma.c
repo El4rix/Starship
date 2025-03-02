@@ -5776,27 +5776,24 @@ void Turret_Macbeth_LevelStart(Player* player) {
                 Macbeth_EffectClouds_Spawn();
             }
             gCsCamEyeX = 500;
-            //gCsCamEyeY = player->pos.y;
-            gCsCamEyeZ = player->zPath + 100;
+            gCsCamEyeY = player->pos.y;
+            gCsCamEyeZ = 5000;
             //gCsCamAtX = 0;
             gCsCamAtY = player->pos.y;
-            gCsCamAtZ = player->zPath - 300;
+            gCsCamAtZ = 350;
 
             D_ctx_80177A48[0] = 0.1f;
             D_ctx_80177A48[1] = 0.1f;
             D_ctx_80177A48[2] = 0.1f;
 
             if (gCsFrameCount < 80) {
-                sp4C = 5.0f;
-                sp48 = 8.0f;
+                sp4C = 10.0f;
+                sp48 = 1.0f;
                 sp44 = 30.0f;
             } else {
-                sp4C = 5.0f;
-                if (D_i5_801BE24C < 35.0f) {
-                    D_i5_801BE24C += 0.2f;
-                }
-                sp48 = D_i5_801BE24C;
-                sp44 = 30.0f;
+                sp4C = 10.0f;
+                sp48 = 4;
+                sp44 = 35.0f;
             }
             if (gCsFrameCount == 260) {
                 player->csState = 3;
@@ -5829,7 +5826,7 @@ void Turret_Macbeth_LevelStart(Player* player) {
     Math_SmoothStepToF(&player->cam.eye.z, gCsCamEyeZ, D_ctx_80177A48[2], sp44, 0);
     Math_SmoothStepToF(&player->cam.at.x, gCsCamAtX, D_ctx_80177A48[0], sp4C, 0);
     Math_SmoothStepToF(&player->cam.at.y, gCsCamAtY, D_ctx_80177A48[1], sp48, 0);
-    Math_SmoothStepToF(&player->cam.at.z, gCsCamAtZ, D_ctx_80177A48[2], sp44, 0);
+    Math_SmoothStepToF(&player->cam.at.z, gCsCamAtZ, D_ctx_80177A48[2], 260, 0);
 
     player->pathHeight = 650.0f;
     player->rockPhase += player->vel.z * 5.0f;

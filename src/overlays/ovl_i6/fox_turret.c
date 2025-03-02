@@ -264,6 +264,7 @@ void Turret_GreatFoxLaser(Player* player, f32 xOffset) {
 
 void Turret_Shoot(Player* player) {
     s32 i;
+    s32 j;
 
     if ((gControllerPress[player->num].button & A_BUTTON) && !((gControllerHold[player->num].button & R_TRIG) && (player->turretLockOnCount == ARRAY_COUNT(gActors))))  {
         player->shotTimer = 8;
@@ -341,6 +342,33 @@ void Turret_Shoot(Player* player) {
             gTexturedLines[i].posBB.z = gActors[i].obj.pos.z;
         }
     }
+    for (j = 1; j < player->turretLockOnCount; j++) {
+        if ((gBosses[j].obj.status == OBJ_ACTIVE) /* && (gActors[i].obj.id == OBJ_ACTOR_EVENT) */) {
+            gTexturedLines[j + 4].mode = 3;
+            gTexturedLines[j + 4].xyScale = 0.2f;
+            gTexturedLines[j + 4].zScale = 1.0f;
+
+            /* gTexturedLines[j + 3].posAA.x = player->pos.x;
+            gTexturedLines[j + 3].posAA.y = player->pos.y; //0.0f
+            gTexturedLines[j + 3].posAA.z = player->pos.z - 10.0f; //100 */
+
+            gTexturedLines[j + 4].posAA.z = player->trueZpos - (300.0f * COS_DEG(gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180));
+            gTexturedLines[j + 4].posAA.x = player->pos.x - (300.0f * SIN_DEG(gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180));
+            gTexturedLines[j + 4].posAA.y = player->pos.y; //0.0f
+
+            gTexturedLines[j + 4].timer = 2;
+
+            gTexturedLines[j + 4].prim.r = 255;
+            gTexturedLines[j + 4].prim.g = 255;
+            gTexturedLines[j + 4].prim.b = 255;
+            gTexturedLines[j + 4].prim.a = 255;
+
+            gTexturedLines[j + 4].posBB.x = gBosses[j].obj.pos.x;
+            gTexturedLines[j + 4].posBB.y = gBosses[j].obj.pos.y;
+            gTexturedLines[j + 4].posBB.z = gBosses[j].obj.pos.z;
+        }
+    }
+
     if ((gControllerHold[player->num].button & R_TRIG)) {
         //TurretLaserChargeSpawn();
         player->turretLockOnCount++;
@@ -569,11 +597,11 @@ void Turret_UpdateRails(Player* player) {
     
     // Resets position
     if ((gControllerHold[player->num].button & B_BUTTON) && (gCurrentLevel != LEVEL_TITANIA) && (gCurrentLevel != LEVEL_MACBETH) && !((gCurrentLevel == LEVEL_VENOM_ANDROSS) && (!gBossActive))) {
-        if (turretDestY > ((player->pathHeight + player->pathFloor)/2) + player->yPathTarget + 50){
+        if ((turretDestY > ((player->pathHeight + player->pathFloor)/2) + player->yPathTarget + 50) && (gCurrentLevel != LEVEL_SOLAR)){
             turretDestY -= 100.0f;
         }
 
-        else if (turretDestY < ((player->pathHeight + player->pathFloor)/2) + player->yPathTarget - 50){
+        else if ((turretDestY < ((player->pathHeight + player->pathFloor)/2) + player->yPathTarget - 50) && (gCurrentLevel != LEVEL_SOLAR)){
             turretDestY += 100.0f;
         }
 
@@ -680,26 +708,26 @@ void Turret_UpdateRails(Player* player) {
     // Move Around
     if ((gControllerHold[player->num].button & U_JPAD) || (gControllerHold[player->num].button & U_CBUTTONS)) {
         if (player->pos.y < (player->pathHeight + player->yPath)) {
-            turretDestY += 20.0f;
+            turretDestY += 30.0f;
         }        
     }
     if ((gControllerHold[player->num].button & D_JPAD) || (gControllerHold[player->num].button & D_CBUTTONS)) {
         if (player->pos.y > (player->pathFloor + player->yPath + 40)) {
-            turretDestY -= 20.0f;
+            turretDestY -= 30.0f;
         }
     }
 
     if ((gControllerHold[player->num].button & R_JPAD) || (gControllerHold[player->num].button & R_CBUTTONS)) {
         if (player->pos.x < (player->xPath + player->pathWidth)) {
-            turretDestX += 20.0f;
+            turretDestX += 30.0f;
             if ((gCallTimer != 0) && (gControllerHold[player->num].button & R_CBUTTONS)) {
-                turretDestX -= 60.0f;
+                turretDestX -= 90.0f;
             }
         }
     }
     if ((gControllerHold[player->num].button & L_JPAD) || (gControllerHold[player->num].button & L_CBUTTONS)) {
         if (player->pos.x > (player->xPath - player->pathWidth)) {
-            turretDestX -= 20.0f;
+            turretDestX -= 30.0f;
         }
     }
 
@@ -714,8 +742,8 @@ void Turret_UpdateRails(Player* player) {
     }
 
     //Updates XY
-    Math_SmoothStepToF(&player->pos.x, turretDestX, 0.5f, 25.0f, 0.00001f);
-    Math_SmoothStepToF(&player->pos.y, turretDestY, 0.5f, 25.0f, 0.00001f);
+    Math_SmoothStepToF(&player->pos.x, turretDestX, 0.15f, 20.0f, 0.00001f);
+    Math_SmoothStepToF(&player->pos.y, turretDestY, 0.15f, 20.0f, 0.00001f);
     
     //Updates rotation
     Math_SmoothStepToF(&player->unk_180, -player->unk_008 + 180, 0.5f, 3.0f, 0.00001f);
@@ -932,15 +960,15 @@ void Turret_Update360(Player* player) {
         }
     } */
 
-    //turretDestX = player->pos.z - player->pos.x;
-    //turretDestZ = player->pos.x - player->pos.z;
-
-
     //Fortuna, Venom II, Corneria: 3000, 0.5, 350
 
     if ((sCoGrangaLimbs <= 3) || (gCurrentLevel != LEVEL_CORNERIA)) {
         turret360Radius = 3000;
     }
+    /* if ((sCoGrangaLimbs <= 3) && (gCurrentLevel == LEVEL_CORNERIA)) {
+        turret360RadiusMod = 0;
+        turret360SpeedMod = 0;
+    } */
     turret360Speed = 1.0f;
     turret360Height = 450;
 
@@ -967,7 +995,7 @@ void Turret_Update360(Player* player) {
     if ((sCoGrangaLimbs > 3) && (gCurrentLevel == LEVEL_CORNERIA)) {
         Math_SmoothStepToF(&turretZPositionMod, gBosses[0].obj.pos.z, 0.5f, 25.0f, 0.00001f);
         Math_SmoothStepToF(&turretXPositionMod, gBosses[0].obj.pos.x, 0.5f, 25.0f, 0.00001f);
-        Math_SmoothStepToF(&turret360Radius, 1500, 0.5f, 25.0f, 0.00001f);
+        //Math_SmoothStepToF(&turret360Radius, 1500, 0.5f, 25.0f, 0.00001f);
     } else {
         turretXPositionMod = 0;
         turretZPositionMod = 0;

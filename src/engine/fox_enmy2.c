@@ -1691,6 +1691,16 @@ void ActorEvent_SpawnTIMine(f32 xPos, f32 yPos, f32 zPos) {
 
 void Actor_SetupPlayerShot(PlayerShotId objId, PlayerShot* shot, s32 actorId, f32 xPos, f32 yPos, f32 zPos, f32 xVel,
                            f32 yVel, f32 zVel, f32 xRot, f32 yRot, f32 zRot) {
+
+    if ((gCurrentLevel == LEVEL_SECTOR_X) && (gTurretModeEnabled) && (gPlayer[0].state == PLAYERSTATE_LEVEL_INTRO)) {
+        objId = PLAYERSHOT_GFOX_LASER;
+        AUDIO_PLAY_SFX(NA_SE_GREATFOX_SHOT_DEMO, shot->sfxSource, 0);
+    }
+    if ((gCurrentLevel == LEVEL_AREA_6) && (gTurretModeEnabled) && (gPlayer[0].state == PLAYERSTATE_ACTIVE)) {
+        objId = PLAYERSHOT_TWIN_LASER;
+        AUDIO_PLAY_SFX(NA_SE_ARWING_SHOT_F, shot->sfxSource, 0);
+    }
+
     PlayerShot_Initialize(shot);
     shot->obj.status = SHOT_ACTIVE;
 
@@ -1710,7 +1720,7 @@ void Actor_SetupPlayerShot(PlayerShotId objId, PlayerShot* shot, s32 actorId, f3
     shot->unk_58 = 1;
     shot->unk_60 = 0;
 
-    if (objId == PLAYERSHOT_GFOX_LASER) {
+    if (objId == PLAYERSHOT_GFOX_LASER || ((gCurrentLevel == LEVEL_AREA_6) && (gTurretModeEnabled) && (gPlayer[0].state == PLAYERSTATE_ACTIVE))) {
         shot->timer = 120;
     } else {
         shot->timer = 30;
@@ -1728,7 +1738,11 @@ void Actor_SetupPlayerShot(PlayerShotId objId, PlayerShot* shot, s32 actorId, f3
         AUDIO_PLAY_SFX(NA_SE_ARWING_SHOT_F, shot->sfxSource, 4);
     } else if (actorId + NPC_SHOT_ID == CS_SHOT_ID + NPC_SHOT_ID) {
         shot->sourceId = CS_SHOT_ID;
-        AUDIO_PLAY_SFX(NA_SE_GREATFOX_SHOT_DEMO, shot->sfxSource, 0);
+        if ((gCurrentLevel == LEVEL_AREA_6) && (gTurretModeEnabled) && (gPlayer[0].state == PLAYERSTATE_ACTIVE)) {
+            AUDIO_PLAY_SFX(NA_SE_ARWING_SHOT_F, shot->sfxSource, 0);
+        } else {
+            AUDIO_PLAY_SFX(NA_SE_GREATFOX_SHOT_DEMO, shot->sfxSource, 0);
+        }
     } else {
         AUDIO_PLAY_SFX(NA_SE_EN_SHOT_0, shot->sfxSource, 4);
     }
@@ -2732,15 +2746,10 @@ void ActorEvent_ProcessTriggers(ActorEvent* this) {
                 gCallTimer = 0;
                 ActorEvent_TriggerBranch(this);
                 if (gTurretModeEnabled) {
-                    if ((gCurrentLevel == LEVEL_AREA_6) && (gPlayer[0].pos.z < 195000)) {
-                        Radio_PlayMessage(gMsg_ID_20279, RCID_ROB64);
-                    } else {
-                        billMessage = RAND_INT(1.9f) + 1;
-                        if (billMessage = 1) {
-                            Radio_PlayMessage(gMsg_ID_10200, RCID_BILL);
-                        } else {
-                            Radio_PlayMessage(gMsg_ID_18140, RCID_BILL);
-                        }
+                    if ((gCurrentLevel == LEVEL_AREA_6) && (gPlayer[0].pos.z > -195000)) {
+                        Radio_PlayMessage(gMsg_ID_10200, RCID_BILL);
+                    } else if ((gCurrentLevel == LEVEL_AREA_6) && (gPlayer[0].pos.z < -195000)) {
+                        Radio_PlayMessage(gMsg_ID_18140, RCID_BILL);
                     }
                 }
             }

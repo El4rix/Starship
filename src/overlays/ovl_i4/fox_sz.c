@@ -116,7 +116,7 @@ void SectorZ_MissileExplode(ActorAllRange* this, bool shotDown) {
     Effect386_Spawn1(this->obj.pos.x, this->obj.pos.y, this->obj.pos.z, 0.0f, 0.0f, 0.0f, 20.0f, 30);
     Effect_Effect384_Spawn(this->obj.pos.x, this->obj.pos.y, this->obj.pos.z, 20.0f, 5);
 
-    if (shotDown) {
+    if ((shotDown) || (gTurretModeEnabled)) {
         sMissileDestroyCount++;
         if ((sMissileDestroyCount >= 6) && (!gTurretModeEnabled) &&
             ((gPlayer[0].state == PLAYERSTATE_ACTIVE) || (gPlayer[0].state == PLAYERSTATE_U_TURN))) {
@@ -129,7 +129,7 @@ void SectorZ_MissileExplode(ActorAllRange* this, bool shotDown) {
             AUDIO_PLAY_SFX(NA_SE_GREATFOX_BURNER, gActors[SZ_GREAT_FOX].sfxSource, 0);
             SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 1);
             SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_FANFARE, 1);
-        } else if ((gTurretModeEnabled) && (sMissileDestroyCount >= 39) && (gPlayer[0].state == PLAYERSTATE_ACTIVE)) {
+        } else if ((gTurretModeEnabled) && (sMissileDestroyCount >= 39)) {
             if (gActors[AI360_KATT].obj.status == OBJ_ACTIVE) {
                 Radio_PlayMessage(gMsg_ID_16140, RCID_KATT);
             } else if (gTeamShields[AI360_SLIPPY] > 0) {
@@ -151,7 +151,7 @@ void SectorZ_MissileExplode(ActorAllRange* this, bool shotDown) {
         } 
 
         // Check for Katt's appearance
-        if ((sMissileDestroyCount == 3) && (gLeveLClearStatus[LEVEL_ZONESS] == 0)) {
+        if ((sMissileDestroyCount == 3) && (gLeveLClearStatus[LEVEL_ZONESS] != 0)) {
             gAllRangeSpawnEvent = gAllRangeEventTimer + 110;
         }
     }
@@ -266,17 +266,7 @@ void SectorZ_Missile_Update(ActorAllRange* this) {
             (fabsf(this->fwork[MISSILE_TARGET_Z] - this->obj.pos.z) < 400.0f)) {
             gCameraShake = 25;
             gBosses[SZ_GREAT_FOX].dmgType = DMG_MISSILE;
-            if (gTurretModeEnabled) {
-                SectorZ_MissileExplode(this, true);
-            } else {
-                SectorZ_MissileExplode(this, false);
-                if ((gPlayer[0].state == PLAYERSTATE_ACTIVE) || (gPlayer[0].state == PLAYERSTATE_U_TURN)) {
-                    gPlayer[0].state = PLAYERSTATE_LEVEL_COMPLETE;
-                    gPlayer[0].csState = 0;
-                    gActors[SZ_GREAT_FOX].state = -31072;
-                    return;
-                }
-            }
+            SectorZ_MissileExplode(this, true);
         }
 
         if ((gPlayer[0].state == PLAYERSTATE_ACTIVE) && (this->aiIndex > 5)){
@@ -337,16 +327,12 @@ void SectorZ_Missile_Update(ActorAllRange* this) {
             (fabsf(this->fwork[MISSILE_TARGET_Z] - this->obj.pos.z) < 800.0f)) {
             gCameraShake = 25;
             gBosses[SZ_GREAT_FOX].dmgType = DMG_MISSILE;
-            if (gTurretModeEnabled) {
-                SectorZ_MissileExplode(this, true);
-            } else {
-                SectorZ_MissileExplode(this, false);
-                if ((gPlayer[0].state == PLAYERSTATE_ACTIVE) || (gPlayer[0].state == PLAYERSTATE_U_TURN)) {
-                    gPlayer[0].state = PLAYERSTATE_LEVEL_COMPLETE;
-                    gPlayer[0].csState = 0;
-                    gActors[SZ_GREAT_FOX].state = -31072;
-                    return;
-                }
+            SectorZ_MissileExplode(this, false);
+            if ((gPlayer[0].state == PLAYERSTATE_ACTIVE) || (gPlayer[0].state == PLAYERSTATE_U_TURN)) {
+                gPlayer[0].state = PLAYERSTATE_LEVEL_COMPLETE;
+                gPlayer[0].csState = 0;
+                gActors[SZ_GREAT_FOX].state = -31072;
+                return;
             }
         }
     }
@@ -634,7 +620,6 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
         switch (gAllRangeEventTimer) {
             // Wave 1 ========================================================================
             case 1300:
-                Radio_PlayMessage(gMsg_ID_3026, RCID_PEPPY);
                 gRadarMissileAlarmTimer = 490;
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_CENTER], 0);
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_RIGHT], 1);
@@ -668,7 +653,6 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
                 gFillScreenRed = gFillScreenGreen = gFillScreenBlue = 0;
                 AUDIO_PLAY_BGM(NA_BGM_BOSS_SZ);
                 break;
-
 
             // Wave 2 ==================================================================================
             case 2350:
@@ -2054,7 +2038,12 @@ void SectorZ_LevelComplete(Player* player) {
                     player->state = PLAYERSTATE_NEXT;
                     player->csTimer = 0;
                     gFadeoutType = 4;
-                    gLeveLClearStatus[LEVEL_SECTOR_Z] = Play_CheckMedalStatus(100) + 1;
+                    if (gTurretModeEnabled) {
+                        gLeveLClearStatus[LEVEL_SECTOR_Z] = Play_CheckMedalStatus(250) + 1;
+                    } else {
+                        gLeveLClearStatus[LEVEL_SECTOR_Z] = Play_CheckMedalStatus(100) + 1;
+                    }
+                    
                 }
             }
             break;
@@ -2446,11 +2435,11 @@ void SectorZ_SzGreatFox_Update(SzGreatFox* this) {
         this->timer_050 = 10;
         AUDIO_PLAY_SFX(NA_SE_OB_BROKEN_SPARK_L, this->sfxSource, 0);
         if (gTurretModeEnabled) {
+            gGreatFoxIntact = false;
             if (gPlayer[0].shields > 0) {
                 Player_ApplyDamage(&gPlayer[0], 0, 127);
-                //gPlayer[0].shields -= 127;
             }
-            if (gGreatFoxIntact) {
+            if ((gGreatFoxIntact) && (sMissileDestroyCount <= 36)) {
                 gPlayer[0].state = PLAYERSTATE_STANDBY;
                 this->timer_052 = 60;
             }

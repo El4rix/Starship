@@ -345,6 +345,12 @@ void Andross_AndBrainWaste_Update(AndBrainWaste* this) {
     Math_SmoothStepToF(&this->vel.y, 0.0f, 0.2f, 0.5f, 0.0f);
     Math_SmoothStepToF(&this->vel.z, 0.0f, 0.2f, 0.5f, 0.0f);
 
+    if (gTurretModeEnabled) {
+        this->obj.pos.x -= ((this->obj.pos.x - (gPlayer[0].pos.x)) * 0.02f);
+        this->obj.pos.z -= ((this->obj.pos.z - (gPlayer[0].pos.z)) * 0.02f);
+        this->obj.pos.y -= ((this->obj.pos.y - (gPlayer[0].pos.y)) * 0.02f);
+    }
+
     if (this->dmgType != DMG_NONE) {
         Effect_SpawnTimedSfxAtPos(&this->obj.pos, NA_SE_EN_EXPLOSION_S);
         Object_Kill(&this->obj, this->sfxSource);
@@ -451,6 +457,10 @@ void Andross_80188A4C(AndBrain* this) {
                         AUDIO_PLAY_SFX(NA_SE_EN_KNOCK_DOWN, this->sfxSource, 4);
 
                         this->health -= this->damage;
+                        if (gTurretModeEnabled) {
+                            this->health += (this->damage * 0.5f);
+                        }
+
                         if ((this->health != 0) && (this->health <= 0)) {
                             gScreenFlashTimer = 8;
                             AUDIO_PLAY_SFX(NA_SE_EN_DOWN_IMPACT, this->sfxSource, 4);
@@ -1103,17 +1113,31 @@ void Andross_AndBrain_Update(AndBrain* this) {
                     }
                     break;
 
-                case 500:
+                case 450:
                     if (gTurretModeEnabled) {
                         Radio_PlayMessage(gMsg_ID_19205, RCID_FOX);
+                    }
+                    break;
+                
+                case 500:
+                    if (gTurretModeEnabled) {
+                        Radio_PlayMessage(gMsg_ID_16200, RCID_FOX);
                     } else {
                         Radio_PlayMessage(gMsg_ID_19350, RCID_FOX);
                     }
                     gAllRangeCheckpoint = 1;
                     break;
 
+                case 535:
+                    if (gTurretModeEnabled) {
+                        Audio_ClearVoice();
+                        gHideRadio = true;
+                    }
+                    break;
+
                 case 600:
                     if (gTurretModeEnabled) {
+                        gHideRadio = false;
                         SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 20);
                         SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_FANFARE, 20);
                         Audio_KillSfxById(NA_SE_OB_ROUTE_EXPLOSION1);

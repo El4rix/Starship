@@ -1887,7 +1887,12 @@ void Object_DrawAll(s32 cullDirection) {
             } else {
                 RCP_SetupDL_27();
 
-                if (actor->scale >= 0.0f) {
+                if ((gTurretModeEnabled) && (actor->timer_0C6 >= 900)) {
+                    gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 0, 128, 255, 255);
+                    if (actor->timer_0C6 <= 1000) {
+                        actor->timer_0C6 = 0;
+                    }
+                } else if (actor->scale >= 0.0f) {
                     gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
                 } else {
                     gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 64, 64, 255, 255);

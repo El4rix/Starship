@@ -7000,6 +7000,8 @@ void Play_UpdateLevel(void) {
                 } else {
                     Math_SmoothStepToF(&gWarpZoneBgAlpha, 128.0f, 1.0f, 1.0f, 0.0f);
                 }
+            } else if ((gTurretModeEnabled) && (gLevelPhase == 0) && (gPlayer[0].state == PLAYERSTATE_ACTIVE)) {
+                gBlurAlpha = 255;
             }
 
             if ((gCurrentLevel == LEVEL_SECTOR_X) && (gLevelPhase == 0) && (gRingPassCount == 4)) {

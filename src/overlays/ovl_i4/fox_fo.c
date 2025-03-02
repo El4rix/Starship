@@ -667,8 +667,6 @@ void Fortuna_LevelComplete(Player* player) {
     ActorCutscene* falco = &gActors[3];
     s32 pad[3];
 
-    gMissionStatus = MISSION_COMPLETE;
-
     if ((gTurretModeEnabled) && (player->csState < 10)) {
         player->draw = true;
     }

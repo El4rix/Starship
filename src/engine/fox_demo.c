@@ -3326,7 +3326,7 @@ void Cutscene_DrawGreatFox(void) {
             return;
         }
 
-        if ((gGameState == GSTATE_TITLE) && (gStarCount == 801)) {
+        if (/* ((gGameState == GSTATE_TITLE) && (gStarCount == 801)) ||  */(gGameState == GSTATE_MAP)) {
             gGreatFoxIntact = true;
             Matrix_Push(&gGfxMatrix);
             Matrix_Scale(gGfxMatrix, 0.05f, 0.05f, 0.05f, MTXF_APPLY);
@@ -3424,7 +3424,7 @@ void Cutscene_DrawGreatFox(void) {
     FrameInterpolation_RecordCloseChild();
 
     if (gTurretModeEnabled) {
-        if ((gGameState == GSTATE_TITLE) && (gStarCount == 801)) {
+        if (/* ((gGameState == GSTATE_TITLE) && (gStarCount == 801)) ||  */(gGameState == GSTATE_MAP)) {
             gGreatFoxIntact = true;
             Matrix_Pop(&gGfxMatrix);
         }

@@ -530,6 +530,7 @@ void Title_Screen_Setup(void) {
 
     if (gTurretModeEnabled) {
         gStarCount = 801;
+        gGreatFoxIntact = true;
     } else {
         gStarCount = 800;
     }
@@ -597,12 +598,12 @@ void Title_Screen_Setup(void) {
         sTitleArwing[TEAM_FOX].drawShadow = 0;
     } else {
         sTitleArwing[TEAM_FOX].pos.x = -80.0f;
-        sTitleArwing[TEAM_FOX].pos.y = 220.0f;
-        sTitleArwing[TEAM_FOX].pos.z = -360.0f;
+        sTitleArwing[TEAM_FOX].pos.y = 620.0f;
+        sTitleArwing[TEAM_FOX].pos.z = -7360.0f;
         sTitleArwing[TEAM_FOX].scale = 4.0f;
-        sTitleArwing[TEAM_FOX].xRot = 35.0f;
-        sTitleArwing[TEAM_FOX].yRot = -90.0f;
-        sTitleArwing[TEAM_FOX].zRot = -15.0f;
+        sTitleArwing[TEAM_FOX].xRot = 0.0f;
+        sTitleArwing[TEAM_FOX].yRot = 0.0f;
+        sTitleArwing[TEAM_FOX].zRot = 0.0f;
         sTitleArwing[TEAM_FOX].cockpitGlassXrot = 0.0f;
         sTitleArwing[TEAM_FOX].laserGunsYpos = 0.0f;
         sTitleArwing[TEAM_FOX].teamFaceXrot = 0.0f;
@@ -882,8 +883,18 @@ void Title_Screen_Update(void) {
             D_menu_801B82D0 = 0.08f;
         }
     }
-
-    sTitleArwing->xRot += 0.6f;
+    
+    if (!gTurretModeEnabled) {
+        sTitleArwing->xRot += 0.6f;
+    } else {
+        if (!D_menu_801B9040) {
+            Math_SmoothStepToF(&sTitleArwing->xRot, (3 * SIN_DEG(gGameFrameCount)), D_menu_801B82D0, 100.0f, 0.01f);
+            Math_SmoothStepToF(&sTitleArwing->yRot, 0, D_menu_801B82D0, 100.0f, 0.01f);
+            //sTitleArwing->xRot = (3 * SIN_DEG(gGameFrameCount));
+        }
+        sTitleArwing->zRot = (5 * SIN_DEG(gGameFrameCount * 2));
+        sTitleArwing->pos.y = 550 + (50 * SIN_DEG(gGameFrameCount));
+    }
 
     Title_SetCamUp3(1, &gCsCamEyeX, &gCsCamEyeY, &gCsCamEyeZ, &gCsCamAtX, &gCsCamAtY, &gCsCamAtZ, D_menu_801B86A8,
                     D_menu_801B86AC, D_menu_801B86B0);
@@ -3460,6 +3471,26 @@ void Title_Screen_Input(void) {
         D_menu_801B86A4++;
     } else {
         D_menu_801B86A4 = 0;
+    }
+
+    if (gTurretModeEnabled) {
+        /* if (D_menu_801B9040) {
+            if (((sTitleArwing[TEAM_FOX].yRot + (stickX * 0.05f)) > -170.0f) && ((sTitleArwing[TEAM_FOX].yRot + (stickX * 0.05f)) < 170.0f)) {
+                sTitleArwing[TEAM_FOX].yRot += stickX * 0.05f;
+            }
+            if (((sTitleArwing[TEAM_FOX].xRot + (stickY * 0.1f)) > -80.0f) && ((sTitleArwing[TEAM_FOX].xRot + (stickY * 0.1f)) < 80.0f)) {
+                sTitleArwing[TEAM_FOX].xRot -= stickY * 0.1f;
+            }
+        } */ 
+
+        if (D_menu_801B9040) {
+            if (((sTitleArwing[TEAM_FOX].yRot + (stickX * 0.05f)) > -90.0f) && ((sTitleArwing[TEAM_FOX].yRot + (stickX * 0.05f)) < 90.0f)) {
+                sTitleArwing[TEAM_FOX].yRot = D_menu_801B905C / 7;
+            }
+            if (((sTitleArwing[TEAM_FOX].xRot + (stickY * 0.05f)) > -45.0f) && ((sTitleArwing[TEAM_FOX].xRot + (stickY * 0.05f)) < 45.0f)) {
+                sTitleArwing[TEAM_FOX].xRot = ((D_menu_801B9060) / -7) + 20;
+            }
+        } 
     }
 }
 

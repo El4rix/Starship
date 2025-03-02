@@ -833,6 +833,10 @@ void Titania_TiRasco_Update(TiRasco* this) {
                     sp3C->vel.x = dest.x;
                     sp3C->vel.y = dest.y;
                     sp3C->vel.z = dest.z;
+                    if (gTurretModeEnabled) {
+                        sp3C->vel.x *= 1.75f;
+                        sp3C->vel.z *= 1.75f;
+                    }
                     sp3C->work_046 = 0;
                     sp3C->iwork[0] = (uintptr_t) NULL;
                     this->iwork[0] = (uintptr_t) NULL;
@@ -861,6 +865,10 @@ void Titania_TiRasco_Update(TiRasco* this) {
                     sp38->vel.x = dest.x;
                     sp38->vel.y = dest.y;
                     sp38->vel.z = dest.z;
+                    if (gTurretModeEnabled) {
+                        sp38->vel.x *= 1.75f;
+                        sp38->vel.z *= 1.75f;
+                    }
                     sp38->work_046 = 0;
                     sp38->iwork[0] = (uintptr_t) NULL;
                     this->iwork[1] = (uintptr_t) NULL;
@@ -3395,6 +3403,9 @@ void Titania_80192118(TiGoras* this) {
                         D_i5_801BBEF0[27] -= this->damage;
                         AUDIO_PLAY_SFX(NA_SE_EN_DAMAGE_S, this->sfxSource, 4);
                         break;
+                }
+                if (gTurretModeEnabled) {
+                    D_i5_801BBEF0[27] += (this->damage * 0.9f);
                 }
                 this->dmgType = DMG_NONE;
             }
