@@ -524,7 +524,7 @@ Scene sOvli6_SectorY[1] = {
         /* 0xB */ NO_SEGMENT,
         /* 0xC */ NO_SEGMENT,
         /* 0xD */ NO_SEGMENT,
-        /* 0xE */ ROM_SEGMENT(ast_great_fox),
+        /* 0xE */ NO_SEGMENT,
         /* 0xF */ NO_SEGMENT } },
 };
 

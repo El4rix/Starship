@@ -500,6 +500,7 @@ void Ending_8018F2A8(u32 arg0, AssetInfo* asset) {
                     MTXF_APPLY);
 
         Matrix_SetGfxMtx(&gMasterDisp);
+        
         Cutscene_DrawGreatFox();
     }
 }

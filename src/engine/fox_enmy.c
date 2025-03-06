@@ -487,7 +487,7 @@ void Object_Load(ObjectInit* objInit, f32 xMax, f32 xMin, f32 yMax, f32 yMin) {
         }
         if ((objInit->id >= OBJ_ITEM_START) && (objInit->id < OBJ_ITEM_MAX)) {
             for (i = 0; i < ARRAY_COUNT(gItems); i++) {
-                if ((gItems[i].obj.status == OBJ_FREE)) {
+                if (gItems[i].obj.status == OBJ_FREE) {
                     Item_Load(&gItems[i], objInit);
                     break;
                 }
@@ -2388,7 +2388,7 @@ void ItemSupplyRing_Update(Item* this) {
             } else {
                 this->obj.pos.y += (gPlayer[this->playerNum].pos.y - this->obj.pos.y) * 0.5f;
             }
-            if (gPlayer[0].alternateView) {
+            if (gPlayer[0].alternateView && (gLevelMode == LEVELMODE_ON_RAILS)) {
                 this->obj.pos.z += (gPlayer[this->playerNum].trueZpos - 300.0f - this->obj.pos.z) * 0.3f;
             } else if (gTurretModeEnabled) {
                 if (gLevelMode == LEVELMODE_ALL_RANGE) {

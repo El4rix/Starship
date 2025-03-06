@@ -189,8 +189,8 @@ s32 D_i1_8019C0B8;
 s32 D_i1_8019C0BC;
 s32 D_i1_8019C0C0;
 
-const char D_i1_8019B2B0[] = "--??≪?帥???????????!!\n"; //--Attack off!!
-const char D_i1_8019B2C4[] = "--???????????≪?????!!\n"; //--Level Up!
+const char D_i1_8019B2B0[] = "--アタックオフ!!\n"; //--Attack off!!
+const char D_i1_8019B2C4[] = "--レベルアップ!!\n"; //--Level Up!
 const char D_i1_8019B2D8[] = "wk_f00=<%10.3f>\n";
 
 f32 Venom1_801920F0(f32* arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32* arg5) {

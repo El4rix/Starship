@@ -68,7 +68,9 @@ void PlayerShot_ExplodeBomb(PlayerShot* shot) {
         shot->timer = 30;
         shot->unk_58 = 150;
         Audio_PlayBombExplodeSfx(shot->sourceId, shot->sfxSource);
-        //gScreenFlashTimer = 4;
+        if (!gTurretModeEnabled) {
+            gScreenFlashTimer = 4;
+        }
         if (shot->obj.pos.y < (gGroundHeight + 450.0f)) {
             gCameraShake = 15;
             if (gGroundSurface == SURFACE_WATER) {
@@ -1541,7 +1543,7 @@ void PlayerShot_DrawShot(PlayerShot* shot) {
                 }
                 break;
             case PLAYERSHOT_GFOX_LASER:
-                if (gTurretModeEnabled) { //It was backwards some reason
+                if (gTurretModeEnabled) { // Laser model was backwards some reason
                     Matrix_RotateY(gGfxMatrix, M_PI*2, MTXF_APPLY);
                     Matrix_Scale(gGfxMatrix, 6.0f, 6.0f, 20.0f, MTXF_APPLY);
                     RCP_SetupDL_21();
@@ -2086,9 +2088,7 @@ void PlayerShot_UpdateBomb(PlayerShot* shot) {
     f32 var_ft5;
 
     if (gTurretModeEnabled) {
-        //if (gControllerPress[0].button & A_BUTTON) {
-            PlayerShot_ExplodeBomb(shot);
-        //}
+        PlayerShot_ExplodeBomb(shot);
     }
 
     switch (shot->unk_5C) {

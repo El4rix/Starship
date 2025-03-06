@@ -4903,7 +4903,6 @@ void Player_Setup(Player* playerx) {
                 break;
         }
         if ((gTurretModeEnabled) && (gCurrentLevel != LEVEL_MACBETH)) {
-                //player->state = PLAYERSTATE_ACTIVE;
                 gDrawGround = true;
             } 
     } else {
@@ -5389,7 +5388,9 @@ void Player_ArwingBrake(Player* player) {
             }
             player->boostMeter += sp30;
             if (player->boostMeter > 90.0f) {
-                //player->boostCooldown = true;
+                if (gTurretModeEnabled) {
+                    player->boostCooldown = true;
+                }
                 player->boostMeter = 90.0f;
             }
 
@@ -6722,7 +6723,7 @@ void Camera_SetStarfieldPos(f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 
     tempf = sqrtf(SQ(zEye - zAt) + SQ(xEye - xAt));
     pitch = -Math_Atan2F(yEye - yAt, tempf);
 
-    // Adjust yaw to stay within the range [-??/2, ??/2]
+    // Adjust yaw to stay within the range [-¦Ð/2, ¦Ð/2]
     if (yaw >= M_PI / 2) {
         yaw -= M_PI;
     }

@@ -346,8 +346,8 @@ void SectorX_SxSpyborg_Update(SxSpyborg* this) {
         gLight2BTarget = 20;
     }
 
-    PRINTF("???????????＜????? ??????荀??????????鐚?\n");                      // Takao-chan, look at it!
-    PRINTF("?????拷?∝姦荐??????? : <%d>????????若??\n\n", gBossFrameCount); // Boss stage total time: <%d> frames.
+    PRINTF("たかおちゃん よう見ときや！\n");                      // Takao-chan, look at it!
+    PRINTF("ボス面累計時間 : <%d>フレーム\n\n", gBossFrameCount); // Boss stage total time: <%d> frames.
 
     if (gTurretModeEnabled) {
         if (gPlayer[0].pos.y < gPlayer[0].pathFloor) {
@@ -1791,8 +1791,6 @@ void SectorX_LevelComplete(Player* player) {
             }
             Math_SmoothStepToF(&player->cam.eye.x, player->pos.x + sp48.x + 750, D_ctx_80177A48[0], 500.0f, 0.0f);
             Math_SmoothStepToF(&player->cam.eye.y, player->pos.y + sp48.y, D_ctx_80177A48[0], 500.0f, 0.0f);
-            Math_SmoothStepToF(&player->cam.eye.z, player->trueZpos + gPathProgress + sp48.z - 300, D_ctx_80177A48[0], 500.0f,
-                               0.0f);
             Matrix_Pop(&gCalcMatrix);
             sp54.x = 0.0f;
             sp54.y = 0;

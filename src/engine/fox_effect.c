@@ -3513,12 +3513,12 @@ void Effect_Effect395_Update(Effect395* this) {
     //! FAKE: Probably some debug stuff printing different messages depending on what state is.
     if ((this->state != 0) && (this->state != 6) && (this->state != 7) && (this->state != 11)) {
         if (gCurrentLevel) {}
-        PRINTF("ï¼ºï¼¯ï¼¿ï¼­ï¼?ï¼¶ï¼¥ ï¼?ï¼¥ï¼¬ï¼? %d\n");
+        PRINTF("£Ú£Ï¡²£Í£Ï£Ö£Å £È£Å£Ì£Ð %d\n");
     }
     if ((this->state != 1) && (this->state != 2) && (this->state != 4) && (this->state != 5) && (this->state != 8) &&
         (this->state != 9)) {
         if (gCurrentLevel) {}
-        PRINTF("ï¼¡ï¼£ï¼¿ï¼­ï¼?ï¼¶ï¼¥ ï¼?ï¼¥ï¼¬ï¼? %d\n");
+        PRINTF("£Á£Ã¡²£Í£Ï£Ö£Å £È£Å£Ì£Ð %d\n");
     }
 
     switch (this->state) {
@@ -3890,11 +3890,11 @@ void Effect_Effect395_Draw(Effect395* this) {
     //! FAKE: Probably some debug stuff printing different messages depending on what unk_4E is.
     if ((this->state != 0) && (this->state != 6)) {
         if (this->unk_4A && this->unk_4A) {}
-        PRINTF("ï¼ºï¼¯ï¼¿ï¼¤ï¼?ï¼³ï¼° ï¼?ï¼¥ï¼¬ï¼? %d\n");
+        PRINTF("£Ú£Ï¡²£Ä£É£Ó£Ð £È£Å£Ì£Ð %d\n");
     }
     if ((this->state != 1) && (this->state != 2) && (this->state != 4) && (this->state != 5) && (this->state != 7)) {
         if (this->unk_4A && !this->scale2) {}
-        PRINTF("ï¼¡ï¼£ï¼¿ï¼¤ï¼?ï¼³ï¼° ï¼?ï¼¥ï¼¬ï¼? %d\n");
+        PRINTF("£Á£Ã¡²£Ä£É£Ó£Ð £È£Å£Ì£Ð %d\n");
     }
 
     // @port: Tag the transform.

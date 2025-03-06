@@ -1482,15 +1482,17 @@ void Display_Player_Update(Player* player, s32 reflectY) {
             || ((gCurrentLevel == LEVEL_AQUAS) && (player->state == PLAYERSTATE_LEVEL_COMPLETE)) 
             || ((gCurrentLevel == LEVEL_VENOM_ANDROSS) && (player->state == PLAYERSTATE_LEVEL_COMPLETE))) {
                 Matrix_Translate(gGfxMatrix, player->pos.x, player->pos.y, player->trueZpos + player->zPath, MTXF_APPLY);
-                if ((gCurrentLevel == LEVEL_AQUAS) && (player->state == PLAYERSTATE_LEVEL_COMPLETE)) {
-                    Matrix_Scale(gGfxMatrix, 0.1f, 0.1f, 0.1f, MTXF_APPLY);
+                if (gTurretModeEnabled) {
+                    if ((gCurrentLevel == LEVEL_AQUAS) && (player->state == PLAYERSTATE_LEVEL_COMPLETE)) {
+                        Matrix_Scale(gGfxMatrix, 0.1f, 0.1f, 0.1f, MTXF_APPLY);
+                    }
+                    if ((gCurrentLevel == LEVEL_VENOM_ANDROSS) && (player->state == PLAYERSTATE_LEVEL_COMPLETE)) {
+                        Matrix_Scale(gGfxMatrix, 0.15f, 0.15f, 0.15f, MTXF_APPLY);
+                    }
                 }
-                if ((gCurrentLevel == LEVEL_VENOM_ANDROSS) && (player->state == PLAYERSTATE_LEVEL_COMPLETE)) {
-                    Matrix_Scale(gGfxMatrix, 0.15f, 0.15f, 0.15f, MTXF_APPLY);
-                }
-            } else if (player->state != PLAYERSTATE_ACTIVE) {
+            } else if ((player->state != PLAYERSTATE_ACTIVE) && (gTurretModeEnabled)) {
                 Matrix_Translate(gGfxMatrix, player->pos.x + (1400 * SIN_DEG(player->rot.y)), player->pos.y - (1400 * SIN_DEG(player->rot.x)), player->trueZpos + player->zPath + (1400 * COS_DEG(player->rot.y)), MTXF_APPLY);
-            } else {
+            } else if (gTurretModeEnabled) {
                 Matrix_Translate(gGfxMatrix, player->pos.x, player->pos.y + 25, player->trueZpos + player->zPath + 1075, MTXF_APPLY);
             }
             if (gVersusMode) {

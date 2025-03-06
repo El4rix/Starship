@@ -32,7 +32,7 @@ void Training_ItemRing_Update(ItemTrainingRing* this) {
 
                 if (this->obj.pos.z > (gPlayer[0].trueZpos + var_fv0)) {
                     this->unk_44 = 1;
-                    PRINTF("???:?????³ã?°æ???????????\n"); // Ring not passed sound
+                    PRINTF("¢ö:¥ê¥ó¥°Ì¤ÄÌ²á²»\n"); // Ring not passed sound
                     AUDIO_PLAY_SFX(NA_SE_RING_MISS, gDefaultSfxSource, 4);
                     gRingPassCount = 0;
                 }
@@ -43,7 +43,7 @@ void Training_ItemRing_Update(ItemTrainingRing* this) {
                 this->timer_48 = 50;
                 this->info.cullDistance = 10000.0f;
 
-                PRINTF("???:?????³ã?°é????????\n"); // Ring passing sound
+                PRINTF("¢ö:¥ê¥ó¥°ÄÌ²á²»\n"); // Ring passing sound
                 AUDIO_PLAY_SFX(NA_SE_RING_PASS, gDefaultSfxSource, 4);
 
                 gRingPassCount++;
