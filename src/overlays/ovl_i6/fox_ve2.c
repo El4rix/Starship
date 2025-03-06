@@ -625,14 +625,6 @@ void Turret_Venom2_LevelComplete(Player* player) {
         case 2:
             player->draw = player->arwing.drawFace = false;
 
-            /* player->cam.eye.x = gCsCamEyeX = gBosses[0].obj.pos.x;
-            player->cam.eye.y = gCsCamEyeY -= 80;
-            player->cam.eye.z = gCsCamEyeZ = gBosses[0].obj.pos.z;
-
-            player->cam.at.x = gCsCamAtX = gBosses[0].obj.pos.x;
-            player->cam.at.y = gCsCamAtY = -5000;
-            player->cam.at.z = gCsCamAtZ = gBosses[0].obj.pos.z; */
-
             gCsCamEyeY -= 80;
 
             Math_SmoothStepToF(&gCsCamEyeX, gBosses[0].obj.pos.x - 10, 1.0, 10.0f, 0);

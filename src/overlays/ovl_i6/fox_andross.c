@@ -2830,12 +2830,6 @@ void Andross_AndAndross_Update(AndAndross* this) {
                     this->swork[8] = 0;
                     this->fwork[9] = 0.2f;
                     this->animFrame = 0;
-
-                    /* this->state = 18;
-                    this->animFrame = 0;
-                    this->work_044 = 1;
-                    this->timer_050 = 40;
-                    this->fwork[9] = 0.0f; */
                     Player_DamageEffects(player);
                     break;
                 }

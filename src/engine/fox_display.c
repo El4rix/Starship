@@ -1968,7 +1968,9 @@ void Display_Update(void) {
             playerPos.y = player->pos.y;
             playerPos.z = player->trueZpos;
             FrameInterpolation_RecordOpenChild(player, i);
-            Display_Player_Update(player, 1);
+            if (!gTurretModeEnabled) {
+                Display_Player_Update(player, 1);
+            }
             FrameInterpolation_RecordCloseChild();
         }
         Matrix_Pop(&gGfxMatrix);
@@ -2065,7 +2067,7 @@ void Display_Update(void) {
         }
     }
 
-    if ((gTurretModeEnabled /* gLevelMode == LEVELMODE_TURRET */) && (gPlayer[0].state == PLAYERSTATE_ACTIVE)) {
+    if ((gTurretModeEnabled || gLevelMode == LEVELMODE_TURRET) && (gPlayer[0].state == PLAYERSTATE_ACTIVE)) {
         Turret_Draw(gPlayer);
     }
 

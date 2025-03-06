@@ -2069,7 +2069,9 @@ void Cutscene_ArwingDown360(Player* player) {
     Vec3f dest;
 
     Math_SmoothStepToF(&player->rot.x, 0.0f, 0.1f, 1.0f, 0.01f);
-    player->pos.x += player->vel.x;
+    if (!gTurretModeEnabled) {
+        player->pos.x += player->vel.x;
+    }
     player->pos.y += player->vel.y;
 
     if (!((gCurrentLevel == LEVEL_VENOM_1) && gBossActive) &&
@@ -2078,8 +2080,10 @@ void Cutscene_ArwingDown360(Player* player) {
         player->rot.x -= 2.0f;
     }
 
-    player->pos.z += player->vel.z;
-    player->trueZpos = player->pos.z;
+    if (!gTurretModeEnabled) {
+        player->pos.z += player->vel.z;
+        player->trueZpos = player->pos.z;
+    }
     player->bankAngle = player->rot.z + player->zRotBank + player->zRotBarrelRoll;
     player->zRotBank += 15.0f;
 
@@ -3326,8 +3330,10 @@ void Cutscene_DrawGreatFox(void) {
             return;
         }
 
-        if (/* ((gGameState == GSTATE_TITLE) && (gStarCount == 801)) ||  */(gGameState == GSTATE_MAP)) {
-            gGreatFoxIntact = true;
+        if (gGameState == GSTATE_MAP) {
+            if (gLeveLClearStatus[LEVEL_SECTOR_Z] != 0) {
+                gGreatFoxIntact = true;
+            }
             Matrix_Push(&gGfxMatrix);
             Matrix_Scale(gGfxMatrix, 0.05f, 0.05f, 0.05f, MTXF_APPLY);
             Matrix_SetGfxMtx(&gMasterDisp);
@@ -3422,11 +3428,4 @@ void Cutscene_DrawGreatFox(void) {
     }
     // @port Pop the transform id.
     FrameInterpolation_RecordCloseChild();
-
-    if (gTurretModeEnabled) {
-        if (/* ((gGameState == GSTATE_TITLE) && (gStarCount == 801)) ||  */(gGameState == GSTATE_MAP)) {
-            gGreatFoxIntact = true;
-            Matrix_Pop(&gGfxMatrix);
-        }
-    }
 }

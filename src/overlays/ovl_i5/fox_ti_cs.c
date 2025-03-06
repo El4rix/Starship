@@ -650,15 +650,6 @@ void Turret_Titania_LevelComplete(Player* player) {
 
             Math_SmoothStepToF(&player->unk_170, 2.0f, 1.0f, 0.2f, 0.0f);
             Math_SmoothStepToF(&player->unk_16C, 2.0f, 1.0f, 0.2f, 0.0f);
-
-            /* if (gCsFrameCount < 1470) {
-                Effect_Effect359_Spawn(RAND_FLOAT_CENTERED(30.0f) + (player->pos.x + 30.0f), 30.0f,
-                                       RAND_FLOAT_CENTERED(30.0f) + player->trueZpos, RAND_FLOAT(2.0f) + 3.5f, 255, 12,
-                                       1);
-            }
-
-            Effect_Effect359_Spawn(RAND_FLOAT_CENTERED(30.0f) + (player->pos.x - 30.0f), 30.0f,
-                                   RAND_FLOAT_CENTERED(30.0f) + player->trueZpos, RAND_FLOAT(2.0f) + 3.5f, 255, 12, 1); */
             Math_SmoothStepToF(&player->rockAngle, SIN_DEG(gGameFrameCount * 6.0f) * 18.0f, 0.1f, 100.0f, 0.0f);
             Math_SmoothStepToF(&player->yBob, SIN_DEG(gGameFrameCount * 3.0f) * 5.0f, 0.1f, 100.0f, 0.0f);
 

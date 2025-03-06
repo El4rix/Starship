@@ -676,11 +676,7 @@ void PlayerShot_ApplyDamageToActor(PlayerShot* shot, Actor* actor, s32 hitIndex)
     actor->dmgType = DMG_BEAM;
     actor->dmgPart = hitIndex - 1;
     actor->timer_0C2 = 2;
-    if (!gTurretModeEnabled) {
-        actor->damage = 10;
-    } else {
-        actor->damage = 31;
-    }
+    actor->damage = 10;
     if ((shot->sourceId < 4) && (gPlayer[shot->sourceId].form != FORM_LANDMASTER)) {
         switch (gLaserStrength[shot->sourceId]) {
             case LASERS_TWIN:
@@ -698,16 +694,14 @@ void PlayerShot_ApplyDamageToActor(PlayerShot* shot, Actor* actor, s32 hitIndex)
     }
     if (shot->obj.id == PLAYERSHOT_GFOX_LASER) {
         if ((gTurretModeEnabled)) {
-            if ((actor->eventType == EVID_TEAMMATE) 
-            || (actor->obj.id == OBJ_ACTOR_TEAM_BOSS) 
-            || (actor->obj.id == OBJ_ACTOR_TEAM_ARWING) 
+            if ((actor->eventType == EVID_TEAMMATE) || (actor->obj.id == OBJ_ACTOR_TEAM_BOSS) || (actor->obj.id == OBJ_ACTOR_TEAM_ARWING)
+            || (actor->aiType == AI360_SLIPPY) || (actor->aiType == AI360_PEPPY) || (actor->aiType == AI360_FALCO)
             || (gCurrentLevel == LEVEL_VENOM_2)) {
                 actor->damage = 4;
             } else if ((gCurrentLevel == LEVEL_FORTUNA) 
             || (gCurrentLevel == LEVEL_BOLSE) 
             || (gCurrentLevel == LEVEL_KATINA)) {
                 actor->damage = 12;
-                actor->dmgType = DMG_EXPLOSION;
             } else if (gCurrentLevel == LEVEL_SECTOR_Z) {
                 actor->damage = 25;
             } else if ((gCurrentLevel == LEVEL_ZONESS) 

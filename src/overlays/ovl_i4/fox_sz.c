@@ -476,12 +476,7 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
     Vec3f src;
     Vec3f dest;
     ActorAllRange* actor;
-
-    /* if (gAllRangeEventTimer < 1450) { // Skip ahead for testing
-        gAllRangeEventTimer = 1450;
-    } */
-
-
+    
     if ((gAllRangeEventTimer >= 0) && (!gTurretModeEnabled)) {
         if (gTeamShields[AI360_FALCO] > 0) {
             if (gActors[AI360_FALCO].iwork[2] == AI360_FOX) {
@@ -1640,17 +1635,7 @@ void Turret_SectorZ_LevelStart(Player* player) {
             player->unk_190 = 5.0f;
             player->yRot_114 = 90.0f;
             player->baseSpeed = gArwingSpeed;
-            //player->draw = true;
             AUDIO_PLAY_SFX(NA_SE_ARWING_BOOST, player->sfxSource, 0);
-            break;
-
-        case 760:
-            /* player->unk_194 = 5.0f;
-            player->unk_190 = 5.0f;
-            player->yRot_114 = 90.0f;
-            player->baseSpeed = gArwingSpeed;
-            //player->draw = true;
-            AUDIO_PLAY_SFX(NA_SE_ARWING_BOOST, player->sfxSource, 0); */
             break;
     }
 
@@ -2430,12 +2415,15 @@ void SectorZ_SzGreatFox_Update(SzGreatFox* this) {
     Vec3f src;
     Vec3f dest;
 
+    if ((gTurretModeEnabled) && (gPlayer[0].state == PLAYERSTATE_DOWN) && (gPlayer[0].csTimer == 30)) {
+        Effect_Effect383_Spawn(0, 0, -1000, 80.0f);
+    }
+
     if (this->dmgType == DMG_MISSILE) {
         this->dmgType = DMG_NONE;
         this->timer_050 = 10;
         AUDIO_PLAY_SFX(NA_SE_OB_BROKEN_SPARK_L, this->sfxSource, 0);
         if (gTurretModeEnabled) {
-            gGreatFoxIntact = false;
             if (gPlayer[0].shields > 0) {
                 Player_ApplyDamage(&gPlayer[0], 0, 127);
             }
@@ -2443,6 +2431,7 @@ void SectorZ_SzGreatFox_Update(SzGreatFox* this) {
                 gPlayer[0].state = PLAYERSTATE_STANDBY;
                 this->timer_052 = 60;
             }
+            gGreatFoxIntact = false;
         } else {
             this->state = 1;
             this->timer_052 = 60;

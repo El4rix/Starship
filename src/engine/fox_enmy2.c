@@ -1946,7 +1946,7 @@ void ActorEvent_ProcessActions(ActorEvent* this) {
                 this->work_048 = EVACT_NONE;
                 break;
 
-            case EVACT_9:
+            case EVACT_9: // Aquas starfish
                 if ((gTurretModeEnabled) && (this->obj.pos.x > gPlayer[0].pos.x - 500) 
                                          && (this->obj.pos.x < gPlayer[0].pos.x + 500)
                                          && (this->obj.pos.y > gPlayer[0].pos.y - 500)
@@ -1956,8 +1956,8 @@ void ActorEvent_ProcessActions(ActorEvent* this) {
                             AUDIO_PLAY_SFX(NA_SE_EN_HEART_OPEN, this->sfxSource, 0);
                         }
                         this->obj.pos.z = gPlayer[0].pos.z - 200;
-                        this->obj.pos.x += (turretDestX - gPlayer[0].pos.x + gPlayer[0].knockback.x);
-                        this->obj.pos.y += (turretDestY - gPlayer[0].pos.y + gPlayer[0].knockback.y);
+                        Math_SmoothStepToF(&this->obj.pos.x, turretDestX - gPlayer[0].pos.x + this->obj.pos.x, 0.15f, 20.0f, 0.00001f);
+                        Math_SmoothStepToF(&this->obj.pos.y, turretDestY - gPlayer[0].pos.y + this->obj.pos.y, 0.15f, 20.0f, 0.00001f);
 
                         this->rot_0F4.x = -90;
                         this->obj.rot.z = 0;

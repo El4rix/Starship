@@ -168,6 +168,43 @@ void Training_Enemy_Update(ActorAllRange* this) {
     if (this->iwork[8] != 0) {
         this->iwork[8]--;
     }
+
+    if ((gTurretModeEnabled) && (gCurrentLevel != LEVEL_SECTOR_Z) && (gPlayer[0].state == PLAYERSTATE_ACTIVE)) {
+        if ((gControllerHold[0].button & R_TRIG)) {
+            if (((sin((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) + 0.3f) 
+                    > ((this->obj.pos.x - gPlayer[0].pos.x) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2)))) 
+                    && ((sin((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) - 0.3f) 
+                    < ((this->obj.pos.x - gPlayer[0].pos.x) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2)))) 
+                    && ((cos((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) + 0.3f) 
+                    > ((this->obj.pos.z - gPlayer[0].pos.z) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2)))) 
+                    && ((cos((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) - 0.3f) 
+                    < ((this->obj.pos.z - gPlayer[0].pos.z) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2))))) {
+                this->obj.pos.x -= ((this->obj.pos.x - gPlayer[0].pos.x) * 0.025f);
+                this->obj.pos.z -= ((this->obj.pos.z - gPlayer[0].pos.z) * 0.025f);
+
+                if ((sqrtf(Math_PowF((fabsf(this->obj.pos.z - gPlayer[0].pos.z)), 2) + Math_PowF((fabsf(this->obj.pos.x - gPlayer[0].pos.x)), 2)) < 2000)
+                    && ((this->aiType == AI360_PEPPY) || (this->aiType == AI360_FALCO) || (this->aiType == AI360_SLIPPY))) {
+                    if (gTeamShields[this->aiType] < 255) {
+                        gTeamShields[this->aiType] += 1;
+                        if (gGameFrameCount % 10 == 0) {
+                            AUDIO_PLAY_SFX(NA_SE_EN_RNG_BEAM_CHARGE, this->sfxSource, 4);
+                            this->timer_0C6 = 1020;
+                        }
+                    }
+                    if ((gTeamShields[this->aiType] == 254) && !(gControllerHold[0].button & A_BUTTON)) {
+                        AUDIO_PLAY_SFX(NA_SE_WING_REPAIR, gDefaultSfxSource, 4);
+                        if (this->aiType == AI360_PEPPY) {
+                            Radio_PlayMessage(gMsg_ID_5230, RCID_PEPPY);
+                        } else if (this->aiType == AI360_FALCO) {
+                            Radio_PlayMessage(gMsg_ID_20280, RCID_FALCO);
+                        } else if (this->aiType == AI360_SLIPPY) {
+                            Radio_PlayMessage(gMsg_ID_16280, RCID_SLIPPY);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 typedef struct TrainingMessage {

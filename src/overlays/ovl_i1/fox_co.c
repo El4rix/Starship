@@ -3557,9 +3557,7 @@ void Turret_Corneria_LevelStart(Player* player) {
     player->pos.z = player->pos.z;
     player->trueZpos = player->pos.z + player->camDist;
     player->bobPhase += 10.0f;
-    player->yBob = -SIN_DEG(player->bobPhase) * 0.5f;/* 
-    player->rockPhase += 3.0f;
-    player->rockAngle = SIN_DEG(player->rockPhase) * 1.5f; */
+    player->yBob = -SIN_DEG(player->bobPhase) * 0.5f;
 
     Corneria_SpawnClouds();
 

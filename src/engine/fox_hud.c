@@ -3358,7 +3358,11 @@ void HUD_Score_Update(f32 xPos, f32 yPos) {
             break;
 
         case LEVEL_SECTOR_Z:
+        if (gTurretModeEnabled) {
+            medalStatus = Play_CheckMedalStatus(250);
+        } else {
             medalStatus = Play_CheckMedalStatus(100);
+        }
             break;
 
         case LEVEL_AREA_6:

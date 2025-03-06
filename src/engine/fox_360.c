@@ -941,6 +941,10 @@ void ActorAllRange_ApplyDamage(ActorAllRange* this) {
                     gTeamDamage[this->aiType] = this->damage * 2;
                 }
             }
+            
+            if ((gTurretModeEnabled) && (gCurrentLevel == LEVEL_KATINA) && (this->animFrame == 1) && (this->dmgSource == AI360_FOX + 1)) {
+                this->health += (this->damage * 0.75);
+            }
 
             if (this->health <= 0) {
                 this->health = 0;

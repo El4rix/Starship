@@ -984,7 +984,7 @@ void Player_ApplyDamage(Player* player, s32 direction, s32 damage) {
         damage = 40;
     }
 
-    if (gExpertMode) {
+    if ((gExpertMode) && (!gTurretModeEnabled)) {
         player->damage = damage * 2;
     } else {
         player->damage = damage;
@@ -2838,7 +2838,7 @@ void Play_Init(void) {
         gControllerRumbleEnabled[i] = 0;
     }
 
-    if (gExpertMode) {
+    if ((gExpertMode) && (!gTurretModeEnabled)) {
         gEnemyShotSpeed = 200;
     } else {
         gEnemyShotSpeed = 100;
@@ -6108,6 +6108,7 @@ void Player_Update(Player* player) {
             Cutscene_PlayerDown(player);
             if (gTurretModeEnabled) {
                 Audio_KillSfxBySourceAndId(gDefaultSfxSource, NA_SE_EN_A6BOSS_CHARGE);
+                player->draw = false;
             }
             break;
 

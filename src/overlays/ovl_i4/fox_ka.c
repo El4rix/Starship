@@ -681,6 +681,9 @@ void Katina_BossHandleDamage(KaSaucerer* this) {
                 if (this->swork[10 + this->dmgPart] > 0) {
                     this->swork[00 + this->dmgPart] = 20;
                     this->swork[10 + this->dmgPart] -= this->damage;
+                    if (gTurretModeEnabled) {
+                        this->swork[10 + this->dmgPart] += (this->damage * 0.5f);
+                    }
 
                     sfxSource.x = (this->vwork[1 + this->dmgPart].x * 1.3f) + this->obj.pos.x;
                     sfxSource.y = (this->vwork[1 + this->dmgPart].y * 1.3f) + this->obj.pos.y;

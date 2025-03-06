@@ -2008,9 +2008,6 @@ void Item_CheckBounds(Item* this) {
         }
     }
     if ((gLevelMode == LEVELMODE_ALL_RANGE) && (gTurretModeEnabled) && (gControllerHold[0].button & R_TRIG)) {
-        /* Math_SmoothStepToF(&this->obj.pos.x, gPlayer[0].pos.x, 0.2f, 50.0f, 0.01f);
-        Math_SmoothStepToF(&this->obj.pos.y, gPlayer[0].pos.y, 0.2f, 30.0f, 0.01f);
-        Math_SmoothStepToF(&this->obj.pos.z, gPlayer[0].pos.z, 0.2f, 50.0f, 0.01f); */
         if (gPlayer[0].state == PLAYERSTATE_ACTIVE) {
             if (((sin((gPlayer[0].unk_180 + gPlayer[0].unk_000) * M_DTOR) + 0.3f) 
                     > ((this->obj.pos.x - gPlayer[0].pos.x) / sqrtf(Math_PowF((this->obj.pos.z - gPlayer[0].pos.z), 2) + Math_PowF((this->obj.pos.x - gPlayer[0].pos.x), 2)))) 
