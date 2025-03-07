@@ -43,12 +43,41 @@ f32 gAndrossUnkBrightness;     // can be static
 f32 gAndrossUnkAlpha = 0.0f;
 u16 gBolseDynamicGround = true;
 s32 D_bg_800C9C38 = 0; // unused?
+
 static f32 sGroundPositions360x_FIX[] = {
-    5999.0f, -5999.0f, 5999.0f, -5999.0f, /* 5999.0f * 2.0f, 5999.0f * 2.0f, -5999.0f * 2.0f, -5999.0f * 2.0f,*/
+    // center pieces : 0 - 3
+    5999.0f,         -5999.0f, 5999.0f, -5999.0f,
+    5999.0f * 3.0f,  // lower right corner piece : 4
+    5999.0f * 1.0f,  // lower middle left piece : 5
+    -5999.0f * 1.0f, // lower middle right piece : 6
+    -5999.0f * 3.0f, // lower left corner piece : 7
+    -5999.0f * 3.0f, // upper left corner piece : 8
+    -5999.0f * 1.0f, // uppder middle left piece : 9
+    +5999.0f * 1.0f, // Upper middle right pieceX : 10
+    +5999.0f * 3.0f, // upper right corner piece : 11
+    -5999.0f * 3.0f, // side upper left piece : 12
+    -5999.0f * 3.0f, // side lower left piece : 13
+    +5999.0f * 3.0f, // side upper right piece: 14
+    +5999.0f * 3.0f, // side lower right piece : 15
 };
+
 static f32 sGroundPositions360z_FIX[] = {
-    5999.0f, 5999.0f, -5999.0f, -5999.0f, /* 5999.0f * 2.0f, 5999.0f * 2.0f, -5999.0f * 2.0f, -5999.0f * 2.0f,*/
+    // center pieces : 0 - 3
+    5999.0f,         5999.0f, -5999.0f, -5999.0f,
+    5999.0f * 3.0f,  // lower right corner piece : 4
+    5999.0f * 3.0f,  // lower middle left piece : 5
+    +5999.0f * 3.0f, // lower middle right piece : 6
+    5999.0f * 3.0f,  // lower left corner piece : 7
+    -5999.0f * 3.0f, // upper left corner piece : 8
+    -5999.0f * 3.0f, // uppder middle left piece : 9
+    -5999.0f * 3.0f, // Upper middle right pieceX : 10
+    -5999.0f * 3.0f, // upper right corner piece : 11
+    -5999.0f * 1.0f, // side upper left piece : 12
+    5999.0f * 1.0f,  // side lower left piece : 13
+    -5999.0f * 1.0f, // side upper right piece: 14
+    5999.0f * 1.0f,  // side lower right piece : 15
 };
+
 u16 gStarColors[16] = {
     0x108B, 0x108B, 0x1087, 0x1089, 0x39FF, 0x190D, 0x108B, 0x1089,
     0x294B, 0x18DF, 0x294B, 0x1085, 0x39FF, 0x108B, 0x18CD, 0x108B,
@@ -536,14 +565,14 @@ void Background_DrawBackdrop(void) {
 
                 case LEVEL_CORNERIA:
                 case LEVEL_VENOM_1: {
+                    Matrix_Push(&gGfxMatrix);
                     // Calculate vertical and horizontal offsets
                     f32 bgYpos = (gPlayer[gPlayerNum].camPitch * -6000.0f) - (gPlayer[gPlayerNum].cam.eye.y * 0.6f);
-                    f32 sp13C =
-                        Math_ModF(Math_RadToDeg(gPlayer[gPlayerNum].camYaw) * (-7280.0f / 360.0f) * 5.0f, 7280.0f);
-                    f32 corneriaCamYawDeg = Math_RadToDeg(gPlayer[0].camYaw);
+                    f32 playerCamYawDeg = Math_RadToDeg(gPlayer[gPlayerNum].camYaw);
+                    f32 sp13C = Math_ModF(playerCamYawDeg * (-7280.0f / 360.0f) * 5.0f, 7280.0f);
 
                     if (gLevelMode == LEVELMODE_ON_RAILS) {
-                        if (corneriaCamYawDeg < 180.0f) {
+                        if (playerCamYawDeg < 180.0f) {
                             sp13C = -(7280.0f - sp13C);
                         }
                     }
@@ -559,12 +588,12 @@ void Background_DrawBackdrop(void) {
 
                     // Apply camera roll and translate matrix to the starting position (far left)
                     Matrix_RotateZ(gGfxMatrix, gPlayer[gPlayerNum].camRoll * M_DTOR, MTXF_APPLY);
-                    Matrix_Translate(gGfxMatrix, sp13C - 14560.0f, -2000.0f + bgYpos + bgCutsceneFix, -6000.0f,
+                    Matrix_Translate(gGfxMatrix, sp13C - (7280.0f * 2.0f), -2000.0f + bgYpos + bgCutsceneFix, -6000.0f,
                                      MTXF_APPLY);
                     Matrix_SetGfxMtx(&gMasterDisp);
 
                     // Render the textures across a wider range to cover the screen
-                    for (int i = 0; i < 10; i++) {
+                    for (int i = 0; i < 6; i++) {
                         if (skipInterpolation) {
                             // @port Skip interpolation
                             FrameInterpolation_ShouldInterpolateFrame(false);
@@ -596,8 +625,8 @@ void Background_DrawBackdrop(void) {
                         }
                     }
                     bgPrevPosX = sp13C;
-                    break;
-                }
+                    Matrix_Pop(&gGfxMatrix);
+                } break;
 
                 case LEVEL_VENOM_ANDROSS: // WIP
                     if (gDrawBackdrop != 6) {
@@ -1167,10 +1196,104 @@ Vtx dynaFloor1Vtx[17 * 17];
 Vtx dynaFloor2Vtx[17 * 17];
 #endif
 
-static u8 skipInterpolationGround = 0;
-static u8 skipInterpolationGround2 = 0;
-static f32 prevPlayerPath = 0.0f;
-static f32 prevPlayerPath2 = 0.0f;
+void AllRangeGround_Draw(void) {
+    for (int i = 0; i < ARRAY_COUNT(sGroundPositions360x_FIX); i++) {
+        const f32 maxDistZ = 0.0f;
+        const f32 maxDistX = 0.0f;
+
+        // UPPER LEFT QUADRANT
+        if (gPlayer[0].pos.x < maxDistX && gPlayer[0].pos.z < maxDistZ) {
+            // upper left corner piece : 8
+            // side upper  left piece : 12
+            // side lower left piece : 13
+            // Upper middle right piece : 10
+            // upper middle left piece : 9
+            if ((i > 3) && (i != 8) && (i != 12) && (i != 9) && (i != 13) && (i != 10)) {
+                continue;
+            }
+        }
+
+        // LOWER LEFT QUADRANT
+        if (gPlayer[0].pos.x < maxDistX && gPlayer[0].pos.z > maxDistZ) {
+            // lower middle left piece: 5
+            // lower middle right piece : 6
+            // lower left corner piece: 7
+            // side upper left piece : 12
+            // side lower left piece : 13
+            if ((i > 3) && (i != 5) && (i != 7) && (i != 13) && (i != 6) && (i != 12)) {
+                continue;
+            }
+        }
+
+        // UPPER RIGHT QUADRANT
+        if (gPlayer[0].pos.x > maxDistX && gPlayer[0].pos.z < maxDistZ) {
+            // uppder middle left piece : 9
+            // Upper middle right piece : 10
+            // upper right corner piece : 11
+            // side upper right piece: 14
+            // side lower right piece : 15
+            if ((i > 3) && (i != 10) && (i != 11) && (i != 14) && (i != 9) && (i != 15)) {
+                continue;
+            }
+        }
+
+        // LOWER RIGHT QUADRANT
+        if (gPlayer[0].pos.x > maxDistX && gPlayer[0].pos.z > maxDistZ) {
+            // lower right corner piece : 4
+            // // lower middle left piece : 5
+            // lower middle right piece : 6
+            // side upper right piece: 14
+            // side lower right piece : 15
+            if ((i > 3) && ((i != 4) && (i != 6) && (i != 15) && (i != 14) && (i != 5))) {
+                continue;
+            }
+        }
+
+        Matrix_Push(&gGfxMatrix);
+
+        // @port: Tag the transform.
+        FrameInterpolation_RecordOpenChild("360Ground", i);
+
+        Matrix_Translate(gGfxMatrix, sGroundPositions360x_FIX[i], 0.0f, sGroundPositions360z_FIX[i], MTXF_APPLY);
+
+        if (gCurrentLevel == LEVEL_TRAINING) {
+            Matrix_Scale(gGfxMatrix, 1.5f, 1.0f, 1.0f, MTXF_APPLY);
+        }
+        Matrix_SetGfxMtx(&gMasterDisp);
+
+        switch (gCurrentLevel) {
+            case LEVEL_FORTUNA:
+                gSPDisplayList(gMasterDisp++, D_FO_6001360);
+                break;
+            case LEVEL_KATINA:
+                gSPDisplayList(gMasterDisp++, D_KA_6009250);
+                break;
+            case LEVEL_BOLSE:
+                gSPDisplayList(gMasterDisp++, D_BO_600A810);
+                break;
+            case LEVEL_VENOM_2:
+                gSPDisplayList(gMasterDisp++, D_VE2_6010700);
+                break;
+            case LEVEL_CORNERIA:
+                gSPDisplayList(gMasterDisp++, D_CO_601EAA0);
+                break;
+            case LEVEL_TRAINING:
+                gSPDisplayList(gMasterDisp++, D_TR_6005880);
+                break;
+            case LEVEL_VERSUS:
+                if (gVersusStage == VS_STAGE_CORNERIA) {
+                    gSPDisplayList(gMasterDisp++, D_versus_3018800);
+                } else {
+                    gSPDisplayList(gMasterDisp++, D_versus_30160A0);
+                }
+                break;
+        }
+        Matrix_Pop(&gGfxMatrix);
+
+        // @port: Pop the transform.
+        FrameInterpolation_RecordCloseChild();
+    }
+}
 
 void Background_DrawGround(void) {
     f32 sp1D4;
@@ -1179,6 +1302,8 @@ void Background_DrawGround(void) {
     u32 temp_s0;
     u16* sp1C4;
     Gfx* sp1C0;
+    f32 temp_fv1;
+    f32 temp_fa0;
 
     if ((gCurrentLevel != LEVEL_VENOM_2) && ((gPlayer[0].cam.eye.y > 4000.0f) || !gDrawGround)) {
         return;
@@ -1200,8 +1325,6 @@ void Background_DrawGround(void) {
     if (gLevelMode == LEVELMODE_ALL_RANGE) {
         Vec3f sp1B4;
         Vec3f sp1A8;
-        f32 temp_fv1;
-        f32 temp_fa0;
 
         sp1D4 = 0.0f;
         gPlayer[gPlayerNum].xPath = 0.0f;
@@ -1213,6 +1336,8 @@ void Background_DrawGround(void) {
         Matrix_RotateY(gCalcMatrix, -gPlayer[gPlayerNum].camYaw, MTXF_NEW);
         Matrix_MultVec3fNoTranslate(gCalcMatrix, &sp1B4, &sp1A8);
 
+        // @port: We no longer warp the floor.
+#if 0
         temp_fv1 = gPlayer[gPlayerNum].cam.eye.x + sp1A8.x;
         temp_fa0 = gPlayer[gPlayerNum].cam.eye.z + sp1A8.z;
 
@@ -1241,6 +1366,7 @@ void Background_DrawGround(void) {
         if (temp_fa0 < -18000.0f) {
             sp1D4 = -24000.0f;
         }
+#endif
     }
 
     Matrix_Push(&gGfxMatrix);
@@ -1334,38 +1460,7 @@ void Background_DrawGround(void) {
                 gGroundSurface = SURFACE_GRASS;
                 gBgColor = 0x845; // 8, 8, 32
 
-                skipInterpolationGround = prevPlayerPath != gPlayer[gPlayerNum].xPath;
-                skipInterpolationGround2 = prevPlayerPath2 != sp1D4;
-
-                if (skipInterpolationGround || skipInterpolationGround2) {
-                    // @port Skip interpolation
-                    FrameInterpolation_ShouldInterpolateFrame(false);
-                }
-
-                for (i = 0; i < ARRAY_COUNT(sGroundPositions360x); i++) {
-                    if (!skipInterpolationGround && !skipInterpolationGround2) {
-                        // @port: Tag the transform.
-                        FrameInterpolation_RecordOpenChild("360Ground", i);
-                    }
-
-                    Matrix_Push(&gGfxMatrix);
-                    Matrix_Translate(gGfxMatrix, sGroundPositions360x_FIX[i], 0.0f, sGroundPositions360z_FIX[i],
-                                     MTXF_APPLY);
-                    Matrix_SetGfxMtx(&gMasterDisp);
-                    gSPDisplayList(gMasterDisp++, D_CO_601EAA0);
-
-                    if (!skipInterpolationGround && !skipInterpolationGround2) {
-                        // @port: Tag the transform.
-                        FrameInterpolation_RecordCloseChild();
-                    }
-                    Matrix_Pop(&gGfxMatrix);
-                }
-                if (skipInterpolationGround || skipInterpolationGround2) {
-                    // @port renable interpolation
-                    FrameInterpolation_ShouldInterpolateFrame(true);
-                }
-                prevPlayerPath = gPlayer[gPlayerNum].xPath;
-                prevPlayerPath2 = sp1D4;
+                AllRangeGround_Draw();
             }
             break;
 
@@ -1489,7 +1584,7 @@ void Background_DrawGround(void) {
                 gSPDisplayList(gMasterDisp++, sp1C0);
                 Matrix_Pop(&gGfxMatrix);
 
-                // Mirrored Display - Left Side
+                // Mirrored Display - Left side
                 Matrix_Push(&gGfxMatrix);
                 Matrix_Translate(gGfxMatrix, -8000.0f, 0.0f, -2500.0f /*+ gPathTexScroll*/,
                                  MTXF_APPLY); // Move left by the width of the original (-8000.0f)
@@ -1498,7 +1593,7 @@ void Background_DrawGround(void) {
                 gSPDisplayList(gMasterDisp++, sp1C0);
                 Matrix_Pop(&gGfxMatrix);
 
-                // Mirrored Display - Right Side
+                // Mirrored Display - Right side
                 Matrix_Push(&gGfxMatrix);
                 Matrix_Translate(gGfxMatrix, 8000.0f, 0.0f, -2500.0f /*+ gPathTexScroll*/,
                                  MTXF_APPLY); // Move right by the width of the original (+8000.0f)
@@ -1515,7 +1610,7 @@ void Background_DrawGround(void) {
                 gSPDisplayList(gMasterDisp++, sp1C0);
                 Matrix_Pop(&gGfxMatrix);
 
-                // Mirrored Display - Left Side for the second section
+                // Mirrored Display - Left side for the second section
                 Matrix_Push(&gGfxMatrix);
                 Matrix_Translate(gGfxMatrix, -8000.0f, 0.0f, -8435.0f + 65 /*+ gPathTexScroll*/,
                                  MTXF_APPLY); // Move left by the width of the original (-8000.0f)
@@ -1524,7 +1619,7 @@ void Background_DrawGround(void) {
                 gSPDisplayList(gMasterDisp++, sp1C0);
                 Matrix_Pop(&gGfxMatrix);
 
-                // Mirrored Display - Right Side for the second section
+                // Mirrored Display - Right side for the second section
                 Matrix_Push(&gGfxMatrix);
                 Matrix_Translate(gGfxMatrix, 8000.0f, 0.0f, -8435.0f + 65 /*+ gPathTexScroll*/,
                                  MTXF_APPLY); // Move right by the width of the original (+8000.0f)
@@ -1533,36 +1628,8 @@ void Background_DrawGround(void) {
                 gSPDisplayList(gMasterDisp++, sp1C0);
                 Matrix_Pop(&gGfxMatrix);
             } else {
-                skipInterpolationGround = prevPlayerPath != gPlayer[gPlayerNum].xPath;
-                skipInterpolationGround2 = prevPlayerPath2 != sp1D4;
-
-                if (skipInterpolationGround || skipInterpolationGround2) {
-                    // @port Skip interpolation
-                    FrameInterpolation_ShouldInterpolateFrame(false);
-                }
-
-                for (i = 0; i < ARRAY_COUNT(sGroundPositions360x_FIX); i++) {
-                    if (!skipInterpolationGround && !skipInterpolationGround2) {
-                        // @port: Tag the transform.
-                        FrameInterpolation_RecordOpenChild("360Ground", i);
-                    }
-
-                    Matrix_Push(&gGfxMatrix);
-                    Matrix_Translate(gGfxMatrix, sGroundPositions360x_FIX[i], 0.0f, sGroundPositions360z_FIX[i],
-                                     MTXF_APPLY);
-                    Matrix_Scale(gGfxMatrix, 1.5f, 1.0f, 1.0f, MTXF_APPLY);
-                    Matrix_SetGfxMtx(&gMasterDisp);
-                    gSPDisplayList(gMasterDisp++, D_TR_6005880);
-
-                    if (!skipInterpolationGround && !skipInterpolationGround2) {
-                        // @port: Tag the transform.
-                        FrameInterpolation_RecordCloseChild();
-                    }
-                    Matrix_Pop(&gGfxMatrix);
-                }
+                AllRangeGround_Draw();
             }
-            prevPlayerPath = gPlayer[gPlayerNum].xPath;
-            prevPlayerPath2 = sp1D4;
             break;
         }
 
@@ -1739,47 +1806,7 @@ void Background_DrawGround(void) {
                 RCP_SetupDL_20(gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
             }
 
-            skipInterpolationGround = prevPlayerPath != gPlayer[gPlayerNum].xPath;
-            skipInterpolationGround2 = prevPlayerPath2 != sp1D4;
-
-            if (skipInterpolationGround || skipInterpolationGround2) {
-                // @port Skip interpolation
-                FrameInterpolation_ShouldInterpolateFrame(false);
-            }
-
-            for (i = 0; i < ARRAY_COUNT(sGroundPositions360x_FIX); i++) {
-                if (!skipInterpolationGround && !skipInterpolationGround2) {
-                    // @port: Tag the transform.
-                    FrameInterpolation_RecordOpenChild("360Ground", i);
-                }
-
-                Matrix_Push(&gGfxMatrix);
-                Matrix_Translate(gGfxMatrix, sGroundPositions360x_FIX[i], 0.0f, sGroundPositions360z_FIX[i],
-                                 MTXF_APPLY);
-                Matrix_SetGfxMtx(&gMasterDisp);
-
-                if (gCurrentLevel == LEVEL_FORTUNA) {
-                    gSPDisplayList(gMasterDisp++, D_FO_6001360);
-                } else if (gCurrentLevel == LEVEL_KATINA) {
-                    gSPDisplayList(gMasterDisp++, D_KA_6009250);
-                } else if (gCurrentLevel == LEVEL_BOLSE) {
-                    gSPDisplayList(gMasterDisp++, D_BO_600A810);
-                } else if (gCurrentLevel == LEVEL_VENOM_2) {
-                    gSPDisplayList(gMasterDisp++, D_VE2_6010700);
-                }
-
-                if (!skipInterpolationGround && !skipInterpolationGround2) {
-                    // @port: Tag the transform.
-                    FrameInterpolation_RecordCloseChild();
-                }
-                Matrix_Pop(&gGfxMatrix);
-            }
-            if (skipInterpolationGround || skipInterpolationGround2) {
-                // @port renable interpolation
-                FrameInterpolation_ShouldInterpolateFrame(true);
-            }
-            prevPlayerPath = gPlayer[gPlayerNum].xPath;
-            prevPlayerPath2 = sp1D4;
+            AllRangeGround_Draw();
             break;
 
         case LEVEL_VERSUS:
@@ -1789,40 +1816,7 @@ void Background_DrawGround(void) {
                 RCP_SetupDL_20(gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
             }
 
-            skipInterpolationGround = prevPlayerPath != gPlayer[gPlayerNum].xPath;
-            skipInterpolationGround2 = prevPlayerPath2 != sp1D4;
-
-            if (skipInterpolationGround || skipInterpolationGround2) {
-                // @port Skip interpolation
-                FrameInterpolation_ShouldInterpolateFrame(false);
-            }
-
-            for (i = 0; i < ARRAY_COUNT(sGroundPositions360x); i++) {
-                if (!skipInterpolationGround && !skipInterpolationGround2) {
-                    // @port: Tag the transform.
-                    FrameInterpolation_RecordOpenChild("360Ground", i);
-                }
-
-                Matrix_Push(&gGfxMatrix);
-                Matrix_Translate(gGfxMatrix, sGroundPositions360x[i], 0.0f, sGroundPositions360z[i], MTXF_APPLY);
-                Matrix_SetGfxMtx(&gMasterDisp);
-                if (gVersusStage == VS_STAGE_CORNERIA) {
-                    gSPDisplayList(gMasterDisp++, D_versus_3018800);
-                } else {
-                    gSPDisplayList(gMasterDisp++, D_versus_30160A0);
-                }
-                if (!skipInterpolationGround && !skipInterpolationGround2) {
-                    // @port: Tag the transform.
-                    FrameInterpolation_RecordCloseChild();
-                }
-                Matrix_Pop(&gGfxMatrix);
-            }
-            if (skipInterpolationGround || skipInterpolationGround2) {
-                // @port renable interpolation
-                FrameInterpolation_ShouldInterpolateFrame(true);
-            }
-            prevPlayerPath = gPlayer[gPlayerNum].xPath;
-            prevPlayerPath2 = sp1D4;
+            AllRangeGround_Draw();
             break;
 
         case LEVEL_SOLAR: // WIP

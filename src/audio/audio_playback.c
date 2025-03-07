@@ -40,6 +40,31 @@ void Audio_AudioListPushFront(AudioListItem* list, AudioListItem* item);
 void Audio_AudioListRemove(Note* note);
 void Audio_NoteInitForLayer(Note* note, SequenceLayer* layer);
 
+#if 0
+typedef struct {                                  // Little Endian
+    /* 0x00 */ uint8_t strongLeft : 1;            // 0000 0001
+    /* 0x00 */ uint8_t strongRight : 1;           // 0000 0010
+    /* 0x00 */ uint8_t bit2 : 2;                  // 0000 0100
+    /* 0x00 */ uint8_t unused : 2;                // 0001 0000
+    /* 0x00 */ uint8_t usesHeadsetPanEffects : 1; // 0100 0000
+    /* 0x00 */ uint8_t stereoHeadsetEffects : 1;  // 1000 0000
+} StereoDataTest;
+
+typedef union {
+    StereoDataTest data;
+    uint8_t raw;
+} StereoUnionTest;
+
+int testBits(void) {
+    StereoUnionTest test;
+
+    test.raw = 0; // Clear all bits
+    test.data.stereoHeadsetEffects = 1;
+
+    printf("Raw byte value: 0x%08X\n", test.raw);
+}
+#endif
+
 void Audio_InitNoteSub(Note* note, NoteAttributes* noteAttr) {
     NoteSubEu* noteSub;
     f32 panVolumeLeft;
@@ -52,6 +77,8 @@ void Audio_InitNoteSub(Note* note, NoteAttributes* noteAttr) {
     u8 pan;
     u8 reverb;
     Stereo stereo;
+
+    // testBits();
 
     Audio_NoteSetResamplingRate(note, noteAttr->freqMod);
     noteSub = &note->noteSubEu;
@@ -168,9 +195,9 @@ TunedSample* Audio_GetInstrumentTunedSample(Instrument* instrument, s32 semitone
 Instrument* Audio_GetInstrument(s32 fontId, s32 instId) {
     Instrument* instrument;
 
-	//fontId = 7;
+    // fontId = 7;
 
-    if(gSoundFontList[fontId].instruments == NULL){
+    if (gSoundFontList[fontId].instruments == NULL) {
         gSoundFontList[fontId] = *Audio_LoadFont(gSoundFontTable->entries[fontId], fontId);
     }
 
@@ -194,7 +221,7 @@ Drum* Audio_GetDrum(s32 fontId, s32 drumId) {
     Drum* drum;
 
     // LTODO: Remove this
-    if(gSoundFontList[fontId].drums == NULL){
+    if (gSoundFontList[fontId].drums == NULL) {
         gSoundFontList[fontId] = *Audio_LoadFont(gSoundFontTable->entries[fontId], fontId);
     }
 
@@ -206,9 +233,9 @@ Drum* Audio_GetDrum(s32 fontId, s32 drumId) {
         D_80155D88 = (fontId << 8) + drumId + 0x04000000;
         return NULL;
     }
-//    if ((u32) gSoundFontList[fontId].drums < AUDIO_RELOCATED_ADDRESS_START) {
-//        return NULL;
-//    }
+    //    if ((u32) gSoundFontList[fontId].drums < AUDIO_RELOCATED_ADDRESS_START) {
+    //        return NULL;
+    //    }
     drum = gSoundFontList[fontId].drums[drumId];
     if (gSoundFontList[fontId].drums[drumId] == NULL) {
         D_80155D88 = (fontId << 8) + drumId + 0x05000000;

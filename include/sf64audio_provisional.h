@@ -377,11 +377,10 @@ typedef struct {
 typedef struct {
     /* 0x00 */ union {
         struct A {
-            /* 0x00 */ u8 unused : 1;
-            /* 0x00 */ u8 hang : 1;
-            /* 0x00 */ u8 decay : 1;
             /* 0x00 */ u8 release : 1;
-            /* 0x00 */
+            /* 0x00 */ u8 decay : 1;
+            /* 0x00 */ u8 hang : 1;
+            /* 0x00 */ u8 unused : 1;
         } s;
         /* 0x00 */ u8 asByte;
     } action;
@@ -398,12 +397,12 @@ typedef struct {
 } AdsrState; // size = 0x24
 
 typedef struct {
-    /* 0x00 */ u8 stereoHeadsetEffects : 1;
-    /* 0x00 */ u8 usesHeadsetPanEffects : 1;
-    /* 0x00 */ u8 unused : 2;
-    /* 0x00 */ u8 bit2 : 2;
-    /* 0x00 */ u8 strongRight : 1;
     /* 0x00 */ u8 strongLeft : 1;
+    /* 0x00 */ u8 strongRight : 1;
+    /* 0x00 */ u8 bit2 : 2;
+    /* 0x00 */ u8 unused : 2;
+    /* 0x00 */ u8 usesHeadsetPanEffects : 1;
+    /* 0x00 */ u8 stereoHeadsetEffects : 1;
 } StereoData; // size = 0x1
 
 typedef union {
@@ -432,9 +431,10 @@ typedef struct SequenceChannel {
     /* 0x00 */ u8 unused : 1;
     union {
         struct {
-            /* 0x01 */ u8 freqMod : 1;
-            /* 0x01 */ u8 volume : 1;
-            /* 0x01 */ u8 pan : 1;
+            /* 0x4 */ char pad_4 : 1;
+            /* 0x3 */ u8 pan : 1;
+            /* 0x2 */ u8 volume : 1;
+            /* 0x1 */ u8 freqMod : 1;
         } s;
         /* 0x01 */ u8 asByte;
     } changes;
@@ -773,13 +773,22 @@ typedef struct {
         };
     };
     union {
-        void* data;
+        uintptr_t asPtr;
+        u32 data;
         f32 asFloat;
         s32 asInt;
-        uintptr_t asPtr;
-        u16 asUShort;
-        s8 asSbyte;
-        u8 asUbyte;
+        struct {
+            u8 pad2[2];
+            u16 asUShort;
+        };
+        struct {
+            u8 pad1[3];
+            s8 asSbyte;
+        };
+        struct {
+            u8 pad0[3];
+            u8 asUbyte;
+        };
         u32 asUInt;
     };
 } AudioCmd; // size = 0x8

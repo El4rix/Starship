@@ -8,7 +8,11 @@ s32 sGammaMode = 1;
 SPTask* gCurrentTask;
 SPTask* sAudioTasks[1];
 SPTask* sGfxTasks[2];
+#ifdef AVOID_UB
+SPTask* sNewAudioTasks[2];
+#else
 SPTask* sNewAudioTasks[1];
+#endif
 SPTask* sNewGfxTasks[2];
 u32 gSegments[16];          // 800E1FD0
 OSMesgQueue gPiMgrCmdQueue; // 800E2010
@@ -234,12 +238,9 @@ void Graphics_ThreadUpdate() {
 
     gSysFrameCount++;
     Graphics_InitializeTask(gSysFrameCount);
-    osRecvMesg(&gControllerMesgQueue, NULL, OS_MESG_NOBLOCK);
-    osSendMesg(&gSerialThreadMesgQueue, OS_MESG_32(SI_RUMBLE), OS_MESG_PRI_NORMAL);
     Controller_UpdateInput();
     Controller_ReadData();
     Controller_Rumble();
-    osSendMesg(&gSerialThreadMesgQueue, OS_MESG_32(SI_READ_CONTROLLER), OS_MESG_PRI_NORMAL);
     Main_SetVIMode();
     {
         __gSPSegment(gUnkDisp1++, 0, 0);
@@ -254,7 +255,6 @@ void Graphics_ThreadUpdate() {
         gDPFullSync(gMasterDisp++);
         gSPEndDisplayList(gMasterDisp++);
     }
-    osRecvMesg(&gGfxTaskMesgQueue, NULL, OS_MESG_BLOCK);
     Graphics_SetTask();
 
     if (GfxDebuggerIsDebuggingRequested()) {
@@ -277,7 +277,6 @@ void Graphics_ThreadUpdate() {
     //     osRecvMesg(&gGfxVImsgQueue, NULL, OS_MESG_BLOCK);
     // }
 
-    osSendMesg(&gTaskMesgQueue, OS_MESG_PTR(NULL), OS_MESG_NOBLOCK);
     Audio_Update();
 }
 

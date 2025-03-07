@@ -12,8 +12,13 @@
 
 #include <libultraship.h>
 
+#ifdef GBI_FLOATS
+#include <string.h>
+#endif
+
+#ifndef GBI_FLOATS
 void guMtxF2L(float mf[4][4], Mtx* m) {
-    unsigned int r, c;
+    int r, c;
     s32 tmp1;
     s32 tmp2;
     s32* m1 = &m->m[0][0];
@@ -29,7 +34,7 @@ void guMtxF2L(float mf[4][4], Mtx* m) {
 }
 
 void guMtxL2F(float mf[4][4], Mtx* m) {
-    unsigned int r, c;
+    int r, c;
     u32 tmp1;
     u32 tmp2;
     u32* m1;
@@ -48,9 +53,14 @@ void guMtxL2F(float mf[4][4], Mtx* m) {
         }
     }
 }
+#else
+void guMtxF2L(float mf[4][4], Mtx* m) {
+    memcpy(m, mf, sizeof(Mtx));
+}
+#endif
 
-void guMtxIdentF(f32 mf[4][4]) {
-    unsigned int r, c;
+void guMtxIdentF(float mf[4][4]) {
+    int r, c;
     for (r = 0; r < 4; r++) {
         for (c = 0; c < 4; c++) {
             if (r == c) {
@@ -63,9 +73,11 @@ void guMtxIdentF(f32 mf[4][4]) {
 }
 
 void guMtxIdent(Mtx* m) {
+#ifndef GBI_FLOATS
     float mf[4][4];
-
     guMtxIdentF(mf);
-
     guMtxF2L(mf, m);
+#else
+    guMtxIdentF(m->mf);
+#endif
 }

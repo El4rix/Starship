@@ -101,7 +101,6 @@ s16 gAiBuffLengths[3];
 u32 gAudioRandom;
 u32 D_80155D88;
 volatile u32 gAudioResetTimer;
-
 u64 gAudioContextEnd[2];
 
 ReverbSettings D_800C74D0[2] = { { 1, 0x30, 0x3000, 0, 0 }, { 1, 0x40, 0x4000, 0xD000, 0x3000 } };

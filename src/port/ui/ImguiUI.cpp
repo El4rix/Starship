@@ -14,6 +14,11 @@
 #include "port/notification/notification.h"
 #include "utils/StringHelper.h"
 
+#ifdef __SWITCH__
+#include <port/switch/SwitchImpl.h>
+#include <port/switch/SwitchPerformanceProfiles.h>
+#endif
+
 extern "C" {
 #include "sys.h"
 #include <sf64audio_provisional.h>
@@ -107,6 +112,10 @@ static const char* filters[3] = {
         "Linear", "None"
 };
 
+static const char* voiceLangs[] = {
+    "Original", /*"Japanese",*/ "Lylat"
+};
+
 void DrawSettingsMenu(){
     if(UIWidgets::BeginMenu("Settings")){
         if (UIWidgets::BeginMenu("Audio")) {
@@ -166,6 +175,21 @@ void DrawSettingsMenu(){
             ImGui::EndMenu();
         }
 
+        if(GameEngine::HasVersion(SF64_VER_EU)){
+            UIWidgets::Spacer(0);
+            if (UIWidgets::BeginMenu("Language")) {
+                if (UIWidgets::CVarCombobox("Voices", "gVoiceLanguage", voiceLangs, 
+                {
+                    .tooltip = "Changes the language of the voice acting in the game",
+                    .defaultIndex = 0,
+                })) {
+                    Audio_SetVoiceLanguage(CVarGetInteger("gVoiceLanguage", 0));
+                };
+                ImGui::Dummy(ImVec2(ImGui::CalcTextSize(voiceLangs[0]).x + 55, 0.0f));
+                ImGui::EndMenu();
+            }
+        }
+
         UIWidgets::Spacer(0);
 
         if (UIWidgets::BeginMenu("Controller")) {
@@ -173,20 +197,10 @@ void DrawSettingsMenu(){
 
             UIWidgets::Spacer(0);
 
-#ifndef __SWITCH__
             UIWidgets::CVarCheckbox("Menubar Controller Navigation", "gControlNav", {
                 .tooltip = "Allows controller navigation of the SOH menu bar (Settings, Enhancements,...)\nCAUTION: This will disable game inputs while the menubar is visible.\n\nD-pad to move between items, A to select, and X to grab focus on the menu bar"
             });
-#endif
-            UIWidgets::CVarCheckbox("Show Inputs", "gInputEnabled", {
-                .tooltip = "Shows currently pressed inputs on the bottom right of the screen"
-            });
-            if (CVarGetInteger("gInputEnabled", 0)) {
-                UIWidgets::CVarSliderFloat("Input Scale", "gInputScale", 1.0f, 3.0f, 1.0f, {
-                    .tooltip = "Sets the on screen size of the displayed inputs from the Show Inputs setting",
-                    .format = "%.1fx",
-                });
-            }
+
             UIWidgets::CVarCheckbox("Invert Y Axis", "gInvertYAxis",{
                 .tooltip = "Inverts the Y axis for controlling vehicles"
             });
@@ -376,12 +390,13 @@ void DrawSettingsMenu(){
         }
 
         UIWidgets::PaddedEnhancementCheckbox("Enable Alternative Assets", "gEnhancements.Mods.AlternateAssets");
-
         // If more filters are added to LUS, make sure to add them to the filters list here
         ImGui::Text("Texture Filter (Needs reload)");
-
         UIWidgets::EnhancementCombobox("gTextureFilter", filters, 0);
 
+        if (Ship::Context::GetInstance()->GetConfig()->GetString("Window.Backend.Name") != windowBackendNames[Ship::WindowBackend::FAST3D_SDL_OPENGL]) {
+            UIWidgets::PaddedEnhancementCheckbox("Apply Point Filtering to UI Elements", "gHUDPointFiltering", true, false, false, "", UIWidgets::CheckboxGraphics::Cross, true);
+        }
         UIWidgets::Spacer(0);
 
         Ship::Context::GetInstance()->GetWindow()->GetGui()->GetGameOverlay()->DrawSettings();
@@ -440,6 +455,10 @@ void DrawGameMenu() {
     }
 }
 
+static const char* hudAspects[] = {
+    "Expand", "Custom", "Original (4:3)", "Widescreen (16:9)", "Nintendo 3DS (5:3)", "16:10 (8:5)", "Ultrawide (21:9)"
+};
+
 void DrawEnhancementsMenu() {
     if (UIWidgets::BeginMenu("Enhancements")) {
 
@@ -452,6 +471,9 @@ void DrawEnhancementsMenu() {
                 .tooltip = "Character heads are displayed inside Arwings in all cutscenes",
                 .defaultValue = true
             });
+            UIWidgets::CVarCheckbox("Use red radio backgrounds for enemies.", "gEnemyRedRadio");
+            UIWidgets::CVarSliderInt("Cockpit Glass Opacity: %d", "gCockpitOpacity", 0, 255, 120);
+            
 
             ImGui::EndMenu();
         }
@@ -477,10 +499,76 @@ void DrawEnhancementsMenu() {
                 .tooltip = "Restores the beta coin that got replaced with the gold ring"
             });
 
-            UIWidgets::CVarCheckbox("Beta: Restore old boost/brake gauge", "gRestoreOldBoostGauge", {
-                .tooltip = "Restores the old boost gauge that was seen in some beta footage"
+            UIWidgets::CVarCheckbox("Beta: Restore beta boost/brake gauge", "gRestoreBetaBoostGauge", {
+                .tooltip = "Restores the beta boost gauge that was seen in some beta footage"
             });
 
+            ImGui::EndMenu();
+        }
+
+        if (UIWidgets::BeginMenu("HUD")) {
+            if (UIWidgets::CVarCombobox("HUD Aspect Ratio", "gHUDAspectRatio.Selection", hudAspects, 
+            {
+                .tooltip = "Which Aspect Ratio to use when drawing the HUD (Radar, gauges and radio messages)",
+                .defaultIndex = 0,
+            })) {
+                CVarSetInteger("gHUDAspectRatio.Enabled", 1);
+                switch (CVarGetInteger("gHUDAspectRatio.Selection", 0)) {
+                    case 0:
+                        CVarSetInteger("gHUDAspectRatio.Enabled", 0);
+                        CVarSetInteger("gHUDAspectRatio.X", 0);
+                        CVarSetInteger("gHUDAspectRatio.Y", 0);
+                        break;
+                    case 1:
+                        if (CVarGetInteger("gHUDAspectRatio.X", 0) <= 0){
+                            CVarSetInteger("gHUDAspectRatio.X", 1);
+                        }
+                        if (CVarGetInteger("gHUDAspectRatio.Y", 0) <= 0){
+                            CVarSetInteger("gHUDAspectRatio.Y", 1);
+                        }
+                        break;
+                    case 2:
+                        CVarSetInteger("gHUDAspectRatio.X", 4);
+                        CVarSetInteger("gHUDAspectRatio.Y", 3);
+                        break;
+                    case 3:
+                        CVarSetInteger("gHUDAspectRatio.X", 16);
+                        CVarSetInteger("gHUDAspectRatio.Y", 9);
+                        break;
+                    case 4:
+                        CVarSetInteger("gHUDAspectRatio.X", 5);
+                        CVarSetInteger("gHUDAspectRatio.Y", 3);
+                        break;
+                    case 5:
+                        CVarSetInteger("gHUDAspectRatio.X", 8);
+                        CVarSetInteger("gHUDAspectRatio.Y", 5);
+                        break;
+                    case 6:
+                        CVarSetInteger("gHUDAspectRatio.X", 21);
+                        CVarSetInteger("gHUDAspectRatio.Y", 9);
+                        break;                    
+                }
+            }
+            
+            if (CVarGetInteger("gHUDAspectRatio.Selection", 0) == 1)
+            {
+                UIWidgets::CVarSliderInt("Horizontal: %d", "gHUDAspectRatio.X", 1, 100, 1);
+                UIWidgets::CVarSliderInt("Vertical: %d", "gHUDAspectRatio.Y", 1, 100, 1);
+            }
+
+            ImGui::Dummy(ImVec2(ImGui::CalcTextSize("Nintendo 3DS (5:3)").x + 35, 0.0f));
+            ImGui::EndMenu();
+        }
+
+        if (UIWidgets::BeginMenu("Accessibility")) { 
+            UIWidgets::CVarCheckbox("Disable Gorgon (Area 6 boss) screen flashes", "gDisableGorgonFlash", {
+                .tooltip = "Gorgon flashes the screen repeatedly when firing its beam or when teleporting, which causes eye pain for some players and may be harmful to those with photosensitivity.",
+                .defaultValue = false
+            });
+            UIWidgets::CVarCheckbox("Add outline to Arwing and Wolfen in radar", "gFighterOutlines", {
+                .tooltip = "Increases visibility of ships in the radar.",
+                .defaultValue = false
+            });
             ImGui::EndMenu();
         }
 
@@ -555,13 +643,23 @@ void DrawDebugMenu() {
             Ship::Context::GetInstance()->GetLogger()->set_level((spdlog::level::level_enum)CVarGetInteger("gDeveloperTools.LogLevel", 1));
         }
 
+#ifdef __SWITCH__
+        if (UIWidgets::CVarCombobox("Switch CPU Profile", "gSwitchPerfMode", SWITCH_CPU_PROFILES, {
+            .tooltip = "Switches the CPU profile to a different one",
+            .defaultIndex = (int)Ship::SwitchProfiles::STOCK
+        })) {
+            SPDLOG_INFO("Profile:: %s", SWITCH_CPU_PROFILES[CVarGetInteger("gSwitchPerfMode", (int)Ship::SwitchProfiles::STOCK)]);
+            Ship::Switch::ApplyOverclock();
+        }
+#endif
+
         UIWidgets::WindowButton("Gfx Debugger", "gGfxDebuggerEnabled", GameUI::mGfxDebuggerWindow, {
             .tooltip = "Enables the Gfx Debugger window, allowing you to input commands, type help for some examples"
         });
 
-        UIWidgets::CVarCheckbox("Debug mode", "gEnableDebugMode", {
-            .tooltip = "TBD"
-        });
+        // UIWidgets::CVarCheckbox("Debug mode", "gEnableDebugMode", {
+        //     .tooltip = "TBD"
+        // });
 
         UIWidgets::CVarCheckbox("Level Selector", "gLevelSelector", {
             .tooltip = "Allows you to select any level from the main menu"
@@ -581,6 +679,10 @@ void DrawDebugMenu() {
 
         UIWidgets::CVarCheckbox("Disable Starfield interpolation", "gDisableStarsInterpolation", {
             .tooltip = "Disable starfield interpolation to increase performance on slower CPUs"
+        });
+        UIWidgets::CVarCheckbox("Disable Gamma Boost (Needs reload)", "gGraphics.GammaMode", {
+            .tooltip = "Disables the game's Built-in Gamma Boost. Useful for modders",
+            .defaultValue = false
         });
 
         UIWidgets::CVarCheckbox("Spawner Mod", "gSpawnerMod", {
@@ -617,12 +719,23 @@ void DrawDebugMenu() {
         });
         
         UIWidgets::CVarCheckbox("Speed Control", "gDebugSpeedControl", {
-            .tooltip = "Control the Arwing speed"
+            .tooltip = "Arwing speed control. Use D-PAD Left and Right to Increase/Decrease the Arwing Speed, D-PAD Down to stop movement."
         });
 
         UIWidgets::CVarCheckbox("Debug Ending", "gDebugEnding", {
             .tooltip = "Jump to credits at the main menu"
         });
+
+        UIWidgets::CVarCheckbox("Debug Pause", "gLToDebugPause", {
+            .tooltip = "Press L to toggle Debug Pause"
+        });
+        if (CVarGetInteger("gLToDebugPause", 0)) {
+            ImGui::Dummy(ImVec2(22.0f, 0.0f));
+            ImGui::SameLine();
+            UIWidgets::CVarCheckbox("Frame Advance", "gLToFrameAdvance", {
+            .tooltip = "Pressing L again advances one frame instead"
+        });
+        }
 
         if (CVarGetInteger(StringHelper::Sprintf("gCheckpoint.%d.Set", gCurrentLevel).c_str(), 0)) {
             if (UIWidgets::Button("Clear Checkpoint")) {

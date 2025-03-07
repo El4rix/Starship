@@ -92,10 +92,8 @@ void Controller_ReadData(void) {
         }
     } else {
         osContStartReadData(&gSerialEventQueue);
-        MQ_WAIT_FOR_MESG(&gSerialEventQueue, NULL);
         osContGetReadData(sNextController);
     }
-    osSendMesg(&gControllerMesgQueue, OS_MESG_32(SI_CONT_READ_DONE), OS_MESG_PRI_NORMAL);
 }
 
 bool Save_ReadData(void) {

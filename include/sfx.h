@@ -33,6 +33,7 @@ void Audio_SetEnvSfxReverb(s8 reverb);
 void Audio_PlayPauseSfx(u8 active);
 void Audio_PlayMapMenuSfx(u8 active);
 void Audio_KillAllSfx(void);
+void Audio_SetVoiceLanguage(u8 language);
 
 #define AUDIO_PLAY_SFX(sfxId, srcPos, token) (Audio_PlaySfx((sfxId),(srcPos),(token),&gDefaultMod,&gDefaultMod,&gDefaultReverb))
 

@@ -7,6 +7,7 @@
 
 audio_setup:
   type: NAUDIO:V1:AUDIO_SETUP
+  driver: SF64
   audio_seq:
     size: 0x3ACF0
     offset: 0xDEA20

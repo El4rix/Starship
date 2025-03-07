@@ -5,7 +5,6 @@
 #include "assets/ast_audio.h"
 #include "port/Engine.h"
 #include "endianness.h"
-#include "port/Engine.h"
 #include "port/resource/loaders/AudioLoader.h"
 
 s32 D_80146D80;
@@ -795,7 +794,7 @@ void* AudioLoad_AsyncLoadInner(s32 tableType, s32 id, s32 nChunks, s32 retData, 
 }
 
 void AudioLoad_ProcessLoads(s32 resetStatus) {
-    // AudioLoad_ProcessSlowLoads(resetStatus);
+    AudioLoad_ProcessSlowLoads(resetStatus);
     // AudioLoad_ProcessSamplePreloads(resetStatus);
     // AudioLoad_ProcessAsyncLoads(resetStatus);
 }
@@ -817,21 +816,9 @@ void AudioLoad_Init(void) {
     s32 i;
     s32 j;
     s32 numFonts;
-    s32 dwordsLeft;
-    u64* clearContext;
     void* ramAddr;
 
     gAudioResetTimer = 0;
-
-    for (i = 0; i < gAudioHeapSize / 8; i++) {
-        *((u64*) gAudioHeap + i) = 0;
-    }
-
-    clearContext = gAudioContextStart;
-    dwordsLeft = ((uintptr_t) gAudioContextEnd - (uintptr_t) gAudioContextStart) / 8;
-    for (; dwordsLeft >= 0; dwordsLeft--) {
-        *clearContext++ = 0;
-    }
     // TODO: osTVType should be unnecessary
     gMaxTempoTvTypeFactors = 16.713f;
     gRefreshRate = 60;
@@ -875,11 +862,6 @@ void AudioLoad_Init(void) {
     gSampleBankTable = SEGMENTED_TO_VIRTUAL(gSampleBankTableInit);
     gSeqFontTable = SEGMENTED_TO_VIRTUAL(gSeqFontTableInit);
     gNumSequences = gSequenceTable->base.numEntries;
-
-    //    AudioLoad_InitTable(gSequenceTable, LOAD_ASSET(gAudioSeq), gSequenceMedium);
-    //    AudioLoad_InitTable(gSoundFontTable, LOAD_ASSET(gAudioBank), gSoundFontMedium);
-    //    AudioLoad_InitTable(gSampleBankTable, LOAD_ASSET(gAudioTable), gSampleBankMedium);
-
     numFonts = gSoundFontTable->base.numEntries;
 
     gSoundFontList = AudioHeap_Alloc(&gInitPool, numFonts * sizeof(SoundFont));
@@ -908,7 +890,6 @@ s32 AudioLoad_SlowLoadSample(s32 fontId, u8 instId, s8* status) {
     AudioSlowLoad* slowLoad;
 
     sample = AudioLoad_GetFontSample(fontId, instId);
-    return 0;
 
     if (sample == NULL) {
         *status = SLOW_LOAD_STATUS_0;
@@ -927,8 +908,7 @@ s32 AudioLoad_SlowLoadSample(s32 fontId, u8 instId, s8* status) {
     slowLoad->sample = *sample;
     slowLoad->status = status;
 
-    slowLoad->curRamAddr =
-        AudioHeap_AllocTemporarySampleCache(sample->size, fontId, sample->sampleAddr, sample->medium);
+    slowLoad->curRamAddr = GameEngine_Malloc(sample->size * 2);
 
     if (slowLoad->curRamAddr == NULL) {
         if ((sample->medium == MEDIUM_UNK) || (sample->codec == 2)) {
@@ -943,7 +923,8 @@ s32 AudioLoad_SlowLoadSample(s32 fontId, u8 instId, s8* status) {
     slowLoad->state = SLOW_LOAD_START;
     slowLoad->bytesRemaining = ALIGN16(sample->size);
     slowLoad->ramAddr = slowLoad->curRamAddr;
-    slowLoad->curDevAddr = sample->sampleAddr;
+    slowLoad->curDevAddr = GameEngine_Malloc(sample->size * 2);
+    memcpy(slowLoad->curDevAddr, sample->sampleAddr, sample->size);
     slowLoad->medium = sample->medium;
     slowLoad->seqOrFontId = fontId;
     slowLoad->instId = instId;

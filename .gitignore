@@ -16,6 +16,8 @@ ctx.c.m2c
 *.u64
 *.bin
 *.otr
+*.o2r
+*.log
 *.eeprom
 assets/yaml/us/ast_test.yaml
 /audio_data
@@ -51,3 +53,6 @@ Starship.log
 dumps/
 _packages/*
 *.DS_Store
+src/jp/
+src/eu/
+src/cn/

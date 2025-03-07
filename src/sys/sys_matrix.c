@@ -6,20 +6,15 @@
 #define IPART(x) ((qs1616(x) >> 16) & 0xFFFF)
 #define FPART(x) (qs1616(x) & 0xFFFF)
 
-#define gdSPDefMtx(xx, yx, zx, wx, xy, yy, zy, wy, xz, yz, zz, wz, xw, yw, zw, ww)                                 \
-    {                                                                                                              \
-        {                                                                                                          \
-            (IPART(xx) << 0x10) | IPART(xy), (IPART(xz) << 0x10) | IPART(xw), (IPART(yx) << 0x10) | IPART(yy),     \
-                (IPART(yz) << 0x10) | IPART(yw), (IPART(zx) << 0x10) | IPART(zy), (IPART(zz) << 0x10) | IPART(zw), \
-                (IPART(wx) << 0x10) | IPART(wy), (IPART(wz) << 0x10) | IPART(ww), (FPART(xx) << 0x10) | FPART(xy), \
-                (FPART(xz) << 0x10) | FPART(xw), (FPART(yx) << 0x10) | FPART(yy), (FPART(yz) << 0x10) | FPART(yw), \
-                (FPART(zx) << 0x10) | FPART(zy), (FPART(zz) << 0x10) | FPART(zw), (FPART(wx) << 0x10) | FPART(wy), \
-                (FPART(wz) << 0x10) | FPART(ww),                                                                   \
-        }                                                                                                          \
+#define gdSPDefMtxF(xx, yx, zx, wx, xy, yy, zy, wy, xz, yz, zz, wz, xw, yw, zw, ww) \
+    {                                                                               \
+        {                                                                           \
+            xx, yx, zx, wx, xy, yy, zy, wy, xz, yz, zz, wz, xw, yw, zw, ww,         \
+        }                                                                           \
     }
 
 Mtx gIdentityMtx =
-    gdSPDefMtx(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+    gdSPDefMtxF(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
 Matrix gIdentityMatrix = { {
     { 1.0f, 0.0f, 0.0f, 0.0f },
@@ -493,7 +488,7 @@ void Matrix_ToMtx(Mtx* dest) {
 // Converts the Mtx src to a Matrix, putting the result in dest
 void Matrix_FromMtx(Mtx* src, Matrix* dest) {
     FrameInterpolation_RecordMatrixMtxFToMtx(src, dest);
-    guMtxF2L(src->m, dest->m);
+    guMtxF2L(src->mf, dest->m);
 }
 
 // Applies the transform matrix mtx to the vector src, putting the result in dest

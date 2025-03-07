@@ -830,8 +830,10 @@ void Area6_A6Gorgon_Update(A6Gorgon* this) {
         case 2:
             Math_SmoothStepToF(D_ctx_801779A8, 10.0f, 1.0f, 5.0f, 0.0f);
             if (this->timer_050 == 10) {
-                gFillScreenRed = gFillScreenGreen = gFillScreenBlue = 255;
-                gFillScreenAlpha = gFillScreenAlphaTarget = 255;
+                if (CVarGetInteger("gDisableGorgonFlash", 0) == 0) {
+                    gFillScreenRed = gFillScreenGreen = gFillScreenBlue = 255;
+                    gFillScreenAlpha = gFillScreenAlphaTarget = 255;
+                }
                 gFillScreenAlphaTarget = 0;
                 gFillScreenAlphaStep = 25;
                 gCameraShake = 50;

@@ -7,6 +7,7 @@
 #include "assets/ast_sector_z.h"
 #include "port/interpolation/FrameInterpolation.h"
 #include "port/hooks/list/EngineEvent.h"
+#include "port/mods/PortEnhancements.h"
 
 // f32 path1 = 0.0f;
 // f32 path2 = 0.0f;
@@ -92,10 +93,10 @@ void Display_DrawHelpAlert(void) {
         switch (centered) {
             case false:
                 if (gTeamHelpActor->sfxSource[0] > 0.0f) {
-                    sp78 = 20.0f * OTRGetAspectRatio() - 8;
+                    sp78 = 20.0f * OTRGetHUDAspectRatio() - 8;
                     sp74 = M_PI / 2;
                 } else {
-                    sp78 = -20.0f * OTRGetAspectRatio() + 8;
+                    sp78 = -20.0f * OTRGetHUDAspectRatio() + 8;
                     sp74 = -M_PI / 2;
                 }
                 Matrix_Push(&gGfxMatrix);
@@ -120,7 +121,7 @@ void Display_DrawHelpAlert(void) {
 
                 // @port: Tag the transform.
                 FrameInterpolation_RecordOpenChild("Display_DrawHelpAlert", centered);
-                Matrix_Translate(gGfxMatrix, 20.0f * OTRGetAspectRatio() - 8, 0.0f, -50.0f, MTXF_APPLY);
+                Matrix_Translate(gGfxMatrix, 20.0f * OTRGetHUDAspectRatio() - 8, 0.0f, -50.0f, MTXF_APPLY);
                 Matrix_RotateZ(gGfxMatrix, -M_PI / 2, MTXF_APPLY);
                 Matrix_Scale(gGfxMatrix, 0.03f, 0.03f, 0.03f, MTXF_APPLY);
                 Matrix_SetGfxMtx(&gMasterDisp);
@@ -130,7 +131,7 @@ void Display_DrawHelpAlert(void) {
 
                 // left arrow (both in simultaneous)
                 Matrix_Push(&gGfxMatrix);
-                Matrix_Translate(gGfxMatrix, -20.0f * OTRGetAspectRatio() + 8, 0.0f, -50.0f, MTXF_APPLY);
+                Matrix_Translate(gGfxMatrix, -20.0f * OTRGetHUDAspectRatio() + 8, 0.0f, -50.0f, MTXF_APPLY);
                 Matrix_RotateZ(gGfxMatrix, M_PI / 2, MTXF_APPLY);
                 Matrix_Scale(gGfxMatrix, 0.03f, 0.03f, 0.03f, MTXF_APPLY);
                 Matrix_SetGfxMtx(&gMasterDisp);
@@ -144,20 +145,20 @@ void Display_DrawHelpAlert(void) {
 
         switch (centered) {
             case false:
-                RCP_SetupDL(&gMasterDisp, SETUPDL_76_POINT);
+                RCP_SetupDL(&gMasterDisp, SETUPDL_76_OPTIONAL);
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 0, 255);
                 if (sp78 < 0.0f) {
-                    Graphics_DisplaySmallText(OTRGetRectDimensionFromLeftEdge(38.0f), 106, 1.0f, 1.0f, "HELP!!");
+                    Graphics_DisplaySmallText(OTRGetRectDimensionFromLeftEdgeOverride(38.0f), 106, 1.0f, 1.0f, "HELP!!");
                 } else {
-                    Graphics_DisplaySmallText(OTRGetRectDimensionFromRightEdge(248), 106, 1.0f, 1.0f, "HELP!!");
+                    Graphics_DisplaySmallText(OTRGetRectDimensionFromRightEdgeOverride(248), 106, 1.0f, 1.0f, "HELP!!");
                 }
                 break;
 
             case true:
-                RCP_SetupDL(&gMasterDisp, SETUPDL_76_POINT);
+                RCP_SetupDL(&gMasterDisp, SETUPDL_76_OPTIONAL);
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 0, 255);
-                Graphics_DisplaySmallText(OTRGetRectDimensionFromLeftEdge(38.0f), 106, 1.0f, 1.0f, "HELP!!");
-                Graphics_DisplaySmallText(OTRGetRectDimensionFromRightEdge(248), 106, 1.0f, 1.0f, "HELP!!");
+                Graphics_DisplaySmallText(OTRGetRectDimensionFromLeftEdgeOverride(38.0f), 106, 1.0f, 1.0f, "HELP!!");
+                Graphics_DisplaySmallText(OTRGetRectDimensionFromRightEdgeOverride(248), 106, 1.0f, 1.0f, "HELP!!");
                 break;
         }
     }
@@ -717,7 +718,8 @@ void Display_CockpitGlass(void) {
     Matrix_Scale(gGfxMatrix, D_display_800CA28C, D_display_800CA28C, D_display_800CA28C, MTXF_APPLY);
     Matrix_SetGfxMtx(&gMasterDisp);
     RCP_SetupDL_64_2();
-    gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 120);
+    u16 opacity = CVarGetInteger("gCockpitOpacity", 120);
+    gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, opacity);
     gSPClearGeometryMode(gMasterDisp++, G_CULL_BACK);
     gSPDisplayList(gMasterDisp++, D_arwing_30194E0);
     gSPSetGeometryMode(gMasterDisp++, G_CULL_BACK);
@@ -796,7 +798,7 @@ void Display_Reticle(Player* player) {
             Matrix_Push(&gGfxMatrix);
             Matrix_Translate(gGfxMatrix, translate->x, translate->y, translate->z, MTXF_APPLY);
             if (gChargeTimers[player->num] >= 20) {
-                RCP_SetupDL(&gMasterDisp, SETUPDL_63_POINT);
+                RCP_SetupDL(&gMasterDisp, SETUPDL_63_OPTIONAL);
                 if (i == 1) {
                     gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
                     gDPSetEnvColor(gMasterDisp++, 255, 0, 0, 255);
@@ -806,7 +808,7 @@ void Display_Reticle(Player* player) {
                     gDPSetEnvColor(gMasterDisp++, 255, 255, 0, 255);
                 }
             } else {
-                gSPDisplayList(gMasterDisp++, gRcpSetupDLs[SETUPDL_36_POINT]);
+                gSPDisplayList(gMasterDisp++, gRcpSetupDLs[SETUPDL_36_OPTIONAL]);
             }
 
             if (i == 1) {
@@ -1127,6 +1129,10 @@ void Display_ArwingLaserCharge(Player* player) {
                 }
 
                 Matrix_Push(&gGfxMatrix);
+
+                // @port: Tag the transform.
+                FrameInterpolation_RecordOpenChild("ArwingMuzzleFlash", 0);
+
                 Matrix_Translate(gGfxMatrix, sp94.x, sp94.y, sp94.z, MTXF_NEW);
                 Matrix_Scale(gGfxMatrix, gMuzzleFlashScale[player->num], gMuzzleFlashScale[player->num], 1.0f,
                              MTXF_APPLY);
@@ -1134,6 +1140,9 @@ void Display_ArwingLaserCharge(Player* player) {
                 gSPDisplayList(gMasterDisp++, aOrbDL);
 
                 Matrix_Pop(&gGfxMatrix);
+
+                // @port Pop the transform id.
+                FrameInterpolation_RecordCloseChild();
                 break;
 
             case LASERS_TWIN:
@@ -1148,6 +1157,10 @@ void Display_ArwingLaserCharge(Player* player) {
                 Matrix_MultVec3f(gCalcMatrix, &spAC, &sp94);
                 Matrix_MultVec3f(gCalcMatrix, &spA0, &sp88);
                 Matrix_Push(&gGfxMatrix);
+
+                // @port: Tag the transform.
+                FrameInterpolation_RecordOpenChild("ArwingMuzzleFlash", 0);
+                
                 Matrix_Translate(gGfxMatrix, sp94.x, sp94.y, sp94.z, MTXF_NEW);
                 Matrix_Scale(gGfxMatrix, gMuzzleFlashScale[player->num], gMuzzleFlashScale[player->num], 1.0f,
                              MTXF_APPLY);
@@ -1155,7 +1168,14 @@ void Display_ArwingLaserCharge(Player* player) {
                 gSPDisplayList(gMasterDisp++, aOrbDL);
                 Matrix_Pop(&gGfxMatrix);
 
+                // @port Pop the transform id.
+                FrameInterpolation_RecordCloseChild();
+
                 Matrix_Push(&gGfxMatrix);
+
+                // @port: Tag the transform.
+                FrameInterpolation_RecordOpenChild("ArwingMuzzleFlash", 1);
+
                 Matrix_Translate(gGfxMatrix, sp88.x, sp88.y, sp88.z, MTXF_NEW);
                 Matrix_Scale(gGfxMatrix, gMuzzleFlashScale[player->num], gMuzzleFlashScale[player->num], 1.0f,
                              MTXF_APPLY);
@@ -1163,6 +1183,9 @@ void Display_ArwingLaserCharge(Player* player) {
                 gSPDisplayList(gMasterDisp++, aOrbDL);
 
                 Matrix_Pop(&gGfxMatrix);
+
+                // @port Pop the transform id.
+                FrameInterpolation_RecordCloseChild();
                 break;
         }
         Matrix_Pop(&gGfxMatrix);
@@ -1730,7 +1753,7 @@ void Display_LockOnIndicator(void) {
                 Matrix_Scale(gGfxMatrix, var_fs0 * 1.5f, var_fs0 * 1.5f, 1.0f, MTXF_APPLY);
                 Matrix_RotateZ(gGfxMatrix, D_display_801615A8[i] * M_DTOR, MTXF_APPLY);
                 Matrix_SetGfxMtx(&gMasterDisp);
-                RCP_SetupDL(&gMasterDisp, SETUPDL_67);
+                RCP_SetupDL(&gMasterDisp, SETUPDL_67_OPTIONAL);
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
                 gDPSetEnvColor(gMasterDisp++, 255, 0, 0, 255);
                 gSPDisplayList(gMasterDisp++, D_1024F60);

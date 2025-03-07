@@ -188,7 +188,10 @@ void Corneria_CoGranga_HandleDamage(CoGranga* this) {
                 }
 
                 this->state = GRANGA_EXPLODE;
-                this->timer_050 = 100;
+
+                // @port: Adjust timing to compensate the lack of lag.
+                // this->timer_050 = 100;
+                this->timer_050 = 138;
 
                 SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 80);
                 SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_FANFARE, 80);
@@ -2297,18 +2300,24 @@ void Corneria_CoCarrier_Update(CoCarrier* this) {
                 Math_SmoothStepToF(&this->vel.y, 0.0f, 0.1f, 2.0f, 0.00001f);
                 Math_SmoothStepToF(&this->vel.z, 0.0f, 0.1f, 2.0f, 0.00001f);
 
-                this->obj.rot.z -= 2.0f;
-                this->gravity = 1.0f;
+                // @port: Adjust gravity and rot to compensate the lack of lag.
+                // this->obj.rot.z -= 2.0f
+                // this->gravity = 1.0f;
+                this->obj.rot.z -= 2.0f - 0.86f;
+                this->gravity = 1.0f - 0.43f;
 
                 if (this->obj.pos.y < (gGroundHeight + 150.0f)) {
                     gCameraShake = 100;
                     func_effect_80081A8C(this->obj.pos.x, this->obj.pos.y, this->obj.pos.z, 40.0f, 12);
-                    this->timer_050 = 20;
+                    
+                    // @port: Adjust timings to compensate the lack of lag.
+                    // this->timer_050 = 20;
+                    this->timer_050 = 40;
                     this->vel.y = -10.0f;
                     this->gravity = 0.0f;
                     this->fwork[17] = 20.0f;
                     Corneria_CoCarrier_WaterSplash(this);
-                    this->state = 10;
+                    this->state = CARRIER_EXPLODE;
                 }
                 break;
 
@@ -2327,8 +2336,8 @@ void Corneria_CoCarrier_Update(CoCarrier* this) {
                 break;
         }
 
-        temp_a0 = (float*)SEGMENTED_TO_VIRTUAL(aCoCarrierUpperHitbox);
-        temp_a1 = (float*)SEGMENTED_TO_VIRTUAL(aCoCarrierBottomHitbox);
+        temp_a0 = (float*) SEGMENTED_TO_VIRTUAL(aCoCarrierUpperHitbox);
+        temp_a1 = (float*) SEGMENTED_TO_VIRTUAL(aCoCarrierBottomHitbox);
         temp_a0[9] = -100000.0f;
         temp_a0[3] = 172.0f;
         temp_a1[9] = -100000.0f;

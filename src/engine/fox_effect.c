@@ -23,6 +23,7 @@
 #include "assets/ast_enmy_planet.h"
 #include "assets/ast_zoness.h"
 #include "port/interpolation/FrameInterpolation.h"
+#include "port/mods/PortEnhancements.h"
 
 // rodata
 const char D_800D7230[] = "Enm->wrk3=<%d>\n";
@@ -140,7 +141,7 @@ void BonusText_DrawAll(void) {
     BonusText* bonus;
     s32 i;
 
-    RCP_SetupDL(&gMasterDisp, SETUPDL_62_POINT);
+    RCP_SetupDL(&gMasterDisp, SETUPDL_62_OPTIONAL);
     gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 255);
 
     for (i = 0, bonus = gBonusText; i < ARRAY_COUNT(gBonusText); i++, bonus++) {
@@ -3786,7 +3787,9 @@ void Effect_Effect395_Update(Effect395* this) {
                     D_ctx_801779A8[0] = 50.0f;
                     if (this->unk_46 == 10) {
                         gFillScreenRed = gFillScreenGreen = gFillScreenBlue = 255;
-                        gFillScreenAlpha = gFillScreenAlphaTarget = 255;
+                        if (CVarGetInteger("gDisableGorgonFlash", 0) == 0){
+                            gFillScreenAlpha = gFillScreenAlphaTarget = 255;
+                        }
                         gFillScreenAlphaTarget = 0;
                         gFillScreenAlphaStep = 25;
                         gCameraShake = 50;

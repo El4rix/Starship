@@ -26,53 +26,108 @@ s32 Graphics_Printf(const char* fmt, ...) {
 }
 
 void Lib_Texture_Scroll(u16* texture, s32 width, s32 height, u8 mode) {
-    // LTodo: [HD-Textures] This is broken
-    u16* pixel = SEGMENTED_TO_VIRTUAL(texture);
-    u16 tempPxl;
-    s32 u;
-    s32 v;
+    // LTodo: [HD-Textures] This could be handled better
+    s32 newWidth;
+    s32 newHeight;
+    float scale;
+    bool custom;
+    GameEngine_GetTextureInfo(texture, &newWidth, &newHeight, &scale, &custom);
 
-    switch (mode) {
-        case 0:
-            for (u = 0; u < width; u++) {
-                tempPxl = pixel[u];
-                for (v = 1; v < height; v++) {
-                    pixel[(v - 1) * width + u] = pixel[(v) *width + u];
-                }
-                pixel[(height - 1) * width + u] = tempPxl;
+    if(custom) {
+        u32* pixel = SEGMENTED_TO_VIRTUAL(texture);
+        u32 tempPxl;
+        s32 u;
+        s32 v;
+        width = newWidth;
+        height = newHeight;
+
+        for(s32 i = 0; i < (s32) scale; i++){
+            switch (mode) {
+                case 0:
+                    for (u = 0; u < width; u++) {
+                        tempPxl = pixel[u];
+                        for (v = 1; v < height; v++) {
+                            pixel[(v - 1) * width + u] = pixel[(v) *width + u];
+                        }
+                        pixel[(height - 1) * width + u] = tempPxl;
+                    }
+                    break;
+                case 1:
+                    for (u = 0; u < width; u++) {
+                        tempPxl = pixel[(height - 1) * width + u];
+                        for (v = height - 2; v >= 0; v--) {
+                            pixel[(v + 1) * width + u] = pixel[(v) *width + u];
+                        }
+                        pixel[u] = tempPxl;
+                    }
+                    break;
+                case 2:
+                    for (v = 0; v < height; v++) {
+                        tempPxl = pixel[v * width + width - 1];
+                        for (u = width - 2; u >= 0; u--) {
+                            pixel[v * width + u + 1] = pixel[v * width + u];
+                        }
+                        pixel[v * width] = tempPxl;
+                    }
+                    break;
+                case 3:
+                    for (v = 0; v < height; v++) {
+                        tempPxl = pixel[v * width];
+                        for (u = 1; u < width; u++) {
+                            pixel[v * width + u - 1] = pixel[v * width + u];
+                        }
+                        pixel[v * width + width - 1] = tempPxl;
+                    }
+                    break;
             }
-            break;
-        case 1:
-            for (u = 0; u < width; u++) {
-                tempPxl = pixel[(height - 1) * width + u];
-                for (v = height - 2; v >= 0; v--) {
-                    pixel[(v + 1) * width + u] = pixel[(v) *width + u];
+        }
+    } else {
+        u16* pixel = SEGMENTED_TO_VIRTUAL(texture);
+        u16 tempPxl;
+        s32 u;
+        s32 v;
+
+        switch (mode) {
+            case 0:
+                for (u = 0; u < width; u++) {
+                    tempPxl = pixel[u];
+                    for (v = 1; v < height; v++) {
+                        pixel[(v - 1) * width + u] = pixel[(v) *width + u];
+                    }
+                    pixel[(height - 1) * width + u] = tempPxl;
                 }
-                pixel[u] = tempPxl;
-            }
-            break;
-        case 2:
-            for (v = 0; v < height; v++) {
-                tempPxl = pixel[v * width + width - 1];
-                for (u = width - 2; u >= 0; u--) {
-                    pixel[v * width + u + 1] = pixel[v * width + u];
+                break;
+            case 1:
+                for (u = 0; u < width; u++) {
+                    tempPxl = pixel[(height - 1) * width + u];
+                    for (v = height - 2; v >= 0; v--) {
+                        pixel[(v + 1) * width + u] = pixel[(v) *width + u];
+                    }
+                    pixel[u] = tempPxl;
                 }
-                pixel[v * width] = tempPxl;
-            }
-            break;
-        case 3:
-            for (v = 0; v < height; v++) {
-                tempPxl = pixel[v * width];
-                for (u = 1; u < width; u++) {
-                    pixel[v * width + u - 1] = pixel[v * width + u];
+                break;
+            case 2:
+                for (v = 0; v < height; v++) {
+                    tempPxl = pixel[v * width + width - 1];
+                    for (u = width - 2; u >= 0; u--) {
+                        pixel[v * width + u + 1] = pixel[v * width + u];
+                    }
+                    pixel[v * width] = tempPxl;
                 }
-                pixel[v * width + width - 1] = tempPxl;
-            }
-            break;
+                break;
+            case 3:
+                for (v = 0; v < height; v++) {
+                    tempPxl = pixel[v * width];
+                    for (u = 1; u < width; u++) {
+                        pixel[v * width + u - 1] = pixel[v * width + u];
+                    }
+                    pixel[v * width + width - 1] = tempPxl;
+                }
+                break;
+        }
+
+        gSPInvalidateTexCache(gMasterDisp++, pixel);
     }
-
-    // LTodo: we should only invalidate one texture
-    gSPInvalidateTexCache(gMasterDisp++, NULL);
 }
 
 void Lib_Texture_Mottle(u16* dst, u16* src, u8 mode) {
@@ -135,8 +190,7 @@ void Lib_Texture_Mottle(u16* dst, u16* src, u8 mode) {
             break;
     }
 
-    // LTodo: we should only invalidate one texture
-    gSPInvalidateTexCache(gMasterDisp++, NULL);
+    gSPInvalidateTexCache(gMasterDisp++, dst8);
 }
 
 s32 Animation_GetLimbIndex(Limb* limb, Limb** skeleton) {

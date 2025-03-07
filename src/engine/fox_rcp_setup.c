@@ -1229,7 +1229,7 @@ Gfx gRcpSetupDLs[][9] = {
         gsSPSetGeometryMode(0),
         gsSPSetOtherMode(G_SETOTHERMODE_L, G_MDSFT_ALPHACOMPARE, 3, G_AC_NONE | G_ZS_PIXEL),
         gsDPSetRenderMode(G_RM_XLU_SURF, G_RM_XLU_SURF2),
-        gsSPSetOtherModeHi(G_AD_PATTERN | G_CD_MAGICSQ | G_CK_NONE | G_TC_FILT | G_TF_POINT | G_TT_RGBA16 | G_TL_TILE |
+        gsSPSetOtherModeHi(G_AD_PATTERN | G_CD_MAGICSQ | G_CK_NONE | G_TC_FILT | G_TF_BILERP | G_TT_RGBA16 | G_TL_TILE |
                            G_TD_CLAMP | G_TP_NONE | G_CYC_1CYCLE | G_PM_NPRIMITIVE),
         gsSPEndDisplayList(),
     },
@@ -1318,6 +1318,21 @@ Gfx gRcpSetupDLs[][9] = {
         gsSPSetGeometryMode(G_SHADE | G_SHADING_SMOOTH),
         gsSPSetOtherMode(G_SETOTHERMODE_L, G_MDSFT_ALPHACOMPARE, 3, G_AC_NONE | G_ZS_PIXEL),
         gsDPSetRenderMode(G_RM_CLD_SURF, G_RM_CLD_SURF2),
+        gsSPSetOtherModeHi(G_AD_PATTERN | G_CD_MAGICSQ | G_CK_NONE | G_TC_FILT | G_TF_POINT | G_TT_NONE | G_TL_TILE |
+                           G_TD_CLAMP | G_TP_PERSP | G_CYC_1CYCLE | G_PM_NPRIMITIVE),
+        gsSPEndDisplayList(),
+    },
+    {
+        /* SETUPDL_67_POINT */
+        gsDPPipeSync(),
+        gsSPClearGeometryMode(G_ZBUFFER | G_SHADE | G_CULL_BOTH | G_FOG | G_LIGHTING | G_TEXTURE_GEN |
+                              G_TEXTURE_GEN_LINEAR | G_LOD | G_SHADING_SMOOTH),
+        gsSPTexture(0xFFFF, 0xFFFF, 0, G_TX_RENDERTILE, G_ON),
+        gsDPSetCombineLERP(PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0, PRIMITIVE, ENVIRONMENT,
+                           TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0),
+        gsSPSetGeometryMode(G_ZBUFFER | G_SHADE | G_SHADING_SMOOTH),
+        gsSPSetOtherMode(G_SETOTHERMODE_L, G_MDSFT_ALPHACOMPARE, 3, G_AC_NONE | G_ZS_PIXEL),
+        gsDPSetRenderMode(G_RM_ZB_CLD_SURF, G_RM_ZB_CLD_SURF2),
         gsSPSetOtherModeHi(G_AD_PATTERN | G_CD_MAGICSQ | G_CK_NONE | G_TC_FILT | G_TF_POINT | G_TT_NONE | G_TL_TILE |
                            G_TD_CLAMP | G_TP_PERSP | G_CYC_1CYCLE | G_PM_NPRIMITIVE),
         gsSPEndDisplayList(),
