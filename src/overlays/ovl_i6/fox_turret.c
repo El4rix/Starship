@@ -213,12 +213,12 @@ void Turret_Shoot(Player* player) {
         gBombCount[0]++;
     }
 
-    if ((gControllerPress[player->num].button & A_BUTTON) && !((gControllerHold[player->num].button & R_TRIG) && (player->turretLockOnCount == ARRAY_COUNT(gActors))))  {
+    if (gControllerPress[player->num].button & A_BUTTON)  {
         player->shotTimer = 6;
     }
 
     // Fires two great fox lasers. Offsets match up with the possible guns in Draw.
-    if ((gControllerHold[player->num].button & A_BUTTON) && !((gControllerHold[player->num].button & R_TRIG) && (player->turretLockOnCount == ARRAY_COUNT(gActors))))  {
+    if (gControllerHold[player->num].button & A_BUTTON)  {
 
         if (gLaserStrength[0] > 2) {
             gLaserStrength[0] = 2;
@@ -333,7 +333,7 @@ void Turret_Shoot(Player* player) {
         } else {
             player->turretLockOnCount = player->turretLockOnCount;
         }
-        if ((player->turretLockOnCount == ARRAY_COUNT(gActors)) && (gControllerPress[player->num].button & A_BUTTON) && (gBombCount[0] > 0)) {
+        if ((player->turretLockOnCount == ARRAY_COUNT(gActors)) && (gInputPress->button & B_BUTTON) && (gBombCount[0] > 0)) {
             player->turretLockOnCount = 0;
             Player_SmartBomb(player);
             if (gCurrentLevel == LEVEL_AQUAS) {
@@ -548,13 +548,13 @@ void Turret_UpdateRails(Player* player) {
     }
 
     // the B button recenters the view straight ahead
-    if (gControllerPress[player->num].button & B_BUTTON) {
+    if ((gControllerPress[player->num].button & B_BUTTON) && !(gControllerHold[player->num].button & R_TRIG)) {
         player->unk_008 = 0.0f;
         player->unk_00C = 0.0f;
     }
     
     // Resets position
-    if ((gControllerHold[player->num].button & B_BUTTON) && (gCurrentLevel != LEVEL_TITANIA) && (gCurrentLevel != LEVEL_MACBETH) && !((gCurrentLevel == LEVEL_VENOM_ANDROSS) && (!gBossActive))) {
+    if ((gControllerHold[player->num].button & B_BUTTON) && !(gControllerHold[player->num].button & R_TRIG) && (gCurrentLevel != LEVEL_TITANIA) && (gCurrentLevel != LEVEL_MACBETH) && !((gCurrentLevel == LEVEL_VENOM_ANDROSS) && (!gBossActive))) {
         if ((turretDestY > ((player->pathHeight + player->pathFloor)/2) + player->yPathTarget + 50) && (gCurrentLevel != LEVEL_SOLAR)){
             turretDestY -= 100.0f;
         }
@@ -752,7 +752,7 @@ void Turret_Update360(Player* player) {
     }
 
     // the B button recenters the view
-    if (gControllerPress[player->num].button & B_BUTTON) {
+    if ((gControllerPress[player->num].button & B_BUTTON) && (!gControllerHold[player->num].button & R_TRIG)) {
         player->unk_00C = 0.0f;
         if (gCurrentLevel != LEVEL_SECTOR_Z) {
             player->unk_008 = 0.0f;
@@ -805,6 +805,12 @@ void Turret_Update360(Player* player) {
     turret360Height = 450;
 
     switch (gCurrentLevel) {
+        case LEVEL_FORTUNA:
+            turret360Height = 600;
+            break;
+        case LEVEL_KATINA:
+            turret360Height = 750;
+            break;
         case LEVEL_SECTOR_Y:
             turret360Height = 500;
             break;
@@ -814,7 +820,10 @@ void Turret_Update360(Player* player) {
             turret360Height = 300;
             break;
         case LEVEL_BOLSE:
-            turret360Height = 500;
+            turret360Height = 750;
+            break;
+        case LEVEL_VENOM_2:
+            turret360Height = 800;
             break;
         case LEVEL_VENOM_ANDROSS:
             turret360Radius = 0;

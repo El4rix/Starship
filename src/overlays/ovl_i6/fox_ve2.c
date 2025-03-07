@@ -38,6 +38,8 @@ Vec3f sTeamInitPos[6] = {
 f32 sTeamInitRot[3] = { 300.0f, 70.0f, 280.0f };
 
 void Venom2_UpdateEvents(ActorAllRange* this) {
+    Vec3f src;
+    Vec3f dest;
     ActorAllRange* team;
     ActorAllRange* wolf = &gActors[4];
     Player* player = &gPlayer[0];
@@ -177,12 +179,60 @@ void Venom2_UpdateEvents(ActorAllRange* this) {
                 break;
         }
     }
+
+    if ((gTurretModeEnabled) && (gAllRangeEventTimer > 300) && (gPlayer[0].state == PLAYERSTATE_ACTIVE)) {
+        team = &gActors[8];
+        if (((gGameFrameCount % 100) == 0) && (gPlayer[0].state == PLAYERSTATE_ACTIVE)) {
+            src.x = 0.0f;
+            src.y = 0.0f;
+            src.z = 0.0f;
+    
+            for (i = 1, team = &gActors[i + 10]; i < 10; i++, team++) {
+                if (team->obj.status == OBJ_FREE) {
+                    Actor_Initialize(team);
+    
+                    team->obj.status = OBJ_ACTIVE;
+                    team->obj.id = OBJ_ACTOR_ALLRANGE;
+    
+                    Matrix_RotateY(gCalcMatrix, (gGameFrameCount * 6.0f) * M_DTOR, MTXF_NEW);
+                    Matrix_MultVec3fNoTranslate(gCalcMatrix, &src, &dest);
+    
+                    team->obj.pos.x = dest.x;
+                    team->obj.pos.y = 600.0f;
+                    team->obj.pos.z = dest.z;
+    
+                    team->rot_0F4.y = gGameFrameCount * 6.0f;
+                    team->aiType = i + AI360_ENEMY;
+                    team->health = 2;
+                    team->drawShadow = team->iwork[11] = 1;
+                    team->timer_0C2 = 30;
+
+                    team->state = 3;
+    
+                    Object_SetInfo(&team->info, team->obj.id);
+    
+                    AUDIO_PLAY_SFX(NA_SE_ARWING_ENGINE_FG, team->sfxSource, 4);
+    
+                    if ((i + 10) == 13) {
+                        team->aiIndex = AI360_FOX;
+                        this->itemDrop = DROP_LASERS;
+                    } else {
+                        team->aiIndex = -1;
+                        this->itemDrop = DROP_LASERS;
+                    }
+                    break;
+                }
+            }
+        }
+        ActorAllRange_UpdateEnemyEvents(this);
+    }
 }
 
 void Venom2_LoadLevelObjects(void) {
     Actor* actor;
     Boss* boss;
     Scenery360* scenery360;
+    Scenery* temple;
     s32 i;
 
     gLevelObjects = SEGMENTED_TO_VIRTUAL(gLevelObjectInits[gCurrentLevel]);
@@ -229,6 +279,18 @@ void Venom2_LoadLevelObjects(void) {
     boss->obj.status = OBJ_INIT;
     boss->obj.id = OBJ_BOSS_VE2_BASE;
     Object_SetInfo(&boss->info, boss->obj.id);
+
+    if (gTurretModeEnabled) {
+        temple = gScenery360;
+        Scenery360_Initialize(temple);
+        temple->obj.status = OBJ_ACTIVE;
+        temple->obj.id = OBJ_SCENERY_VE1_TEMPLE_ENTRANCE;
+        temple->obj.pos.x = 0;
+        temple->obj.pos.y = 0;
+        temple->obj.pos.z = -10000;
+
+        Object_SetInfo(&temple->info, temple->obj.id);
+    }
 }
 
 void Venom2_LevelStart(Player* player) {

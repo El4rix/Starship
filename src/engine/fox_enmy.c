@@ -1752,7 +1752,13 @@ void Actor_Despawn(Actor* this) {
                         this->itemDrop = DROP_LASERS;
                         break;
                 }
-                gDropHitCountItem = 0;
+                if (!gTurretModeEnabled || gCurrentLevel != LEVEL_VENOM_2) {
+                    gDropHitCountItem = 0;
+                } else {
+                    if (gDropHitCountItem > 15) {
+                        gDropHitCountItem = 5;
+                    }
+                }
             }
 
             if (this->obj.id == OBJ_ACTOR_ALLRANGE) {

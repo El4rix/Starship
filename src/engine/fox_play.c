@@ -5388,7 +5388,7 @@ void Player_ArwingBrake(Player* player) {
             }
             player->boostMeter += sp30;
             if (player->boostMeter > 90.0f) {
-                if (gTurretModeEnabled) {
+                if (!gTurretModeEnabled) {
                     player->boostCooldown = true;
                 }
                 player->boostMeter = 90.0f;

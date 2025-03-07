@@ -6040,6 +6040,9 @@ void HUD_Score_Draw(f32 x, f32 y) {
     if ((gHitCount != gDisplayedHitCount) && (D_hud_80161720[0] == 0.0f) && (D_hud_80161720[1] == 0.0f) &&
         (D_hud_80161720[2] == 0.0f)) {
         gDisplayedHitCount++;
+        if (gTurretModeEnabled) {
+            gDropHitCountItem++;
+        }
 
         if ((gDisplayedHitCount == 4) || (gDisplayedHitCount == 9) || (gDisplayedHitCount == 14) ||
             (gDisplayedHitCount == 19) || (gDisplayedHitCount == 24) || (gDisplayedHitCount == 29)) {

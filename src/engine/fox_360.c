@@ -933,6 +933,9 @@ void ActorAllRange_ApplyDamage(ActorAllRange* this) {
                 if (!((this->dmgType == DMG_COLLISION) && (this->aiType == AI360_WOLF)) &&
                     !((this->aiType == AI360_MISSILE) && (this->dmgType == DMG_EXPLOSION))) {
                     this->health -= this->damage;
+                    if ((gTurretModeEnabled) && (gCurrentLevel == LEVEL_VENOM_2)) {
+                        this->health += (this->damage * 0.6f);
+                    }
                 }
             } else if ((this->aiType <= AI360_PEPPY) && (this->state != STATE360_6)) {
                 if (this->aiType == AI360_FALCO) {
@@ -2582,7 +2585,7 @@ void ActorAllRange_Draw(ActorAllRange* this) {
                     gSPDisplayList(gMasterDisp++, aSzInvaderIIIDL);
                     Matrix_Translate(gGfxMatrix, 0.0f, 0.0f, -60.0f, MTXF_APPLY);
                     Actor_DrawEngineGlow(this, EG_GREEN);
-                } else if (gCurrentLevel == LEVEL_BOLSE) {
+                } else if (gCurrentLevel == LEVEL_BOLSE || (gTurretModeEnabled && gCurrentLevel == LEVEL_VENOM_2)) {
                     gSPDisplayList(gMasterDisp++, D_BO_6008770);
                     Matrix_Push(&gGfxMatrix);
                     Matrix_Translate(gGfxMatrix, 0.0f, 0.0f, -60.0f, MTXF_APPLY);
