@@ -190,6 +190,8 @@ void Lib_Texture_Mottle(u16* dst, u16* src, u8 mode) {
             break;
     }
 
+    dst8 = 0;
+
     gSPInvalidateTexCache(gMasterDisp++, dst8);
 }
 
