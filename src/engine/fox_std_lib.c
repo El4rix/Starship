@@ -138,6 +138,8 @@ void Lib_Texture_Mottle(u16* dst, u16* src, u8 mode) {
     u8* src8;
     s32 offset;
 
+    dst8 = 0;
+
     dst = LOAD_ASSET(dst);
     src = LOAD_ASSET(src);
 
@@ -189,8 +191,6 @@ void Lib_Texture_Mottle(u16* dst, u16* src, u8 mode) {
             }
             break;
     }
-
-    dst8 = 0;
 
     gSPInvalidateTexCache(gMasterDisp++, dst8);
 }
