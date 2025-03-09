@@ -933,8 +933,12 @@ void ActorAllRange_ApplyDamage(ActorAllRange* this) {
                 if (!((this->dmgType == DMG_COLLISION) && (this->aiType == AI360_WOLF)) &&
                     !((this->aiType == AI360_MISSILE) && (this->dmgType == DMG_EXPLOSION))) {
                     this->health -= this->damage;
-                    if ((gTurretModeEnabled) && (gCurrentLevel == LEVEL_VENOM_2)) {
-                        this->health += (this->damage * 0.6f);
+                    if ((gTurretModeEnabled) && (this->aiType <= AI360_ANDREW)) {
+                        if ((gCurrentLevel == LEVEL_FORTUNA) || (gCurrentLevel == LEVEL_BOLSE)) {
+                            this->health += (this->damage * 0.8f);
+                        } else if (gCurrentLevel == LEVEL_VENOM_2) {
+                            this->health += (this->damage * 0.9f);
+                        }
                     }
                 }
             } else if ((this->aiType <= AI360_PEPPY) && (this->state != STATE360_6)) {

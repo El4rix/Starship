@@ -423,7 +423,7 @@ void SectorY_80198F5C(SyShogun* this) {
                            0.1f, 10);
     this->health -= this->damage;
     if (gTurretModeEnabled) {
-        this->health += (this->damage * 0.5);
+        this->health += (this->damage * 0.75f);
     }
 
     if (this->health < 0) {
@@ -3814,7 +3814,7 @@ void SectorY_SyRobot_Update(SyRobot* this) {
                                    this->vel.z, 0.1f, 10);
             this->health -= this->damage;
             if (gTurretModeEnabled) {
-                this->health += (this->damage * 0.5f);
+                this->health += (this->damage * 0.75f);
             }
 
             if (this->health <= 0) {

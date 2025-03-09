@@ -2748,7 +2748,12 @@ void ActorEvent_ProcessTriggers(ActorEvent* this) {
                 if (gTurretModeEnabled) {
                     if ((gCurrentLevel == LEVEL_AREA_6) && (gPlayer[0].pos.z > -195000)) {
                         Radio_PlayMessage(gMsg_ID_10200, RCID_BILL);
-                    } else if ((gCurrentLevel == LEVEL_AREA_6) && (gPlayer[0].pos.z < -195000)) {
+                    } else if (((gCurrentLevel == LEVEL_AREA_6) && (gPlayer[0].pos.z < -195000))
+                    || (gCurrentLevel == LEVEL_VENOM_1 && (gPlayer[0].pos.z > -130000))
+                    || (gCurrentLevel == LEVEL_ZONESS)
+                    || (gCurrentLevel == LEVEL_TITANIA)
+                    || (gCurrentLevel == LEVEL_MACBETH)
+                    || (gCurrentLevel == LEVEL_METEO)) {
                         Radio_PlayMessage(gMsg_ID_18140, RCID_BILL);
                     }
                 }

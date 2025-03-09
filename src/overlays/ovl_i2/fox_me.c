@@ -406,6 +406,9 @@ void Meteo_80187FF8(Effect371* this, f32 x, f32 y, f32 z) {
 
     this->unk_44 = 128;
     this->vel.z = 50.0f;
+    if (gTurretModeEnabled) {
+        this->vel.z = 35.0f;
+    }
     this->scale2 = 1.0f;
     Object_SetInfo(&this->info, this->obj.id);
 }

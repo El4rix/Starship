@@ -5037,13 +5037,14 @@ void Player_Setup(Player* playerx) {
     gPauseEnabled = false;
 
     if (gTurretModeEnabled) {
+        gLaserStrength[0] = 0;
         player->unk_180 = 180.0f;
         turretDestY = player->pos.y = ((player->pathHeight + player->pathFloor)/2);
         if (gCurrentLevel == LEVEL_BOLSE) {
             player->pos.y = 1300;
         }
         turretDestX = player->pos.x = 0;
-        Audio_StartEngineNoise();
+        AUDIO_PLAY_SFX(NA_SE_GREATFOX_ENGINE, gDefaultSfxSource, 0);
     }
 }
 

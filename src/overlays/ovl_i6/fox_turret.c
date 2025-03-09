@@ -209,8 +209,9 @@ void Turret_Shoot(Player* player) {
     s32 i;
     s32 j;
 
-    if ((gBombCount[0] < 4) && (gGameFrameCount % 1000 == 0)) {
+    if ((gBombCount[0] < 4) && (gGameFrameCount % 900 == 0)) {
         gBombCount[0]++;
+        AUDIO_PLAY_SFX(NA_SE_BOMB_GET, gDefaultSfxSource, 4);
     }
 
     if (gControllerPress[player->num].button & A_BUTTON)  {
@@ -235,7 +236,7 @@ void Turret_Shoot(Player* player) {
 
         switch (gLaserStrength[0]) {
             case LASERS_SINGLE:
-                player->shotTimer += 2;
+                player->shotTimer += 3;
                 break;
 
             case LASERS_TWIN:
@@ -752,7 +753,7 @@ void Turret_Update360(Player* player) {
     }
 
     // the B button recenters the view
-    if ((gControllerPress[player->num].button & B_BUTTON) && (!gControllerHold[player->num].button & R_TRIG)) {
+    if ((gControllerPress[player->num].button & B_BUTTON) && !(gControllerHold[player->num].button & R_TRIG)) {
         player->unk_00C = 0.0f;
         if (gCurrentLevel != LEVEL_SECTOR_Z) {
             player->unk_008 = 0.0f;

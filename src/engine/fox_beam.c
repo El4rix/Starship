@@ -697,11 +697,11 @@ void PlayerShot_ApplyDamageToActor(PlayerShot* shot, Actor* actor, s32 hitIndex)
     if (shot->obj.id == PLAYERSHOT_GFOX_LASER) {
         if ((gTurretModeEnabled)) {
             if ((actor->eventType == EVID_TEAMMATE) || (actor->obj.id == OBJ_ACTOR_TEAM_BOSS) || (actor->obj.id == OBJ_ACTOR_TEAM_ARWING)
-            || (actor->aiType == AI360_SLIPPY) || (actor->aiType == AI360_PEPPY) || (actor->aiType == AI360_FALCO)
-            || (gCurrentLevel == LEVEL_VENOM_2)) {
+            || (actor->aiType == AI360_SLIPPY) || (actor->aiType == AI360_PEPPY) || (actor->aiType == AI360_FALCO)) {
                 actor->damage = 4;
             } else if ((gCurrentLevel == LEVEL_FORTUNA) 
             || (gCurrentLevel == LEVEL_BOLSE) 
+            || (gCurrentLevel == LEVEL_VENOM_2)
             || (gCurrentLevel == LEVEL_KATINA)) {
                 actor->damage = 12;
             } else if (gCurrentLevel == LEVEL_SECTOR_Z) {

@@ -231,6 +231,9 @@ void Bolse_UpdateEventHandler(ActorEvent* this) {
 
             for (i = 0; i < 6; i++) {
                 gStarWolfTeamAlive[i] = gSavedStarWolfTeamAlive[i];
+                if (gTurretModeEnabled) {
+                    gStarWolfTeamAlive[i] = 1;
+                }
             }
 
         case 2:
@@ -1970,6 +1973,9 @@ void Bolse_BoBaseCore_Update(BoBaseCore* this) {
 
             if (this->dmgPart < 8) {
                 this->swork[this->dmgPart] -= this->damage;
+                if (gTurretModeEnabled) {
+                    this->swork[this->dmgPart] += (this->damage *= 0.75);
+                }
                 if (this->swork[this->dmgPart] <= 0) {
                     this->swork[24 + this->dmgPart] = 30;
                     AUDIO_PLAY_SFX(NA_SE_EN_EXPLOSION_M, this->sfxSource, 4);

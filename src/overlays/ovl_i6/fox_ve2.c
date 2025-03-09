@@ -182,7 +182,7 @@ void Venom2_UpdateEvents(ActorAllRange* this) {
 
     if ((gTurretModeEnabled) && (gAllRangeEventTimer > 300) && (gPlayer[0].state == PLAYERSTATE_ACTIVE)) {
         team = &gActors[8];
-        if (((gGameFrameCount % 100) == 0) && (gPlayer[0].state == PLAYERSTATE_ACTIVE)) {
+        if (((gGameFrameCount % 70) == 0) && (gPlayer[0].state == PLAYERSTATE_ACTIVE)) {
             src.x = 0.0f;
             src.y = 0.0f;
             src.z = 0.0f;
