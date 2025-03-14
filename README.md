@@ -1,103 +1,66 @@
-[comment]: <> (Todo: Make Light Mode Image)
-[comment]: <> (Todo: Make Dark Mode Image)
+# Turret Mode
+## About
+"Turret Mode" is a mod for the unofficial PC Port of Star Fox 64, "Starship." It restores an unfinished gamemode where the player controlled the Great Fox's guns in first-person view. While originally only meant for Area 6, this mod expands the gamemode to encompass every level, and adds new features. For more background info, see this [video.](https://www.youtube.com/watch?v=cmZl8i-uAng)
 
-# Starship
+## Issues
+If you have trouble installing, visit https://github.com/HarbourMasters/Starship for more complete instructions and how to install regular Starship. If you encounter any bugs while playing, please report them in the dedicated Starship forum topic "Turret Mode" in the Ship of Harkinian's Discord: https://discord.com/invite/shipofharkinian
 
-Developed by: 
-* [SonicDcer](https://www.github.com/sonicdcer)
-* [Lywx](https://www.github.com/kiritodv)
+# Instructions
+Currently Windows only. You will need to provide your own copy of the original "USA 1.1 Rev A" ROM.
+* Download the release version of Turret Mode [here.](https://github.com/El4rix/Starship/releases/tag/v1.0)
+* Download a nightly build of Starship [here.](https://nightly.link/HarbourMasters/Starship/workflows/main/main/starship-windows.zip) The December 2024 release (v1.0.0) will not work, but newer ones will.
+* Move "Turret.exe" and your ROM into your Starship folder.
+* Run "Turret.exe" and select your ROM to generate the .o2r file. (Generating the .o2r with "Starship.exe" also works, if you've already done that).
+* Play!
 
-## Discord
+# Features
+### Rapid Fire
+Hold A to rapidly fire the Great Fox's lasers. There is no lock-on attack. Collecting Laser items will increase your fire rate. Lasers are reset after each level. Laser items also restore some health.
 
-Official Discord: https://discord.com/invite/shipofharkinian
+### Charge Attack
+Hold R to charge your bomb. Lines will point to nearby entities. Press B when the spark appears and the sound cue plays to detonate. Your Bombs will slowly refill if you have less than 4.
 
-If you're having any trouble after reading through this `README`, feel free ask for help in the Starship Support text channels. Please keep in mind that we do not condone piracy.
+### Tractor Beam
+Holding R also uses the Tractor Beam. Vacuum enemies, teammates, and items towards you so you don't have to move, you lazy bastard. Targeting teammates will slowly heal them if they're close to you.
 
-# Quick Start
+### Locking the View
+Hold Z to lock your view in the direction you're facing. If you're on-rails, you'll also brake.
 
-Starship does not include any copyrighted assets.  You are required to provide a supported copy of the game.
+### On-Rails/Corridor Mode
+Use the C buttons or D-Pad to move around. Press B to recenter your view, hold B to reposition the Great Fox. Hold Z to brake. There is no way to boost.
 
-### 1. Verify your ROM dump
-The supported ROM is the USA 1.1 Rev A version. You can verify you have dumped a supported copy of the game by using the SHA-1 File Checksum Online at https://www.romhacking.net/hash/. The hash for a US 1.1 ROM is SHA-1: 09F0D105F476B00EFA5303A3EBC42E60A7753B7A.
+### 360/All-Range Mode 
+The Great Fox orbits the center of the map. Press C/D-Pad Up to decrease your orbit radius, and C/D-Pad Down to increase your orbit radius. Press C/D-Pad Left and Right to quickly turn your view. Press B to reorient your view to the center of the map.
 
-### 2. Verify your ROM is in .z64 format
-Your ROM needs to be in .z64 format. If it's in .n64 format, use the following to convert it to a .z64: https://hack64.net/tools/swapper.php
+### Iron Wings
+The Great Fox's wings are impossible to break, and you won't lose your laser power ups or struggle to ascend, but I still wouldn't fly carelessly in a populated city.
 
-### 2. Download Starship from [Releases](https://github.com/HarbourMasters/Starship/releases)
+### Expert Mode
+Enemy accuracy and damage are not increased in Expert Mode - only their numbers. More cannon fodder!
 
-### 3. Generating the O2R from the ROM
-#### Windows
-* Extract every file from the zip into a folder of your choosing.
-* Copy your ROM to the root of the folder you extracted the zip to.
-* Run "generate_o2r.bat"
+### Nasty Surprises
+Certain enemies' behaviors have been changed to provide more of a challenge. Bosses also have more health.
 
-#### MacOS
-* Extract every file from the zip into a folder of your choosing.
-* Copy your ROM to the root of the folder you extracted the zip to.
-* Run "generate_o2r.sh"
+### New Helper
+ROB's on the ship with you, so maybe a friend in the Cornerian Army can lend you a helping hand.
 
-### 4. Play!
-* Launch `Starship.exe`
-Congratulations, you are now sailing with Starship! Have fun!
+### New Cutscenes
+I had to accomodate the Great Fox's big ol' ass somehow.
 
-# Configuration
-
-### Default keyboard configuration
-| N64 | A | B | Z | Start | Analog stick | C buttons | D-Pad |
-| - | - | - | - | - | - | - | - |
-| Keyboard | X | C | Z | Space | WASD | Arrow keys | TFGH |
-
-### Other shortcuts
-| Keys | Action |
-| - | - |
-| F1 | Toggle menubar |
-| F11 | Fullscreen |
-| Tab | Toggle Alternate assets |
-| Ctrl+R | Reset |
-
-### Graphics Backends
-Currently, there are three rendering APIs supported: DirectX11 (Windows), OpenGL (all platforms), and Metal (macOS). You can change which API to use in the `Settings` menu of the menubar, which requires a restart.  If you're having an issue with crashing, you can change the API in the `starship.cfg.json` file by finding the line `"Backend":{`... and changing the `id` value to `3` and set the `Name` to `OpenGL`. `DirectX 11` with id `2` is the default on Windows. `Metal` with id `4` is the default on macOS.
-
-# Custom Assets
-Custom assets are packed in `.o2r` or `.otr` files. To use custom assets, place them in the `mods` folder.
-
-If you're interested in creating and/or packing your own custom asset `.o2r`/`.otr` files, check out the following tools:
-* [**retro - OTR and O2R generator**](https://github.com/HarbourMasters64/retro)
-* [**fast64 - Blender plugin (Note that SF64 is not supported at this time)**](https://github.com/HarbourMasters/fast64)
+# Controls
+| Button | Action | (360) |
+| - | - | - |
+| A | Lasers |
+| B | Recenter |
+| C/D-Pad Left/Right | Move Left/Right | Quick Turn | 
+| C/D-Pad Up/Down | Move Up/Down | Move Inwards/Outwards |
+| R | Charge Bomb & Tractor Beam |
+| Z | Brake & Lock View |
 
 # Development
-### Building
-
-If you want to manually compile Starship, please consult the [building instructions](https://github.com/HarbourMasters/Starship/blob/main/docs/BUILDING.md).
-
-### Playtesting
-If you want to playtest a continuous integration build, you can find them at the links below. Keep in mind that these are for playtesting only, and you will likely encounter bugs and possibly crashes. 
-
-* [Windows](https://nightly.link/HarbourMasters/Starship/workflows/main/main/starship-windows.zip)
-* [macOS](https://nightly.link/HarbourMasters/Starship/workflows/main/main/starship-mac-x64.zip)
-* [Linux](https://nightly.link/HarbourMasters/Starship/workflows/main/main/Starship-linux.zip)
-
-<a href="https://github.com/Kenix3/libultraship/">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./docs/poweredbylus.darkmode.png">
-    <img alt="Powered by libultraship" src="./docs/poweredbylus.lightmode.png">
-  </picture>
-</a>
+If you want to manually compile or edit Turret Mode, please consult the [building instructions](https://github.com/HarbourMasters/Starship/blob/main/docs/BUILDING.md).
 
 # Special Thanks:
-
-* [ZeldaRET](https://github.com/zeldaret) : for teaching me the fundamental knowledge of N64 decompilation.
-* [Decompals](https://github.com/decompals) : for helping in the initial disassembly and decompilation of the game.
-* [HM64 Team](https://github.com/harbourMasters) : for creating Libultraship and helping with various issues.
-
-* [DarioSamo](https://github.com/DarioSamo) : for providing important fixes to the renderer and information about the inner workings of the game graphics system.
-* [garrettjoecox](https://github.com/garrettjoecox) : for contributing with interpolation fixes to this port.
-* [inspectredc](https://github.com/inspectredc) : for contributing to the [SF64 decompilation project](https://github.com/sonicdcer/sf64).
-* [Lywx](https://github.com/KiritoDv) : for co-developing this port as a lead and creating [Torch](https://github.com/HarbourMasters/Torch) asset extraction system.
-* [m4xw](https://github.com/m4xw) : for helping with audio issues in this port.
-* [Malkierian](https://github.com/Malkierian) : for contributing with important fixes to this port.
-* [petrie911](https://github.com/petrie911) : for contributing to the [SF64 decompilation project](https://github.com/sonicdcer/sf64) as a lead.
-* [Ryan-Myers](https://github.com/Ryan-Myers) : for contributing to the [SF64 decompilation project](https://github.com/sonicdcer/sf64).
-* [Thar0](https://github.com/Thar0) : for contributing with an improved Starfield that can be interpolated to any framerate.
-* [TheBoy181](https://github.com/TheBoy181) : for contributing to this project with various widescreen enhancements such as level floors, an extended Starfield among other things.
-* [Wiseguy](https://github.com/Mr-Wiseguy) : for providing important information about the inner workings of the N64 platform, as well as helping with the decompilation process.
+* [The Starship Team](https://github.com/HarbourMasters/Starship) : for making this awesome port.
+* [Sonic Dreamcaster](https://github.com/sonicdcer) : for showing me how to set everything up.
+* [petrie911](https://github.com/petrie911) : for decompiling and documenting the original turret mode left in the game.

@@ -229,8 +229,8 @@ void Turret_Shoot(Player* player) {
         }
         
         if (player->shotTimer == 0) {
-            Turret_GreatFoxLaser(player, -120.0f);
-            Turret_GreatFoxLaser(player, 120.0f);
+            Turret_GreatFoxLaser(player, -90.0f); // -120
+            Turret_GreatFoxLaser(player, 90.0f); // 120
             player->turretRecoil = 30;
         }
 
@@ -762,22 +762,12 @@ void Turret_Update360(Player* player) {
 
     // Quick look around
     if ((gControllerPress[player->num].button & R_JPAD) || ((gControllerPress[player->num].button & R_CBUTTONS) && (gCallTimer == 0))) {
-        if (gCurrentLevel == LEVEL_SECTOR_Z) {
-            player->unk_008 += 45.0f;
-            player->unk_180 -= 30.0f;
-        } else {
-            player->unk_008 += 90.0f;
-            player->unk_180 -= 30.0f;
-        }
+        player->unk_008 += 45.0f;
+        player->unk_180 -= 30.0f;
     }
     if ((gControllerPress[player->num].button & L_JPAD) || (gControllerPress[player->num].button & L_CBUTTONS)) {
-        if (gCurrentLevel == LEVEL_SECTOR_Z) {
-            player->unk_008 -= 45.0f;
-            player->unk_180 += 30.0f;
-        } else {
-            player->unk_008 -= 90.0f;
-            player->unk_180 += 30.0f;
-        }
+        player->unk_008 -= 45.0f;
+        player->unk_180 += 30.0f;
     }
 
     // Change Orbit Radius
@@ -1282,7 +1272,7 @@ void Turret_Draw(Player* player) {
         gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 155, 155, 155, 255);
     }
     Matrix_Push(&gGfxMatrix);
-    Matrix_Translate(gGfxMatrix, -70.0f, -100.0f, -200.0f + player->turretRecoil, MTXF_APPLY);
+    Matrix_Translate(gGfxMatrix, -50.0f, -100.0f, -200.0f + player->turretRecoil, MTXF_APPLY); // -70
     Matrix_RotateY(gGfxMatrix, player->rot.y * M_DTOR, MTXF_APPLY);
     Matrix_RotateX(gGfxMatrix, -player->rot.x * M_DTOR, MTXF_APPLY);
     Matrix_RotateZ(gGfxMatrix, M_PI, MTXF_APPLY);
@@ -1293,7 +1283,7 @@ void Turret_Draw(Player* player) {
     gSPDisplayList(gMasterDisp++, Guns_GF_GUNS_mesh_mesh);
     Matrix_Pop(&gGfxMatrix);
     Matrix_Push(&gGfxMatrix);
-    Matrix_Translate(gGfxMatrix, 70.0f, -100.0f, -200.0f + player->turretRecoil, MTXF_APPLY);
+    Matrix_Translate(gGfxMatrix, 50.0f, -100.0f, -200.0f + player->turretRecoil, MTXF_APPLY); // 70
     Matrix_RotateY(gGfxMatrix, player->rot.y * M_DTOR, MTXF_APPLY);
     Matrix_RotateX(gGfxMatrix, -player->rot.x * M_DTOR, MTXF_APPLY);
     // Matrix_RotateZ(gGfxMatrix, M_PI, MTXF_APPLY);
@@ -1310,7 +1300,7 @@ void Turret_Draw(Player* player) {
         RCP_SetupDL_64();
         gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 128);
         Matrix_Push(&gGfxMatrix);
-        Matrix_Translate(gGfxMatrix, -150.0f, -90.0f, -300.0f + player->turretRecoil, MTXF_APPLY);
+        Matrix_Translate(gGfxMatrix, -120.0f, -90.0f, -300.0f + player->turretRecoil, MTXF_APPLY); // -150
         Matrix_RotateY(gGfxMatrix, player->rot.y * M_DTOR, MTXF_APPLY);
         Matrix_RotateX(gGfxMatrix, -player->rot.x * M_DTOR, MTXF_APPLY);
         Matrix_Translate(gGfxMatrix, 0.0f, 0.0f, -188.0f, MTXF_APPLY);
@@ -1319,7 +1309,7 @@ void Turret_Draw(Player* player) {
         gSPDisplayList(gMasterDisp++, aOrbDL); // was D_1024AC0
         Matrix_Pop(&gGfxMatrix);
         Matrix_Push(&gGfxMatrix);
-        Matrix_Translate(gGfxMatrix, 150.0f, -90.0f, -300.0f + player->turretRecoil, MTXF_APPLY);
+        Matrix_Translate(gGfxMatrix, 120.0f, -90.0f, -300.0f + player->turretRecoil, MTXF_APPLY); // 150
         Matrix_RotateY(gGfxMatrix, player->rot.y * M_DTOR, MTXF_APPLY);
         Matrix_RotateX(gGfxMatrix, -player->rot.x * M_DTOR, MTXF_APPLY);
         Matrix_Translate(gGfxMatrix, 0.0f, 0.0f, -188.0f, MTXF_APPLY);

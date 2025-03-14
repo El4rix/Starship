@@ -1543,8 +1543,9 @@ void PlayerShot_DrawShot(PlayerShot* shot) {
                 }
                 break;
             case PLAYERSHOT_GFOX_LASER:
-                if (gTurretModeEnabled) { // Laser model was backwards some reason
-                    Matrix_RotateY(gGfxMatrix, M_PI*2, MTXF_APPLY);
+                if (gTurretModeEnabled) {
+                    Matrix_RotateY(gGfxMatrix, M_PI*2, MTXF_APPLY); // Laser model was backwards some reason
+                    Matrix_Translate(gGfxMatrix, 0.0f, 0.0f, 200.0f, MTXF_APPLY);
                     Matrix_Scale(gGfxMatrix, 6.0f, 6.0f, 20.0f, MTXF_APPLY);
                     RCP_SetupDL_21();
                 } else {

@@ -129,7 +129,7 @@ void SectorZ_MissileExplode(ActorAllRange* this, bool shotDown) {
             AUDIO_PLAY_SFX(NA_SE_GREATFOX_BURNER, gActors[SZ_GREAT_FOX].sfxSource, 0);
             SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 1);
             SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_FANFARE, 1);
-        } else if ((gTurretModeEnabled) && (sMissileDestroyCount >= 39)) {
+        } else if ((gTurretModeEnabled) && (sMissileDestroyCount >= 39) && (gPlayer[0].state != PLAYERSTATE_DOWN)) {
             if (gActors[AI360_KATT].obj.status == OBJ_ACTIVE) {
                 Radio_PlayMessage(gMsg_ID_16140, RCID_KATT);
             } else if (gTeamShields[AI360_SLIPPY] > 0) {
@@ -352,9 +352,11 @@ void SectorZ_Missile_Update(ActorAllRange* this) {
           bugFixCond)) &&
         (((gPlayer[0].state == PLAYERSTATE_ACTIVE) || bugFixCond) ||
          (gPlayer[0].state == PLAYERSTATE_U_TURN))) {
-        gPlayer[0].state = PLAYERSTATE_LEVEL_COMPLETE;
-        gPlayer[0].csState = 100;
-        gActors[SZ_GREAT_FOX].state = -31072;
+        if (!gTurretModeEnabled) {
+            gPlayer[0].state = PLAYERSTATE_LEVEL_COMPLETE;
+            gPlayer[0].csState = 100;
+            gActors[SZ_GREAT_FOX].state = -31072;
+        }
     }
     // clang-format on
 }
