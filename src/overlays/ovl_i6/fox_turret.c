@@ -441,8 +441,8 @@ void Turret_UpdateRails(Player* player) {
                 func_tank_800481F4(player);
             }
             if (gCurrentLevel == LEVEL_TITANIA) {
-                func_tank_80046358(player);
-                func_tank_80046260(player);
+                //func_tank_80046358(player);
+                //func_tank_80046260(player);
             }
             break;
 

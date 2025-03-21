@@ -1577,10 +1577,19 @@ void Turret_SectorZ_LevelStart(Player* player) {
 
             if (gCsFrameCount == 800) {
                 Audio_KillSfxById(NA_SE_DEMO_SIREN);
-                player->state = PLAYERSTATE_ACTIVE;
+                //player->state = PLAYERSTATE_ACTIVE;
                 player->unk_01C = player->unk_018 = player->unk_014 = 0.f;
                 AUDIO_PLAY_BGM(gBgmSeqId);
                 gLevelStartStatusScreenTimer = 50;
+
+                Play_ClearObjectData();
+                for (i = 0; i < gCamCount; i++) {
+                    Audio_KillSfxBySource(gPlayer[i].sfxSource);
+                    Audio_StopPlayerNoise(i);
+                }
+                gPlayState = PLAY_INIT;
+                gCsFrameCount = gLevelClearScreenTimer = gLevelStartStatusScreenTimer = gRadioState = 0;
+                D_ctx_8017782C = false;
             }
             break;
     }

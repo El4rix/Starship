@@ -157,9 +157,12 @@ void Corneria_CoGranga_HandleDamage(CoGranga* this) {
     if (this->dmgType != DMG_NONE) {
         this->dmgType = DMG_NONE;
 
-        if ((this->dmgPart == GRANGA_DMG_BACKPACK) && (sCoGrangaLimbs > 4)) {
+        if ((this->dmgPart == GRANGA_DMG_BACKPACK) && (sCoGrangaLimbs > 3)) {
             this->swork[GRANGA_BACKPACK_DMG_IND] = DMG_FLICKER_15;
             this->swork[GRANGA_BACKPACK_HP] -= this->damage;
+            if (gTurretModeEnabled) {
+                this->swork[GRANGA_BACKPACK_HP] += (this->damage * 0.5f);
+            }
 
             Corneria_80187A38(this, sCoGrangaWork[GRANGA_WORK_62], sCoGrangaWork[GRANGA_WORK_63],
                               sCoGrangaWork[GRANGA_WORK_64], 0.2f, 20);
@@ -170,7 +173,13 @@ void Corneria_CoGranga_HandleDamage(CoGranga* this) {
                 Effect_SpawnTimedSfxAtPos(&this->obj.pos, NA_SE_OB_DAMAGE_M);
             }
 
-            Radio_PlayMessage(gMsg_ID_2270, RCID_BOSS_CORNERIA);
+            if (!gTurretModeEnabled) {
+                Radio_PlayMessage(gMsg_ID_2270, RCID_BOSS_CORNERIA);
+            } else {
+                if ((this->swork[GRANGA_BACKPACK_HP] < 130) && (this->swork[GRANGA_BACKPACK_HP] > 120)) {
+                    Radio_PlayMessage(gMsg_ID_2270, RCID_BOSS_CORNERIA);
+                }
+            }
 
             if (this->swork[GRANGA_BACKPACK_HP] <= 0) { // Boss defeat check
                 this->swork[GRANGA_BACKPACK_DMG_IND] = DMG_DESTROYED;
@@ -553,6 +562,9 @@ void Corneria_80188C7C(CoGranga* this) {
         this->swork[GRANGA_SWK_22] = 12;
         this->swork[GRANGA_SWK_20] = 17;
         gCameraShake = 20;
+        if (gTurretModeEnabled) {
+            Radio_PlayMessage(gMsg_ID_2230, RCID_PEPPY);
+        }
     } else {
         this->fwork[GRANGA_FWK_12] = 0.0f;
     }
@@ -728,11 +740,19 @@ void Corneria_CoGranga_Update(CoGranga* this) {
                 Radio_PlayMessage(gMsg_ID_2260, RCID_BOSS_CORNERIA);
                 break;
             case 900:
-                Radio_PlayMessage(gMsg_ID_2230, RCID_PEPPY);
+                if (gTurretModeEnabled) {
+                    Radio_PlayMessage(gMsg_ID_4095, RCID_PEPPY);
+                } else {
+                    Radio_PlayMessage(gMsg_ID_2230, RCID_PEPPY);
+                }
                 break;
             case 3840:
                 if (this->state < GRANGA_FALL_TO_LEFT) {
-                    Radio_PlayMessage(gMsg_ID_2230, RCID_PEPPY);
+                    if (gTurretModeEnabled) {
+                        Radio_PlayMessage(gMsg_ID_4095, RCID_PEPPY);
+                    } else {
+                        Radio_PlayMessage(gMsg_ID_2230, RCID_PEPPY);
+                    }
                 }
                 break;
         }
