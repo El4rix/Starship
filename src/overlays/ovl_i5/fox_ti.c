@@ -1841,7 +1841,7 @@ void Titania_TiDelphorHead_Update(TiDelphorHead* this) {
 
     sp9C = gPlayer[0].pos.x - this->obj.pos.x;
     spA0 = (gPlayer[0].pos.y - this->obj.pos.y) - 30.0f;
-    spA4 = gPlayer[0].trueZpos - this->obj.pos.z;
+    spA4 = gPlayer[0].trueZpos - this->obj.pos.z - 250; // 0
 
     switch (this->state) {
         case 0:
@@ -1861,6 +1861,10 @@ void Titania_TiDelphorHead_Update(TiDelphorHead* this) {
 
             Math_SmoothStepToAngle(&this->obj.rot.y, this->fwork[7], 0.1f, 1.3333334f, 0.01f);
             Math_SmoothStepToAngle(&this->obj.rot.x, this->fwork[6], 0.1f, 1.3333334f, 0.01f);
+
+            if (gTurretModeEnabled) {
+                Math_SmoothStepToF(&sp70, gPlayer[0].pos.y, 1, 10, 0.01f);
+            }
             break;
 
         case 2:
@@ -1993,7 +1997,7 @@ void Titania_TiDelphorHead_Update(TiDelphorHead* this) {
     for (i = 0; i <= 3000; i += 50) {
         sp5C = (sp68 * i) + sp40;
         sp54 = (sp60 * i) + sp48;
-        Ground_801B6E20(sp5C, sp54 + gPathProgress, &sp74, &sp70, &sp6C);
+        Ground_801B6E20(sp5C, sp54 + gPathProgress, &sp74, &sp70, &sp6C); // Particle effect where lasers hit ground
         if ((sp64 * i) + sp44 < sp70) {
             break;
         }
@@ -3405,7 +3409,7 @@ void Titania_80192118(TiGoras* this) {
                         break;
                 }
                 if (gTurretModeEnabled) {
-                    D_i5_801BBEF0[27] += (this->damage * 0.9f);
+                    D_i5_801BBEF0[27] += (this->damage * 0.85f);
                 }
                 this->dmgType = DMG_NONE;
             }
