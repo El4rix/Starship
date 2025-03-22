@@ -47,6 +47,9 @@ ROB's on the ship with you, so maybe a friend in the Cornerian Army can lend you
 ### New Cutscenes
 I had to accomodate the Great Fox's big ol' ass somehow.
 
+### Hotswap
+Instantly switch between the Great Fox and the Arwing with a button combination (Z + R + C-Down).
+
 # Controls
 | Button | Action | (360) |
 | - | - | - |
@@ -56,6 +59,7 @@ I had to accomodate the Great Fox's big ol' ass somehow.
 | C/D-Pad Up/Down | Move Up/Down | Move Inwards/Outwards |
 | R | Charge Bomb & Tractor Beam |
 | Z | Brake & Lock View |
+| Z + R + C-Down| Swap vehicle |
 
 # Development
 If you want to manually compile or edit Turret Mode, please consult the [building instructions](https://github.com/HarbourMasters/Starship/blob/main/docs/BUILDING.md).
