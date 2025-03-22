@@ -641,9 +641,19 @@ void Turret_UpdateRails(Player* player) {
     Math_SmoothStepToF(&player->unk_17C, -player->unk_00C, 0.5f, 3.0f, 0.00001f);
     Turret_Shoot(player);
 
-    if ((gBossActive) && (gCurrentLevel == LEVEL_TITANIA)) {
-        if (turretDestY > 200) {
-            Math_SmoothStepToF(&turretDestY, 200, 0.5f, 5.0f, 0.00001f);
+    if (gCurrentLevel == LEVEL_TITANIA) {
+        if (turretDestY > 450) {
+            Math_SmoothStepToF(&turretDestY, 450, 0.5f, 8.0f, 0.00001f);
+        }
+        if (gBossActive) {
+            if (turretDestY > 200) {
+                Math_SmoothStepToF(&turretDestY, 200, 0.5f, 5.0f, 0.00001f);
+            }
+        }
+    }
+    if (gCurrentLevel == LEVEL_MACBETH) {
+        if (turretDestY > 650) {
+            Math_SmoothStepToF(&turretDestY, 650, 0.5f, 8.0f, 0.00001f);
         }
     }
 }

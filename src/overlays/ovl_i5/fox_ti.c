@@ -1841,7 +1841,7 @@ void Titania_TiDelphorHead_Update(TiDelphorHead* this) {
 
     sp9C = gPlayer[0].pos.x - this->obj.pos.x;
     spA0 = (gPlayer[0].pos.y - this->obj.pos.y) - 30.0f;
-    spA4 = gPlayer[0].trueZpos - this->obj.pos.z - 250; // 0
+    spA4 = gPlayer[0].trueZpos - this->obj.pos.z;
 
     switch (this->state) {
         case 0:
@@ -1861,10 +1861,6 @@ void Titania_TiDelphorHead_Update(TiDelphorHead* this) {
 
             Math_SmoothStepToAngle(&this->obj.rot.y, this->fwork[7], 0.1f, 1.3333334f, 0.01f);
             Math_SmoothStepToAngle(&this->obj.rot.x, this->fwork[6], 0.1f, 1.3333334f, 0.01f);
-
-            if (gTurretModeEnabled) {
-                Math_SmoothStepToF(&sp70, gPlayer[0].pos.y, 1, 10, 0.01f);
-            }
             break;
 
         case 2:
@@ -2014,9 +2010,16 @@ void Titania_TiDelphorHead_Update(TiDelphorHead* this) {
         gTexturedLines[index].prim.g = 255;
         gTexturedLines[index].prim.b = 0;
         gTexturedLines[index].prim.a = 255;
-        gTexturedLines[index].posBB.x = sp5C;
-        gTexturedLines[index].posBB.y = sp70;
-        gTexturedLines[index].posBB.z = sp54;
+        if ((gTurretModeEnabled) && (this->state == 1)) {
+            Math_SmoothStepToF(&gTexturedLines[index].posBB.x, gPlayer[0].pos.x, 1, 100, 1);
+            Math_SmoothStepToF(&gTexturedLines[index].posBB.y, gPlayer[0].pos.y, 1, 100, 1);
+            //Math_SmoothStepToF(&gTexturedLines[index].posBB.z, gPlayer[0].trueZpos + 100, 1, 100, 1);
+            gTexturedLines[index].posBB.z = gPlayer[0].trueZpos + 100;
+        } else {
+            gTexturedLines[index].posBB.x = sp5C;
+            gTexturedLines[index].posBB.y = sp70;
+            gTexturedLines[index].posBB.z = sp54;
+        }
         gTexturedLines[index].xyScale = 3.0f;
 
         if (this->timer_0C0 == 0) {

@@ -89,7 +89,9 @@ u8 Load_SceneFiles(Scene* scene) {
 u8 Load_SceneSetup(u8 sceneId, u8 sceneSetup) {
     u8 changeScene;
 
-    gTurretModeEnabled = true;
+    if (gGameFrameCount == 0) {
+        gTurretModeEnabled = true;
+    }
 
     switch (sceneId) {
         case SCENE_TITLE:

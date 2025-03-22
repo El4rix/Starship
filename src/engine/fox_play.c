@@ -4691,9 +4691,9 @@ void Player_Setup(Player* playerx) {
             }
             if (gTurretModeEnabled) {
                 if (gCurrentLevel == LEVEL_TITANIA) {
-                    player->pathHeight = 450.0f;
-                } else {
                     player->pathHeight = 650.0f;
+                } else {
+                    player->pathHeight = 850.0f;
                 }
                 player->pathFloor = 100.0f;
             }
@@ -6007,6 +6007,44 @@ void Player_Update(Player* player) {
     sp1C4 = player->whooshTimer;
     if (sp1C4 != 0) {
         player->whooshTimer--;
+    }
+
+    if ((gControllerHold[player->num].button & Z_TRIG) && (gControllerHold[player->num].button & R_TRIG) && (gControllerPress[player->num].button & D_CBUTTONS)) {
+        if (gTurretModeEnabled) {
+            gTurretModeEnabled = false;
+            gBrakeButton[0] = D_CBUTTONS;
+            player->draw = true;
+            Audio_KillSfxBySourceAndId(gDefaultSfxSource, NA_SE_EN_A6BOSS_CHARGE);
+            AUDIO_PLAY_SFX(NA_SE_ARWING_BOOST, gDefaultSfxSource, 4);
+            Radio_PlayMessage(gMsg_ID_8215, RCID_FOX);
+            player->camDist = -100;
+            if (gLevelMode == LEVELMODE_ALL_RANGE) {
+                player->yRot_114 = player->unk_180 + player->unk_000 + 180;
+            }
+        } else {
+            gTurretModeEnabled = true;
+            gBrakeButton[0] = Z_TRIG;
+            Audio_KillSfxById(NA_SE_TANK_GO_UP);
+            Audio_KillSfxById(NA_SE_TANK_BURNER_HALF);
+            AUDIO_PLAY_SFX(NA_SE_WING_OPEN_END, gDefaultSfxSource, 4);
+            Radio_PlayMessage(gMsg_ID_21050, RCID_ROB64);
+            player->camPitch = player->camRoll = player->camYaw = 0;
+            player->rot.x = player->rot.z = 0;
+            if (gLevelMode == LEVELMODE_ALL_RANGE) {
+                player->draw = false;
+                player->unk_008 = player->unk_000 - player->yRot_114;
+            }
+            player->unk_180 = -player->unk_008 + 180;
+            if (player->form == FORM_LANDMASTER) {
+                player->pos.y += 300;
+                if (gCurrentLevel == LEVEL_TITANIA) {
+                    player->pathHeight = 650;
+                }
+                if (gCurrentLevel == LEVEL_MACBETH) {
+                    player->pathHeight = 850;
+                }
+            }
+        }
     }
 
     switch (player->state) {
