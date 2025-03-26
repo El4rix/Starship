@@ -4718,6 +4718,8 @@ void Player_Setup(Player* playerx) {
             break;
     }
 
+    player->form = FORM_ON_FOOT;
+
     if (gCurrentLevel != LEVEL_CORNERIA) {
         gSavedGroundSurface = SURFACE_GRASS;
     }
@@ -6009,7 +6011,8 @@ void Player_Update(Player* player) {
         player->whooshTimer--;
     }
 
-    if ((gControllerHold[player->num].button & Z_TRIG) && (gControllerHold[player->num].button & R_TRIG) && (gControllerPress[player->num].button & D_CBUTTONS)) {
+    // Turn Turret Mode on or off
+    /* if ((gControllerHold[player->num].button & Z_TRIG) && (gControllerHold[player->num].button & R_TRIG) && (gControllerPress[player->num].button & D_CBUTTONS)) {
         if (gTurretModeEnabled) {
             gTurretModeEnabled = false;
             gBrakeButton[0] = D_CBUTTONS;
@@ -6045,7 +6048,7 @@ void Player_Update(Player* player) {
                 }
             }
         }
-    }
+    } */
 
     switch (player->state) {
         case PLAYERSTATE_STANDBY:
