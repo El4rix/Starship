@@ -16,6 +16,7 @@ s32 gPlayState;
 s32 D_ctx_80177868; // some sort of state. pause-related? Also used by game over
 LevelMode gLevelMode;
 bool gTurretModeEnabled;
+bool gRunning;
 DrawMode gDrawMode;
 s32 gPlayerNum;
 s32 gCamCount;

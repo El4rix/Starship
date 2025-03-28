@@ -3,7 +3,7 @@
 
 #define SAVE_SLOT_SOLAR 13
 #define SAVE_SLOT_VENOM_1 14
-#define SAVE_SLOT_VENOM_2 15
+#define SAVE_SLOT_VENOM_2 16
 
 typedef enum LevelType {
     /* 0 */ LEVELTYPE_PLANET,
@@ -124,7 +124,8 @@ typedef enum PlanetId {
     /* 12 */ PLANET_FORTUNA,
     /* 13 */ PLANET_VENOM,
     /* 14 */ PLANET_SOLAR,
-    /* 15 */ PLANET_MAX,
+    /* 15 */ PLANET_COLONY,
+    /* 16 */ PLANET_MAX,
 } PlanetId;
 
 typedef enum VsStage {

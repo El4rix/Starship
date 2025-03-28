@@ -17,7 +17,7 @@ void Map_PlayLevel(void);
 static PlanetId sPlanetArray[][3] = {
     { PLANET_CORNERIA, PLANET_CORNERIA, PLANET_CORNERIA }, { PLANET_METEO, PLANET_METEO, PLANET_SECTOR_Y },
     { PLANET_FORTUNA, PLANET_KATINA, PLANET_AQUAS },       { PLANET_SECTOR_X, PLANET_SOLAR, PLANET_ZONESS },
-    { PLANET_TITANIA, PLANET_MACBETH, PLANET_SECTOR_Z },   { PLANET_BOLSE, PLANET_BOLSE, PLANET_AREA_6 },
+    { PLANET_TITANIA, PLANET_MACBETH, PLANET_SECTOR_Z },   { PLANET_BOLSE, PLANET_AREA_6, PLANET_COLONY },
     { PLANET_VENOM, PLANET_VENOM, SAVE_SLOT_VENOM_2 },
 };
 
@@ -26,7 +26,8 @@ void Map_LevelSelect(void) {
     static s32 difficulty = 0;
     static char* sLevelSelectPlanetNames[] = {
         "METEO",  "AREA 6",   "BOLSE",   "SECTOR Z", "SECTOR X", "SECTOR Y", "KATINA", "MACBETH",
-        "ZONESS", "CORNERIA", "TITANIA", "AQUAS",    "FORTUNA",  "VENOM 1",  "SOLAR",  "VENOM 2",
+        "ZONESS", "CORNERIA", "TITANIA", "AQUAS",    "FORTUNA",  "VENOM 1",  "SOLAR",  "COLONY",
+        "VENOM 2",
     };
     static s32 startOption = 0;
     static s32 timer = 30;
@@ -56,12 +57,12 @@ void Map_LevelSelect(void) {
         if (difficulty > 2) {
             difficulty = 0;
         }
-        if ((difficulty == 1) && ((mission == 1) || (mission == 5) || (mission == 6))) {
+        if ((difficulty == 1) && ((mission == 1) || (mission == 6))) {
             difficulty = 2;
         }
     } else if ((contPress->button & D_JPAD) && (mission != 0)) {
         difficulty--;
-        if ((difficulty != 2) && ((mission == 1) || (mission == 5) || (mission == 6))) {
+        if ((difficulty != 2) && ((mission == 1) || (mission == 6))) {
             difficulty--;
         }
         if (difficulty < 0) {
