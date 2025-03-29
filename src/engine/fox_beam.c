@@ -1303,6 +1303,9 @@ void PlayerShot_DrawShot(PlayerShot* shot) {
             (shot->obj.id == PLAYERSHOT_7)) {
             shot->obj.rot.y = RAD_TO_DEG(-gPlayer[gPlayerNum].camYaw);
             shot->obj.rot.x = RAD_TO_DEG(gPlayer[gPlayerNum].camPitch);
+            if ((shot->obj.id == PLAYERSHOT_ON_FOOT) || (shot->obj.id == PLAYERSHOT_7)) {
+                shot->obj.rot.z += 30;
+            }
         }
         if (shot->obj.id != PLAYERSHOT_2) {
             Matrix_RotateY(gGfxMatrix, shot->obj.rot.y * M_DTOR, MTXF_APPLY);

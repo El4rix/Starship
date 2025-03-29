@@ -22,6 +22,7 @@
 #include "assets/ast_area_6.h"
 #include "assets/ast_zoness.h"
 #include "port/hooks/Events.h"
+#include "assets/ast_landmaster.h"
 
 extern float gCurrentScreenWidth;
 extern float gCurrentScreenHeight;
@@ -3305,9 +3306,9 @@ void Player_SetupOnFootShot(Player* player, PlayerShot* shot, PlayerShotId shotI
 
     Matrix_MultVec3f(gCalcMatrix, &sp5C, &sp44);
 
-    shot->vel.x = sp50.x;
-    shot->vel.y = sp50.y;
-    shot->vel.z = sp50.z;
+    shot->vel.x = sp50.x * 2;
+    shot->vel.y = sp50.y * 2;
+    shot->vel.z = sp50.z * 2;
 
     shot->obj.pos.x = player->pos.x + sp44.x;
     shot->obj.pos.y = player->pos.y + sp44.y;
@@ -3317,7 +3318,7 @@ void Player_SetupOnFootShot(Player* player, PlayerShot* shot, PlayerShotId shotI
 
     shot->obj.status = SHOT_ACTIVE;
     shot->obj.id = shotId;
-    shot->timer = 30;
+    shot->timer = 43; // 30
     shot->unk_58 = 1;
 
     shot->sourceId = player->num;
@@ -3555,7 +3556,7 @@ void Player_Shoot(Player* player) {
                     Player_OnFootGun(player);
                 }
                 player->shotTimer++;
-                if (player->shotTimer > 4) {
+                if (player->shotTimer > 1) {
                     player->shotTimer = 0;
                 }
             }
@@ -4623,7 +4624,6 @@ void Player_MoveOnFootRails(Player* player) {
     s32 sp44;
     s32 pad;
 
-    //func_tank_80044868(player);
     if (gCurrentLevel == LEVEL_TITANIA) {
         func_tank_80046358(player);
         func_tank_80046260(player);
@@ -4636,14 +4636,13 @@ void Player_MoveOnFootRails(Player* player) {
         player->groundRotY = 0.0f;
         func_tank_800481F4(player);
     }
-    Player_LowHealthAlarm(player);
-    if ((player->shields <= 0) && (player->radioDamageTimer != 0)) {
-        Player_Down(player);
+
+    if (gLevelType == LEVELTYPE_PLANET) {
+        gGroundHeight = -0.0f;
+    } else {
+        gGroundHeight = -400.0f;
     }
-
-    // ===================== ^ Landmaster Code
-
-    gGroundHeight = -0.0f;
+    
 
     player->camRoll = 0.0f;
     var_fa0 = 0.0f;
@@ -4669,8 +4668,8 @@ void Player_MoveOnFootRails(Player* player) {
     gPlayerTurnRate = 3.0f;
     gPlayerTurnStickMod = 0.666f;
 
-    sp74 = gInputPress->stick_x;
-    sp70 = gInputPress->stick_y;
+    sp74 = gInputPress->stick_x / 1.5;
+    sp70 = gInputPress->stick_y / 4;
     Math_SmoothStepToF(&player->rot.y, -sp74 * gPlayerTurnStickMod * 0.6f, 0.5f, gPlayerTurnRate, 0.001f);
     Math_SmoothStepToF(&player->rot.z, -sp74 * gPlayerTurnStickMod * 0.2f * player->baseSpeed / 15.0f, 0.2f, 5.0f,
                        0.001f);
@@ -4773,10 +4772,17 @@ void Player_MoveOnFootRails(Player* player) {
         player->knockback.x = 0.0f;
     }
 
-    if ((player->pos.y < 40.0f) || (player->pos.y > 670.0f)) {
+    // Limit Height
+    if (player->pos.y > (player->pathHeight + player->yPath)) {
+        player->pos.y = (player->pathHeight + player->yPath);
+        player->vel.y = 0.1f;
+        player->knockback.y = 0.0f;
+    }
+
+    /* if ((player->pos.y < 40.0f) || (player->pos.y > 670.0f)) {
         player->rot_104.z = 0.0f;
         player->rot_104.x = 0.0f;
-    }
+    } */
 
     Math_SmoothStepToAngle(&player->xRot_0FC, player->rot_104.x, 0.15f, 15.0f, 0.005f);
     Math_SmoothStepToAngle(&player->zRot_0FC, player->rot_104.z, 0.15f, 15.0f, 0.005f);
@@ -4881,63 +4887,17 @@ void Player_MoveOnFootRails(Player* player) {
     // Jetpack ===========
     static u8 D_800C9F3C = 0;
     f32 temp;
+    f32 sp2C;
 
-    /* if (!(gInputHold->button & Z_TRIG)) {
-        Audio_KillSfxBySourceAndId(player->sfxSource, NA_SE_TANK_GO_UP);
-        Audio_KillSfxBySourceAndId(player->sfxSource, NA_SE_TANK_SLIDE);
-    }
-    if ((gInputHold->button & Z_TRIG) && !player->boostCooldown) {
-        AUDIO_PLAY_SFX(NA_SE_TANK_BURNER_HALF, player->sfxSource, 0); // should only play at start
+    Math_SmoothStepToF(&player->unk_170, 0.0f, 1.0f, 0.2f, 0.0f);
+    Math_SmoothStepToF(&player->unk_16C, 0.0f, 1.0f, 0.2f, 0.0f);
+
+    if ((gInputHold->button & Z_TRIG) && (player->grounded == false) && (player->radioDamageTimer == 0) /* && !player->boostCooldown */) {
+
         player->unk_188 = 0.0f;
-        player->zRotBank += 4.0f;
-        if (player->zRotBank > 50.0f) {
-            player->zRotBank = 50.0f;
-        }
         Math_SmoothStepToF(&player->unk_170, 1.0f, 1.0f, 0.4f, 0.0f);
-    } else {
-        if (player->zRotBank > 0) {
-            player->unk_188 += 1.5f;
-            player->zRotBank -= player->unk_188;
-            if (player->zRotBank <= 0.0f) {
-                player->zRotBank = 0.0f;
-                if (player->unk_188 > 3.0f) {
-                    player->unk_188 *= -0.4f;
-                    player->zRotBank -= player->unk_188;
-                }
-            }
-        }
-    }
-    if (!(gInputHold->button & R_TRIG)) {
-        Audio_KillSfxBySourceAndId(player->sfxSource, NA_SE_TANK_GO_UP);
-        Audio_KillSfxBySourceAndId(player->sfxSource, NA_SE_TANK_SLIDE);
-    }
-    if ((gInputHold->button & R_TRIG) && !player->boostCooldown) {
-        if (player->unk_2C0 == 0.0f) {
-            AUDIO_PLAY_SFX(NA_SE_TANK_BURNER_HALF, player->sfxSource, 0); // should only play at start
-        }
-        player->unk_188 = 0.0f;
-        player->zRotBank -= 4.0f;
-        if (player->zRotBank < -50.0f) {
-            player->zRotBank = -50.0f;
-        }
         Math_SmoothStepToF(&player->unk_16C, 1.0f, 1.0f, 0.4f, 0.0f);
-        player->unk_2C0 += 1.0f;
-    } else {
-        if (player->zRotBank < 0.0f) {
-            player->unk_188 += 1.5f;
-            player->zRotBank += player->unk_188;
-            if (player->zRotBank >= 0.0f) {
-                player->zRotBank = 0.0f;
-                if (player->unk_188 > 3.0f) {
-                    player->unk_188 *= -0.4f;
-                    player->zRotBank += player->unk_188;
-                }
-            }
-        }
-        player->unk_2C0 = 0.0f;
-    }
-    Math_SmoothStepToF(&player->boostSpeed, 0.0f, 0.1f, 1.0f, 0); */
-    if ((gInputHold->button & Z_TRIG) && (player->vel.y > 0) && (player->radioDamageTimer == 0) /* && !player->boostCooldown */) {
+
         if (D_800C9F3C == 0) {
             D_800C9F3C = 1;
             AUDIO_PLAY_SFX(NA_SE_TANK_GO_UP, player->sfxSource, 0);
@@ -4949,7 +4909,7 @@ void Player_MoveOnFootRails(Player* player) {
         Math_SmoothStepToF(&player->boostSpeed, 15.0f, 0.5f, 5.0f, 0.0f);
         Math_SmoothStepToF(&player->rot.z, 0.0f, 0.1f, 5.0f, 0.00001f);
         player->gravity = -1;
-        player->pathHeight += player->vel.y;
+        //player->pathHeight += player->vel.y;
         if ((gGameFrameCount % 2) == 0) {
             Effect_Effect359_Spawn(RAND_FLOAT_CENTERED(20.0f) + player->pos.x, player->groundPos.y + 10.0f,
                                    player->trueZpos - 10.0f, RAND_FLOAT(2.0f) + 3.5f, 255, 16, 1);
@@ -4967,8 +4927,6 @@ void Player_MoveOnFootRails(Player* player) {
                                     255, 15, 0);
         }
     }
-
-
     // ^ Jetpack ===============
 
     player->grounded = false;
@@ -4977,9 +4935,9 @@ void Player_MoveOnFootRails(Player* player) {
 
     if (player->pos.y <= gGroundHeight) {
         player->grounded = true;
-        player->pos.y = 0.0f;
+        player->pos.y = gGroundHeight;
         player->vel.y = 0.0f;
-        player->rot.x += (player->pos.y - player->rot.x) * 0.05f;
+        //player->rot.x += (player->pos.y - player->rot.x) * 0.05f;
     }
 
     if (player->vel.y < -50.0f) {
@@ -7173,16 +7131,17 @@ void Camera_UpdateOnFoot(Player* player, s32 arg1) {
 
     player->cam.at.x = player->pos.x + player->damageShake * 0.1f;
 
-    if (gInputPress->stick_y < 0) {
-        Math_SmoothStepToF(&player->cam.at.y, -(gInputPress->stick_y * 5), 0.1f, 100.0f, 0.001f);
-    } else {
-        Math_SmoothStepToF(&player->cam.at.y, player->pos.y, 0.1f, 100.0f, 0.001f);
-    }
+    Math_SmoothStepToF(&player->cam.at.y, -(gInputPress->stick_y * 3) + player->pos.y, 0.1f, 100.0f, 0.001f);
     player->cam.at.y += player->damageShake * 0.1f;
 
     player->cam.eye.x = player->pos.x;
-    player->cam.eye.y = player->pos.y + 50 - player->cam.at.y / 10;
-    player->cam.eye.z = 100 + (player->baseSpeed * 2) - player->cam.at.y / 5;
+    player->cam.eye.y = player->pos.y + 50;
+    player->cam.eye.z = 100 + (player->baseSpeed * 2); // zoom in when running
+
+    if ((gInputPress->stick_y != 0) && (player->grounded == true)) { // zoom in when looking up
+        player->cam.eye.z -= (player->cam.at.y - gGroundHeight) / 3;
+        player->cam.eye.y -= (player->cam.at.y - gGroundHeight) / 6;
+    }
 
 
 

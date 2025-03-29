@@ -431,14 +431,23 @@ void Display_LandmasterThrusters(Player* player) {
         }
 
         Matrix_Push(&gGfxMatrix);
-        Matrix_Translate(gGfxMatrix, 20.0f, 30.0f, -10.0f, MTXF_APPLY);
+        if (player->form == FORM_ON_FOOT) {
+            Matrix_Translate(gGfxMatrix, 10.0f, 30.0f, -50.0f, MTXF_APPLY);
+        } else {
+            Matrix_Translate(gGfxMatrix, 20.0f, 30.0f, -10.0f, MTXF_APPLY);
+        }
 
         if (!gVersusMode) {
             Matrix_RotateY(gGfxMatrix, -gPlayer[gPlayerNum].camYaw, MTXF_APPLY);
         }
 
         Matrix_Scale(gGfxMatrix, sp2C, sp2C, sp2C, MTXF_APPLY);
-        Matrix_Translate(gGfxMatrix, 0.0f, -30.0f, 0.0f, MTXF_APPLY);
+        
+        if (player->form == FORM_ON_FOOT) {
+            Matrix_Translate(gGfxMatrix, player->pos.x, player->pos.y - 30.0f, 0.0f, MTXF_APPLY);
+        } else {
+            Matrix_Translate(gGfxMatrix, 0.0f, -30.0f, 0.0f, MTXF_APPLY);
+        }
         Matrix_SetGfxMtx(&gMasterDisp);
 
         if (!gVersusMode) {
@@ -475,6 +484,56 @@ void Display_LandmasterThrusters(Player* player) {
         } else {
             gSPDisplayList(gMasterDisp++, D_versus_301B6E0);
         }
+        Matrix_Pop(&gGfxMatrix);
+    }
+    Matrix_Pop(&gGfxMatrix);
+}
+
+void Display_JetpackThrusters(Player* player) {
+    f32 sp2C;
+
+    Matrix_Push(&gGfxMatrix);
+    Matrix_Copy(gGfxMatrix, &D_display_80161418[player->num]);
+
+    gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 192);
+    gDPSetEnvColor(gMasterDisp++, 255, 0, 0, 192);
+    RCP_SetupDL(&gMasterDisp, SETUPDL_67);
+
+    sp2C = player->unk_16C;
+    if (sp2C > 0.2f) {
+        sp2C *= 1.1f;
+
+        if ((gGameFrameCount % 2) != 0) {
+            sp2C *= 1.1f;
+        }
+
+        Matrix_Push(&gGfxMatrix);
+
+        Matrix_Translate(gGfxMatrix, player->pos.x + 10, player->pos.y - 3.0f, 10.0f, MTXF_APPLY);
+        Matrix_RotateY(gGfxMatrix, -gPlayer[gPlayerNum].camYaw, MTXF_APPLY);
+        Matrix_Scale(gGfxMatrix, sp2C, sp2C, sp2C, MTXF_APPLY);
+
+        Matrix_SetGfxMtx(&gMasterDisp);
+        gSPDisplayList(gMasterDisp++, D_landmaster_30066B0);
+        Matrix_Pop(&gGfxMatrix);
+    }
+
+    sp2C = player->unk_170;
+    if (sp2C > 0.2f) {
+        sp2C *= 1.1f;
+
+        if ((gGameFrameCount % 2) != 0) {
+            sp2C *= 1.1f;
+        }
+
+        Matrix_Push(&gGfxMatrix);
+
+        Matrix_Translate(gGfxMatrix, player->pos.x - 10, player->pos.y - 3.0f, 10.0f, MTXF_APPLY);
+        Matrix_RotateY(gGfxMatrix, -gPlayer[gPlayerNum].camYaw, MTXF_APPLY);
+        Matrix_Scale(gGfxMatrix, sp2C, sp2C, sp2C, MTXF_APPLY);
+
+        Matrix_SetGfxMtx(&gMasterDisp);
+        gSPDisplayList(gMasterDisp++, D_landmaster_30066B0);
         Matrix_Pop(&gGfxMatrix);
     }
     Matrix_Pop(&gGfxMatrix);
@@ -1309,6 +1368,11 @@ void Display_PlayerFeatures(Player* player) {
             case FORM_BLUE_MARINE:
                 Display_BarrelRollShield(player);
                 break;
+
+            case FORM_ON_FOOT:
+                Display_BarrelRollShield(player);
+                Display_JetpackThrusters(player);
+                break;
         }
     }
 }
@@ -1951,7 +2015,7 @@ void Display_Update(void) {
     Matrix_LookAt(gGfxMatrix, gPlayCamEye.x, gPlayCamEye.y, gPlayCamEye.z, gPlayCamAt.x, gPlayCamAt.y, gPlayCamAt.z,
                   playerCamUp.x, playerCamUp.y, playerCamUp.z, MTXF_APPLY);
 
-    if ((gLevelType == LEVELTYPE_PLANET) || (gCurrentLevel == LEVEL_BOLSE)) {
+    if ((gLevelType == LEVELTYPE_PLANET) || (gCurrentLevel == LEVEL_BOLSE) || (gPlayer[0].form == FORM_ON_FOOT)) {
         if ((gCurrentLevel == LEVEL_TITANIA) &&
             ((gPlayer[0].state != PLAYERSTATE_LEVEL_INTRO) || (gPlayer[0].unk_19C != 0))) {
             Matrix_Push(&gGfxMatrix);
