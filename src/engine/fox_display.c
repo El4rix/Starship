@@ -2,9 +2,11 @@
 #include "mods/hit64.c"
 #include "assets/ast_arwing.h"
 #include "assets/ast_allies.h"
+#include "assets/ast_great_fox.h"
 #include "assets/ast_landmaster.h"
 #include "assets/ast_versus.h"
 #include "assets/ast_sector_z.h"
+#include "assets/ast_meteo.h"
 #include "port/interpolation/FrameInterpolation.h"
 #include "port/hooks/list/EngineEvent.h"
 #include "port/mods/PortEnhancements.h"
@@ -293,6 +295,8 @@ void Display_OnFootMuzzleFlash(Player* player) {
 }
 
 void Display_OnFootCharacter(Player* player) {
+    Vec3f sp58;
+
     Matrix_Push(&gGfxMatrix);
     Matrix_Scale(gCalcMatrix, 0.5f, 0.5f, 0.5f, MTXF_APPLY);
     Matrix_Translate(gCalcMatrix, 0.0f, 35.0f, 0.0f, MTXF_APPLY);
@@ -314,6 +318,18 @@ void Display_OnFootCharacter(Player* player) {
                                    Display_OnFootFalco_PostLimbDraw, player, gCalcMatrix);
             break;
     }
+
+    // New On-Foot
+    if (gPlayerNum == player->num) {
+        sp58.x = 0.0f;
+        sp58.y = 0.0f + player->unk_154 * -40;
+        sp58.z = 2000.0f;
+        Matrix_MultVec3f(gGfxMatrix, &sp58, &D_display_801613E0[0]);
+        sp58.y *= 2;
+        sp58.z = 4000.0f;
+        Matrix_MultVec3f(gGfxMatrix, &sp58, &D_display_801613E0[1]);
+    }
+
     Matrix_Pop(&gGfxMatrix);
     gSPSetGeometryMode(gMasterDisp++, G_CULL_BACK);
 }
@@ -847,7 +863,7 @@ void Display_Reticle(Player* player) {
     Vec3f* translate;
     s32 i;
 
-    if ((gPlayerNum == player->num) && ((player->form == FORM_ARWING) || (player->form == FORM_LANDMASTER)) &&
+    if ((gPlayerNum == player->num) && ((player->form == FORM_ARWING) || (player->form == FORM_LANDMASTER) || (player->form == FORM_ON_FOOT)) &&
         player->draw &&
         (((gGameState == GSTATE_PLAY) && (player->state == PLAYERSTATE_ACTIVE)) || (gGameState == GSTATE_MENU))) {
         for (i = 0; i < 2; i++) {
@@ -1503,6 +1519,36 @@ void Display_Player_Update(Player* player, s32 reflectY) {
     Vec3f sp50 = { 0.0f, 0.0f, 0.0f };
 
     if (player->draw) {
+
+        if ((player->form == FORM_ON_FOOT) && (gLevelType == LEVELTYPE_SPACE) && (gCurrentLevel != LEVEL_METEO)) {
+            Matrix_Push(&gGfxMatrix);
+            RCP_SetupDL_30(gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
+            //Matrix_Translate(gGfxMatrix, player->pos.x, player->pos.y - 550, 1300, MTXF_APPLY); // On bridge
+            //Matrix_Translate(gGfxMatrix, player->pos.x + 1350, player->pos.y - 472, -390, MTXF_APPLY); // On wing
+            Matrix_Translate(gGfxMatrix, player->pos.x + 1350, -477 - player->pos.y, -390, MTXF_APPLY); // On wing jumping
+            Matrix_Scale(gGfxMatrix, 1.0f, 1.0f, 1.0f, MTXF_APPLY);
+            Matrix_RotateY(gGfxMatrix, 180 * M_DTOR, MTXF_APPLY);
+            Matrix_SetGfxMtx(&gMasterDisp);
+            if (gGreatFoxIntact) {
+                gSPDisplayList(gMasterDisp++, aGreatFoxIntactDL);
+            } else {
+                gSPDisplayList(gMasterDisp++, aGreatFoxDamagedDL);
+            }
+            Matrix_Pop(&gGfxMatrix);
+        }
+
+        if ((player->form == FORM_ON_FOOT) && (gCurrentLevel == LEVEL_SOLAR)) {
+            Matrix_Push(&gGfxMatrix);
+            //RCP_SetupDL_30(gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
+            Matrix_Translate(gGfxMatrix, 0 /* player->pos.x */, 200 + fabsf(player->pos.x) / 10, 600, MTXF_APPLY); // On wing jumping
+            Matrix_Scale(gGfxMatrix, 1.0f, 0.2f, 1.0f, MTXF_APPLY);
+            Matrix_RotateZ(gGfxMatrix, -player->pos.x / 10 * M_DTOR, MTXF_APPLY);
+            //Matrix_RotateY(gGfxMatrix, player->pos.x / 10 * M_DTOR, MTXF_APPLY);
+            Matrix_SetGfxMtx(&gMasterDisp);
+            gSPDisplayList(gMasterDisp++, aMeMolarRockDL);
+            Matrix_Pop(&gGfxMatrix);
+        }
+
         Matrix_Push(&gGfxMatrix);
         if ((player->form == FORM_LANDMASTER) && (!gTurretModeEnabled)) {
             if (player->grounded) {
@@ -2152,6 +2198,7 @@ void Display_Update(void) {
                 Display_LandmasterMuzzleFlash(player);
             } else if (player->form == FORM_ON_FOOT) {
                 Display_OnFootMuzzleFlash(player);
+                Display_Reticle(player);
             }
         }
     }

@@ -580,7 +580,7 @@ void Play_InitEnvironment(void) {
     }
 
     if (!D_ctx_8017782C) {
-        if (gCurrentLevel == LEVEL_SOLAR) {
+        if ((gCurrentLevel == LEVEL_SOLAR) && (gPlayer[0].form != FORM_ON_FOOT)) {
             Audio_SetHeatAlarmParams(255, 1);
             AUDIO_PLAY_SFX(NA_SE_OVERHEAT_ALARM, gDefaultSfxSource, 4);
             Audio_KillSfxBySourceAndId(gPlayer[0].sfxSource, NA_SE_OB_MAGMA_BUBBLE);
@@ -4637,12 +4637,22 @@ void Player_MoveOnFootRails(Player* player) {
         func_tank_800481F4(player);
     }
 
-    if (gLevelType == LEVELTYPE_PLANET) {
+    if ((gCurrentLevel == LEVEL_SOLAR)) {
+        gGroundHeight = 200.0f;
+        player->pathHeight = 1000;
+    } else if (gLevelType == LEVELTYPE_PLANET) {
         gGroundHeight = -0.0f;
-    } else {
+    } else if (gCurrentLevel == LEVEL_METEO) {
         gGroundHeight = -400.0f;
+    } else {
+        if (player->pos.y <= player->yPath) {
+            player->pos.y = player->yPath;
+            player->grounded = true;
+            player->vel.y = 0.0f;
+        }
     }
-    
+
+    player->rot.x = 0;
 
     player->camRoll = 0.0f;
     var_fa0 = 0.0f;
@@ -4650,6 +4660,9 @@ void Player_MoveOnFootRails(Player* player) {
         var_fa0 = 20.0f;
     }
     if (player->pos.y > 300.0f) {
+        var_fa0 = 40.0f;
+    }
+    if ((gLevelType == LEVELTYPE_SPACE) && (gCurrentLevel != LEVEL_METEO)) {
         var_fa0 = 40.0f;
     }
 
@@ -4660,6 +4673,9 @@ void Player_MoveOnFootRails(Player* player) {
     if (var_fa0 < sp74) {
         sp74 = var_fa0;
     }
+    /* if (var_fa0 > sp74) { // ?
+        sp74 = var_fa0;
+    } */
 
     Math_SmoothStepToF(&player->unk_154, sp74, 0.1f, 3.0f, 0.00001f);
     Math_SmoothStepToF(&player->unk_180, 0.0f, 0.15f, 5.0f, 0.00001f);
@@ -4729,7 +4745,7 @@ void Player_MoveOnFootRails(Player* player) {
     player->pos.x += player->vel.x;
 
     // Roll Left/Right
-    if ((gInputHold->button & Z_TRIG) && (gInputPress->stick_x > 50) && (player->grounded)) {
+    if ((gInputHold->button & Z_TRIG) && (gInputPress->stick_x > 50) && (player->grounded) && ((gLevelType == LEVELTYPE_PLANET) || (gCurrentLevel == LEVEL_METEO))) {
         AUDIO_PLAY_SFX(NA_SE_PASS, gDefaultSfxSource, 0);
         player->knockback.x = 25.0f;
         player->rot.z = 370;
@@ -4741,7 +4757,7 @@ void Player_MoveOnFootRails(Player* player) {
         player->rollRate = player->baseRollRate = -30;
         player->sfx.roll = 1;
     }
-    if ((gInputHold->button & Z_TRIG) && (gInputPress->stick_x < -50) && (player->grounded)) {
+    if ((gInputHold->button & Z_TRIG) && (gInputPress->stick_x < -50) && (player->grounded) && ((gLevelType == LEVELTYPE_PLANET) || (gCurrentLevel == LEVEL_METEO))) {
         AUDIO_PLAY_SFX(NA_SE_PASS, gDefaultSfxSource, 0);
         player->knockback.x = -25.0f;
         player->rot.z = -370;
@@ -4788,7 +4804,7 @@ void Player_MoveOnFootRails(Player* player) {
     Math_SmoothStepToAngle(&player->zRot_0FC, player->rot_104.z, 0.15f, 15.0f, 0.005f);
 
     if (player->grounded) {
-        if (player->baseSpeed > 1.0f) {
+        if ((player->baseSpeed > 1.0f) && ((gLevelType == LEVELTYPE_PLANET) || (gCurrentLevel == LEVEL_METEO))) {
             player->unk_00C += player->unk_008;
 
             if ((s32) player->unk_00C >= Animation_GetFrameCount(&D_versus_301CFEC)) {
@@ -4905,7 +4921,7 @@ void Player_MoveOnFootRails(Player* player) {
         player->zRotBank += ((__cosf(gGameFrameCount * M_DTOR * 8.0f) * 10.0f) - player->zRotBank) * 0.1f;
 
         temp = -gInputPress->stick_y * (CVarGetInteger("gInvertYAxis", 0) == 1 ? -1 : 1);
-        Math_SmoothStepToF(&player->rot.x, temp * 0.3f, 0.05f, 5.0f, 0.00001f);
+        //Math_SmoothStepToF(&player->rot.x, temp * 0.3f, 0.05f, 5.0f, 0.00001f);
         Math_SmoothStepToF(&player->boostSpeed, 15.0f, 0.5f, 5.0f, 0.0f);
         Math_SmoothStepToF(&player->rot.z, 0.0f, 0.1f, 5.0f, 0.00001f);
         player->gravity = -1;
@@ -7136,9 +7152,9 @@ void Camera_UpdateOnFoot(Player* player, s32 arg1) {
 
     player->cam.eye.x = player->pos.x;
     player->cam.eye.y = player->pos.y + 50;
-    player->cam.eye.z = 100 + (player->baseSpeed * 2); // zoom in when running
+    player->cam.eye.z = 100 + (player->baseSpeed * 2); // zoom out when running
 
-    if ((gInputPress->stick_y != 0) && (player->grounded == true)) { // zoom in when looking up
+    if (/* (gInputPress->stick_y != 0) &&  */(player->grounded == true)) { // zoom in when looking up
         player->cam.eye.z -= (player->cam.at.y - gGroundHeight) / 3;
         player->cam.eye.y -= (player->cam.at.y - gGroundHeight) / 6;
     }

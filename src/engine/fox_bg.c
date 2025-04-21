@@ -938,7 +938,7 @@ void Background_DrawBackdrop(void) {
                                 Matrix_Scale(gGfxMatrix, 0.5f, 0.5f, 1.0f, MTXF_APPLY);
                                 Matrix_SetGfxMtx(&gMasterDisp);
                                 gSPDisplayList(gMasterDisp++, D_ME_600DDF0);
-                            } else if (gPathProgress > 185668.0f) {
+                            } else if ((gPathProgress > 185668.0f) && (gPlayer[0].form != FORM_ON_FOOT)) {
                                 Matrix_Translate(gGfxMatrix, bgXpos - 120.0f, -(bgYpos - 120.0f) - 130.0f, -290.0f,
                                                  MTXF_APPLY);
                                 Matrix_Scale(gGfxMatrix, 0.4f, 0.4f, 1.0f, MTXF_APPLY);
@@ -2183,9 +2183,9 @@ void Background_DrawGround(void) {
             break;
 
         case LEVEL_METEO:
-        case LEVEL_SECTOR_Y:
-        case LEVEL_SECTOR_X:
-        case LEVEL_AREA_6:
+        //case LEVEL_SECTOR_Y:
+        //case LEVEL_SECTOR_X:
+        //case LEVEL_AREA_6:
             if (gPlayer[0].form != FORM_ON_FOOT) {
                 break;
             }
