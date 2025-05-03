@@ -6052,8 +6052,45 @@ void Player_Update(Player* player) {
             player->draw = false;
             gShowHud = false;
             gPauseEnabled = false;
-            if (gTurretModeEnabled) {
+            if (gTurretModeEnabled && gCurrentLevel != LEVEL_SECTOR_Z) {
                 Audio_KillSfxBySourceAndId(gDefaultSfxSource, NA_SE_EN_A6BOSS_CHARGE);
+                player->draw = true;
+
+                if ((gCurrentLevel == LEVEL_FORTUNA) || (gCurrentLevel == LEVEL_BOLSE) || (gCurrentLevel == LEVEL_KATINA) || (gCurrentLevel == LEVEL_VENOM_2)) {
+                    gCsFrameCount++;
+                }
+
+                switch (gCurrentLevel) {
+                    case LEVEL_FORTUNA:
+                        player->unk_000 = gCsFrameCount * 0.1;
+                        Math_SmoothStepToF(&player->pos.y, turret360Height + turret360RadiusMod / 10, 0.5f, 25.0f, 0.00001f);
+                        player->trueZpos = player->pos.z = (3000) * COS_DEG(player->unk_000 + 180);
+                                        player->pos.x = (3000) * SIN_DEG(player->unk_000 + 180);
+                        break;
+                    case LEVEL_BOLSE:
+                        player->unk_000 = gCsFrameCount * 0.2;
+                        Math_SmoothStepToF(&player->pos.y, turret360Height + turret360RadiusMod / 10, 0.5f, 25.0f, 0.00001f);
+                        player->trueZpos = player->pos.z = (3000) * COS_DEG(player->unk_000 + 135);
+                                        player->pos.x = (3000) * SIN_DEG(player->unk_000 + 135);
+                        break;
+                    case LEVEL_KATINA:
+                        player->unk_000 = gCsFrameCount * 0.1;
+                        Math_SmoothStepToF(&player->pos.y, turret360Height + turret360RadiusMod / 10, 0.5f, 25.0f, 0.00001f);
+                        player->trueZpos = player->pos.z = (3000) * COS_DEG(player->unk_000 + 90);
+                                        player->pos.x = (3000) * SIN_DEG(player->unk_000 + 90);
+                        break;
+                    case LEVEL_VENOM_2:
+                    default:
+                        player->unk_000 = gCsFrameCount * 0.2;
+                        Math_SmoothStepToF(&player->pos.y, turret360Height + turret360RadiusMod / 10, 0.5f, 25.0f, 0.00001f);
+                        player->trueZpos = player->pos.z = (3000) * COS_DEG(player->unk_000 + 90);
+                                        player->pos.x = (3000) * SIN_DEG(player->unk_000 + 90);
+                        break;
+                }
+                //Rotates along path
+                /* if ((gCurrentLevel != LEVEL_SECTOR_Z) && (gCurrentLevel != LEVEL_VENOM_ANDROSS)) {
+                    player->unk_000 += (0.1);
+                } */
             }
             break;
 
@@ -6109,6 +6146,7 @@ void Player_Update(Player* player) {
                     if (!gVersusMode) {
                         if (gTurretModeEnabled) {
                             Turret_Update360(player);
+                            player->draw = false;
                         } else {
                             Player_Update360(player);
                             player->draw = true;

@@ -3412,7 +3412,7 @@ void Titania_80192118(TiGoras* this) {
                         break;
                 }
                 if (gTurretModeEnabled) {
-                    D_i5_801BBEF0[27] += (this->damage * 0.85f);
+                    D_i5_801BBEF0[27] += (this->damage * 0.75f);
                 }
                 this->dmgType = DMG_NONE;
             }
