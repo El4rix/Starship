@@ -6052,7 +6052,7 @@ void Player_Update(Player* player) {
             player->draw = false;
             gShowHud = false;
             gPauseEnabled = false;
-            if (gTurretModeEnabled && gCurrentLevel != LEVEL_SECTOR_Z) {
+            if ((gTurretModeEnabled) && (gCurrentLevel != LEVEL_SECTOR_Z) && (gCurrentLevel != LEVEL_VENOM_ANDROSS) && (gLevelMode == LEVELMODE_ALL_RANGE) && (gPlayState != PLAY_PAUSE)) {
                 Audio_KillSfxBySourceAndId(gDefaultSfxSource, NA_SE_EN_A6BOSS_CHARGE);
                 player->draw = true;
 
