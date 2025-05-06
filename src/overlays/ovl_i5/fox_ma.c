@@ -5585,6 +5585,39 @@ void Macbeth_LevelStart(Player* player) {
 
     Player_UpdatePath(player);
 
+    if (player->form == FORM_ON_FOOT) {
+        player->state = PLAYERSTATE_ACTIVE;
+
+        gLevelObjects = SEGMENTED_TO_VIRTUAL(D_MA_6035678);
+
+        for (i = 0, objInit = gLevelObjects; objInit->id != OBJ_INVALID; i++, objInit++) {
+            Object_Load(objInit, 4000.0f, -4000.0f, 4000.0f, -4000.0f);
+        }
+
+        gLevelObjects = SEGMENTED_TO_VIRTUAL(gLevelObjectInits[gCurrentLevel]);
+
+        for (i = 0, objInit = gLevelObjects; i < 40; i++, objInit++) {
+            Object_Load(objInit, 4000.0f, -4000.0f, 4000.0f, -4000.0f);
+        }
+
+        gFillScreenRed = gFillScreenGreen = gFillScreenBlue = gFillScreenAlpha = 255;
+
+        D_i5_801BE24C = 8.0f;
+        D_i5_801BA768 = 0.0f;
+
+        AUDIO_PLAY_BGM(NA_BGM_STAGE_MA);
+        gLevelStartStatusScreenTimer = 50;
+        player->csState = player->csTimer = player->csEventTimer = player->hideShadow = 0;
+        player->gravity = 3.0f;
+        player->unk_014 = 0.0f;
+        D_ctx_8017782C = true;
+        Play_InitEnvironment();
+        D_ctx_8017782C = false;
+        gObjectLoadIndex = 40;
+
+        return;
+    }
+
     switch (player->csState) {
         case 0:
             gLevelObjects = SEGMENTED_TO_VIRTUAL(D_MA_6035678);

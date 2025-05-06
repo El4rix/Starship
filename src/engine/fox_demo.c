@@ -1816,6 +1816,89 @@ void Cutscene_LevelComplete(Player* player) {
     }
 }
 
+void OnFoot_Cutscene_LevelComplete(Player* player) {
+    s32 sp24;
+    s32 sp20;
+    s32 btn;
+
+    gCsFrameCount++;
+
+    if ((gCurrentLevel != LEVEL_TITANIA) && (gCurrentLevel != LEVEL_TITANIA)) {
+        if ((gCurrentLevel == LEVEL_VENOM_ANDROSS) || ((gCurrentLevel == LEVEL_VENOM_2) && (gLevelPhase == 1))) {
+            Andross_80193C4C(player);
+        } else if (gCurrentLevel == LEVEL_SECTOR_X) {
+            if (gLevelPhase == 0) {
+                SectorX_LevelComplete(player);
+            } else {
+                Cutscene_WarpZoneComplete(player);
+            }
+        } else if (gCurrentLevel == LEVEL_AREA_6) {
+            Area6_LevelComplete(player);
+        } else if (gCurrentLevel == LEVEL_FORTUNA) {
+            Cutscene_FortunaComplete(player);
+            Player_FloorCheck(player);
+        } else if (gCurrentLevel == LEVEL_BOLSE) {
+            Bolse_LevelComplete(player);
+            Player_FloorCheck(player);
+        } else if (gCurrentLevel == LEVEL_SECTOR_Z) {
+            SectorZ_LevelComplete(player);
+        } else if (gCurrentLevel == LEVEL_KATINA) {
+            Katina_LevelComplete(player);
+            Player_FloorCheck(player);
+        } else if (gCurrentLevel == LEVEL_SECTOR_Y) {
+            SectorY_LevelComplete(player);
+            Player_FloorCheck(player);
+        } else if (gCurrentLevel == LEVEL_SOLAR) {
+            Solar_LevelComplete(player);
+            Player_FloorCheck(player);
+        } else if (gCurrentLevel == LEVEL_ZONESS) {
+            Zoness_LevelComplete(player);
+            Player_FloorCheck(player);
+        } else if (gCurrentLevel == LEVEL_VENOM_2) {
+            Venom2_LevelComplete(player);
+            Player_FloorCheck(player);
+        } else if (gCurrentLevel == LEVEL_METEO) {
+            if (gLevelPhase == 0) {
+                Meteo_LevelComplete(player);
+            } else {
+                Cutscene_WarpZoneComplete(player);
+            }
+        } else if ((gCurrentLevel == LEVEL_CORNERIA) && (gLevelMode == LEVELMODE_ALL_RANGE)) {
+            Corneria_LevelComplete1(player);
+            Player_FloorCheck(player);
+        } else if (gCurrentLevel == LEVEL_AQUAS) {
+            Aquas_CsLevelComplete(player);
+        } else {
+            if (gCsFrameCount == 170) {
+                AUDIO_PLAY_BGM(NA_BGM_COURSE_CLEAR);
+            }
+            Cutscene_CoComplete2(player);
+            Player_FloorCheck(player);
+        }
+        Player_UpdateArwingRoll(player);
+    } else {
+        sp20 = gInputPress->button;
+        sp24 = gInputHold->button;
+        gInputPress->button = 0;
+        btn = gInputPress->button;
+        gInputHold->button = gInputPress->button;
+        gInputPress->stick_y = btn;
+        gInputPress->stick_x = btn;
+
+        if (gCurrentLevel == LEVEL_TITANIA) {
+            Titania_LevelComplete(player);
+        } else if (gMissionStatus != MISSION_COMPLETE) {
+            Macbeth_LevelComplete2(player);
+        } else {
+            Macbeth_LevelComplete1(player);
+        }
+
+        func_tank_80046358(player);
+        gInputPress->button = sp20;
+        gInputHold->button = sp24;
+    }
+}
+
 void Cutscene_UTurn(Player* player) {
     Vec3f sp58;
     PosRot sp50;
