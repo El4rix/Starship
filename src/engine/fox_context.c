@@ -17,8 +17,11 @@ s32 D_ctx_80177868; // some sort of state. pause-related? Also used by game over
 LevelMode gLevelMode;
 bool gTurretModeEnabled;
 bool gRunning;
+bool gStoppedRunning;
+bool gFaceZoom;
 DrawMode gDrawMode;
 s32 gPlayerNum;
+s32 gPilotNum;
 s32 gCamCount;
 /**
  * gTeamShields[1] = Falco

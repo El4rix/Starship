@@ -1557,6 +1557,48 @@ bool Play_CheckPolyCollision(ObjectId objId, f32 arg1, f32 arg2, f32 arg3, f32 a
             break;
     }
 
+    if (gPlayer[0].form == FORM_ON_FOOT) {
+        switch (objId) {
+            //case OBJ_SCENERY_CO_BUMP_5:
+            //case ACTOR_EVENT_ID:
+            //case OBJ_BOSS_SZ_GREAT_FOX:
+            case OBJ_SCENERY_CO_HIGHWAY_1:
+            case OBJ_SCENERY_CO_HIGHWAY_2:
+            case OBJ_SCENERY_CO_HIGHWAY_3:
+            case OBJ_SCENERY_CO_HIGHWAY_4:
+            case OBJ_SCENERY_CO_HIGHWAY_5:
+            case OBJ_SCENERY_CO_HIGHWAY_6:
+            case OBJ_SCENERY_CO_HIGHWAY_7:
+            case OBJ_SCENERY_CO_HIGHWAY_8:
+            case OBJ_SCENERY_CO_HIGHWAY_9:
+                colId = COL2_8;
+                break;
+            
+            default:
+                break;
+        }
+    }
+
+    /* ((scenery->obj.id == OBJ_SCENERY_CO_STONE_ARCH) && (player->form == FORM_ON_FOOT)) ||
+                        ((scenery->obj.id == OBJ_SCENERY_CO_HIGHWAY_1) && (player->form == FORM_ON_FOOT)) ||
+                        ((scenery->obj.id == OBJ_SCENERY_CO_HIGHWAY_2) && (player->form == FORM_ON_FOOT)) ||
+                        ((scenery->obj.id == OBJ_SCENERY_CO_HIGHWAY_3) && (player->form == FORM_ON_FOOT)) ||
+                        ((scenery->obj.id == OBJ_SCENERY_CO_HIGHWAY_4) && (player->form == FORM_ON_FOOT)) ||
+                        ((scenery->obj.id == OBJ_SCENERY_CO_HIGHWAY_5) && (player->form == FORM_ON_FOOT)) ||
+                        ((scenery->obj.id == OBJ_SCENERY_CO_HIGHWAY_6) && (player->form == FORM_ON_FOOT)) ||
+                        ((scenery->obj.id == OBJ_SCENERY_CO_HIGHWAY_7) && (player->form == FORM_ON_FOOT)) ||
+                        ((scenery->obj.id == OBJ_SCENERY_CO_HIGHWAY_8) && (player->form == FORM_ON_FOOT)) ||
+                        ((scenery->obj.id == OBJ_SCENERY_CO_HIGHWAY_9) && (player->form == FORM_ON_FOOT)) ||
+                        ((scenery->obj.id == OBJ_SCENERY_CO_ARCH_1) && (player->form == FORM_ON_FOOT)) ||
+                        ((scenery->obj.id == OBJ_SCENERY_CO_ARCH_2) && (player->form == FORM_ON_FOOT)) ||
+                        ((scenery->obj.id == OBJ_SCENERY_CO_ARCH_3) && (player->form == FORM_ON_FOOT)) */
+
+    if (gPlayer[0].form == FORM_ON_FOOT) {
+        if (func_col2_800A3690(&sp54, &sp48, colId, arg7)) {
+            return true;
+        }
+    }
+
     if (!useCol2) {
         if (func_col1_800998FC(&sp54, &sp48, arg8, colId, &sp3C, sp34) > 0) {
             return true;
@@ -1598,14 +1640,16 @@ s32 Player_CheckPolyCollision(Player* player, ObjectId objId, f32 x, f32 y, f32 
         if (Play_CheckPolyCollision(objId, sp84.x, sp84.y, sp84.z, sp6C.x + sp84.x, sp6C.y + sp84.y, sp6C.z + sp84.z,
                                     &sp60, &sp54)) {
             player->pos.y = sp60.y;
-            player->rot_104.x = Math_RadToDeg(sp60.x);
-            player->rot_104.z = Math_RadToDeg(sp60.z);
+            if (player->form != FORM_ON_FOOT) {
+                player->rot_104.x = Math_RadToDeg(sp60.x); // Angles camera in annoying ways when you climb geometry
+                player->rot_104.z = Math_RadToDeg(sp60.z);
+            }
             player->vel.y = 0.0f;
             if (player->form == FORM_ON_FOOT) {
                 player->vel.y = -5.0f;
             }
             player->grounded = true;
-            return 5;
+            return 0; // 5, try 0
         } else {
             return 0;
         }
@@ -1835,8 +1879,10 @@ void Player_CollisionCheck(Player* player) {
                 Effect_Effect362_Spawn(player->hit2.x, player->hit2.y, player->hit2.z, 6.0f);
             }
         }
-    } else if ((player->form == FORM_LANDMASTER) && !gVersusMode) {
-        func_tank_800444BC(player);
+    } else if (((player->form == FORM_LANDMASTER) || (player->form == FORM_ON_FOOT)) && !gVersusMode) {
+        if (gCurrentLevel == LEVEL_MACBETH) {
+            func_tank_800444BC(player);
+        }
     }
 
     if ((player->mercyTimer == 0) || ((gCamCount != 1) && (player->form != FORM_ARWING))) {
@@ -1876,7 +1922,7 @@ void Player_CollisionCheck(Player* player) {
                                 }
                             }
 
-                            if ((gCurrentLevel == LEVEL_FORTUNA) || (gCurrentLevel == LEVEL_VENOM_2)) {
+                            if (((gCurrentLevel == LEVEL_FORTUNA) || (gCurrentLevel == LEVEL_VENOM_2)) && (player->form != FORM_ON_FOOT)) {
                                 temp_v0 = Player_CheckHitboxCollision(
                                     player, scenery360->info.hitbox, &sp98, scenery360->obj.pos.x,
                                     scenery360->obj.pos.y, scenery360->obj.pos.z, scenery360->obj.rot.x,
@@ -1978,7 +2024,9 @@ void Player_CollisionCheck(Player* player) {
                         (scenery->obj.id == OBJ_SCENERY_AQ_CORAL_REEF_1) ||
                         (scenery->obj.id == OBJ_SCENERY_AQ_CORAL_REEF_2) ||
                         (scenery->obj.id == OBJ_SCENERY_AQ_BUMP_1) || (scenery->obj.id == OBJ_SCENERY_AQ_BUMP_2) ||
-                        (scenery->obj.id == OBJ_SCENERY_CO_BUMP_2) || (scenery->obj.id == OBJ_SCENERY_CO_BUMP_3)) {
+                        (scenery->obj.id == OBJ_SCENERY_CO_BUMP_2) || (scenery->obj.id == OBJ_SCENERY_CO_BUMP_3)
+                        || ((scenery->obj.id == OBJ_SCENERY_CO_STONE_ARCH) && (player->form == FORM_ON_FOOT))
+                    ) {
                         spC8.x = scenery->obj.pos.x - player->pos.x;
                         spC8.z = scenery->obj.pos.z - player->trueZpos;
                         if (sqrtf(SQ(spC8.x) + SQ(spC8.z)) < 1100.0f) {
@@ -2981,6 +3029,10 @@ void Play_Init(void) {
                 if (!D_ctx_8017782C) {
                     SectorZ_LoadLevelObjects();
                     ActorAllRange_SpawnTeam();
+                }
+                if (gPlayer[0].form == FORM_ON_FOOT) {
+                    gPlayer[0].pos.x = gPlayer[0].pos.z = 0; // Doesn't work
+                    gPlayer[0].pos.y = 1000;
                 }
                 break;
 
@@ -4377,9 +4429,19 @@ void Player_OnFootUpdateSpeed(Player* player) {
     } else {
         if ((gInputPress->button & R_TRIG) && (gRunning)) {
             gRunning = false;
-        } else if ((gInputPress->button & R_TRIG) && (!gRunning)) {
+        } else if ((gInputPress->button & R_TRIG) && (!gRunning) ) {
             gRunning = true;
         }
+
+        if ((gInputHold->button & R_TRIG) && (player->baseSpeed > 3) && (gRunning)) {
+            gStoppedRunning = true;
+        }
+
+        if (!(gInputHold->button & R_TRIG) && (gStoppedRunning) && (gRunning)) {
+            gRunning = false;
+            gStoppedRunning = false;
+        }
+
         if (gRunning) {
             if ((gCurrentLevel == LEVEL_MACBETH) || (gCurrentLevel == LEVEL_TITANIA) || (gCurrentLevel == LEVEL_AQUAS)) {
                 sp2C = 20.0f;
@@ -4389,6 +4451,12 @@ void Player_OnFootUpdateSpeed(Player* player) {
             sp28 = D_800D30F4[gPlayerNum];
             sp24 = D_800D3104[gPlayerNum];
         }
+    }
+
+    if ((gInputPress->button & U_JPAD) && gFaceZoom) {
+        gFaceZoom = false;
+    } else if ((gInputPress->button & U_JPAD) && !gFaceZoom) {
+        gFaceZoom = true;
     }
 
     Math_SmoothStepToF(&player->baseSpeed, sp2C, 1.0f, 1.0f, 0.00001f);
@@ -4554,7 +4622,7 @@ void Player_MoveOnFoot(Player* player) {
             player->yBob -= 3.0f;
             player->unk_20C = player->unk_00C;
 
-            switch (gPlayerNum) {
+            switch (gPilotNum) {
                 case 0:
                     sp44 = Animation_GetFrameData(&D_versus_301CFEC, player->unk_20C, sp78);
                     break;
@@ -4588,7 +4656,7 @@ void Player_MoveOnFoot(Player* player) {
                 }
             }
 
-            switch (gPlayerNum) {
+            switch (gPilotNum) {
                 case 0:
                     sp48 = LOAD_ASSET(D_versus_302E56C); // Change player character
                     break;
@@ -4611,7 +4679,7 @@ void Player_MoveOnFoot(Player* player) {
         }
     }
     if (!player->grounded) {
-        switch (gPlayerNum) {
+        switch (gPilotNum) {
             case 0:
                 sp48 = LOAD_ASSET(D_versus_302E95C);
                 break;
@@ -4783,7 +4851,7 @@ void Player_MoveOnFootRails(Player* player) {
 
     player->camRoll = 0.0f;
     var_fa0 = 0.0f;
-    if (player->pos.y > 10.0f) {
+    /* if (player->pos.y > 10.0f) {
         var_fa0 = 20.0f;
     }
     if (player->pos.y > 300.0f) {
@@ -4791,16 +4859,13 @@ void Player_MoveOnFootRails(Player* player) {
     }
     if ((gLevelType == LEVELTYPE_SPACE) && (gCurrentLevel != LEVEL_METEO)) {
         var_fa0 = 40.0f;
-    }
+    } */
 
     sp74 = gInputPress->stick_y * 0.8f;
-    if (sp74 < -40.0f) {
+    /* if (sp74 < -40.0f) {
         sp74 = -40.0f;
     }
     if (var_fa0 < sp74) {
-        sp74 = var_fa0;
-    }
-    /* if (var_fa0 > sp74) { // ?
         sp74 = var_fa0;
     } */
 
@@ -4945,7 +5010,7 @@ void Player_MoveOnFootRails(Player* player) {
             player->yBob -= 3.0f;
             player->unk_20C = player->unk_00C;
 
-            switch (gPlayerNum) {
+            switch (gPilotNum) {
                 case 0:
                     sp44 = Animation_GetFrameData(&D_versus_301CFEC, player->unk_20C, sp78);
                     break;
@@ -4979,7 +5044,7 @@ void Player_MoveOnFootRails(Player* player) {
                 }
             }
 
-            switch (gPlayerNum) {
+            switch (gPilotNum) {
                 case 0:
                     sp48 = LOAD_ASSET(D_versus_302E56C); // Change player character
                     break;
@@ -5002,7 +5067,7 @@ void Player_MoveOnFootRails(Player* player) {
         }
     }
     if (!player->grounded) {
-        switch (gPlayerNum) {
+        switch (gPilotNum) {
             case 0:
                 sp48 = LOAD_ASSET(D_versus_302E95C);
                 break;
@@ -5222,6 +5287,7 @@ void Player_Setup(Player* playerx) {
     }
 
     player->form = FORM_ON_FOOT;
+    gPilotNum = 0;
 
     if (gCurrentLevel != LEVEL_CORNERIA) {
         gSavedGroundSurface = SURFACE_GRASS;
@@ -5315,7 +5381,7 @@ void Player_Setup(Player* playerx) {
                 player->pos.y = 0.0f;
                 player->baseSpeed = 15.0f;
                 player->groundPos.y = 0;
-                switch (gPlayerNum) {
+                switch (gPilotNum) {
                     case 0:
                         sp38 = LOAD_ASSET(D_versus_302E56C);
                         break;
@@ -6567,6 +6633,31 @@ void Player_Update(Player* player) {
         }
     } */
 
+    // Turn On Foot Mode on or off
+    if ((gControllerHold[player->num].button & Z_TRIG) && (gControllerHold[player->num].button & R_TRIG) && (gControllerPress[player->num].button & D_CBUTTONS)) {
+        if (gPlayer[0].form == FORM_ON_FOOT) {
+            gPlayer[0].form = FORM_LANDMASTER;
+            player->pos.y += 100;
+        } else {
+            gPlayer[0].form = FORM_ON_FOOT;
+            player->pos.y += 100;
+        }
+    }
+
+    // Swap Characters
+    if ((player->form == FORM_ON_FOOT) && (gControllerPress[player->num].button & L_JPAD)) {
+        gPilotNum--;
+    }
+    if ((player->form == FORM_ON_FOOT) && (gControllerPress[player->num].button & R_JPAD)) {
+        gPilotNum++;
+    }
+    if ((player->form == FORM_ON_FOOT) && (gPilotNum > 3)) {
+        gPilotNum = 0;
+    }
+    if ((player->form == FORM_ON_FOOT) && (gPilotNum < 0)) {
+        gPilotNum = 3;
+    }
+
     switch (player->state) {
         case PLAYERSTATE_STANDBY:
             player->draw = false;
@@ -7250,6 +7341,10 @@ void Camera_UpdateOnFoot360(Player* player, s32 arg1) {
         //player->camDist = gInputPress->stick_y;
     }
 
+    if (gFaceZoom) {
+        player->camDist = 200 + player->baseSpeed;
+    }
+
     sp64.x = 0.0f;
     sp64.y = 20.0f;
     sp64.z = 110.0f - player->camDist; // 60.0f
@@ -7303,13 +7398,24 @@ void Camera_UpdateOnFoot(Player* player, s32 arg1) {
     Math_SmoothStepToF(&player->cam.at.y, -(gInputPress->stick_y * 3) + player->pos.y, 0.1f, 100.0f, 0.001f);
     player->cam.at.y += player->damageShake * 0.1f;
 
+    //player->cam.at.z = player->pos.z;
+
     player->cam.eye.x = player->pos.x;
     player->cam.eye.y = player->pos.y + 50;
-    player->cam.eye.z = 100 + (player->baseSpeed * 2); // zoom out when running
+    player->cam.eye.z = 100 - player->camDist + (player->baseSpeed * 2); // zoom out when running
 
-    if (/* (gInputPress->stick_y != 0) &&  */(player->grounded == true)) { // zoom in when looking up
+    if (player->grounded == true) { // zoom in when looking up
         player->cam.eye.z -= (player->cam.at.y - gGroundHeight) / 3;
         player->cam.eye.y -= (player->cam.at.y - gGroundHeight) / 6;
+    }
+
+    if (gFaceZoom) {
+        Math_SmoothStepToF(&player->camDist, 80 + (player->baseSpeed * 2), 0.2f, 100.0f, 0.001f);
+        Math_SmoothStepToF(&player->cam.at.z, 1000, 0.1f, 100.0f, 0.001f);
+        player->cam.eye.y -= 20;
+    } else {
+        Math_SmoothStepToF(&player->camDist, 0, 0.2f, 100.0f, 0.001f);
+        Math_SmoothStepToF(&player->cam.at.z, -1000, 0.1f, 100.0f, 0.001f);
     }
 
 

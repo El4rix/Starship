@@ -301,7 +301,7 @@ void Display_OnFootCharacter(Player* player) {
     Matrix_Push(&gGfxMatrix);
     Matrix_Scale(gCalcMatrix, 0.5f, 0.5f, 0.5f, MTXF_APPLY);
     Matrix_Translate(gCalcMatrix, 0.0f, 35.0f, 0.0f, MTXF_APPLY);
-    switch (player->num) {
+    switch (gPilotNum) {
         case 0:
             Animation_DrawSkeleton(5, aVsOnFootFoxSkel, player->jointTable, Display_OnFootCharacter_OverrideLimbDraw,
                                    Display_OnFootFox_PostLimbDraw, player, gCalcMatrix);
@@ -324,7 +324,7 @@ void Display_OnFootCharacter(Player* player) {
     if (gPlayerNum == player->num) {
         sp58.x = 0.0f;
         sp58.y = 0.0f + player->unk_154 * -40;
-        if (gGroundSurface == SURFACE_WATER) {
+        if ((gGroundSurface == SURFACE_WATER) && (player->grounded)) {
             sp58.y *= -1;
         }
         sp58.z = 2000.0f;
@@ -711,8 +711,14 @@ void Display_ArwingWings(ArwingInfo* arwing) {
                                 arwing, &gIdentityMatrix);
         }
     } else if (gGameState == GSTATE_PLAY) {
-        Animation_DrawSkeleton(1, D_arwing_3016610, gPlayer[0].jointTable, Display_ArwingWingsOverrideLimbDraw, NULL,
-                               arwing, &gIdentityMatrix);
+        if (gPlayer[0].form == FORM_ON_FOOT) {
+            Animation_GetFrameData(&D_arwing_3015AF4, 0, frameTable);
+            Animation_DrawSkeleton(1, D_arwing_3016610, frameTable, Display_ArwingWingsOverrideLimbDraw, NULL,
+                                    arwing, &gIdentityMatrix);
+        } else {
+            Animation_DrawSkeleton(1, D_arwing_3016610, gPlayer[0].jointTable, Display_ArwingWingsOverrideLimbDraw, NULL,
+                                    arwing, &gIdentityMatrix);
+        }
     } else {
         if (gGameState == GSTATE_MENU) {
             Animation_GetFrameData(&D_arwing_3015AF4, 0, frameTable);
@@ -910,6 +916,7 @@ void Display_Reticle(Player* player) {
 }
 
 void Display_DrawPlayer(Player* player, s32 reflectY) {
+
     if (gTurretModeEnabled) {
         Display_Arwing(player, reflectY);
     } else {
@@ -1530,7 +1537,7 @@ void Display_Player_Update(Player* player, s32 reflectY) {
 
     if (player->draw) {
 
-        if ((player->form == FORM_ON_FOOT) && (gLevelType == LEVELTYPE_SPACE) && (gCurrentLevel != LEVEL_METEO)) { // Great Fox
+        if ((player->form == FORM_ON_FOOT) && (gLevelType == LEVELTYPE_SPACE) && (gCurrentLevel != LEVEL_METEO) && (gLevelMode == LEVELMODE_ON_RAILS)) { // Great Fox
             Matrix_Push(&gGfxMatrix);
             RCP_SetupDL_30(gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
             //Matrix_Translate(gGfxMatrix, player->pos.x, player->pos.y - 550, 1300, MTXF_APPLY); // On bridge
