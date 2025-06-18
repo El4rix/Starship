@@ -118,6 +118,11 @@ void Cutscene_WarpZoneComplete(Player* player) {
     f32 temp_ret;
     s32 temp_v1;
 
+    if ((player->form = FORM_ON_FOOT)) {
+        player->baseSpeed = 0;
+        gRunning = false;
+    }
+
     gBosses[1].obj.status = OBJ_FREE;
 
     Math_SmoothStepToF(&player->zRotBarrelRoll, 0.0f, 0.1f, 15.0f, 0.0f);
@@ -397,6 +402,10 @@ void Cutscene_EnterWarpZone(Player* player) {
     s32 var_v0;
     s32 pad[4];
 
+    if ((player->form = FORM_ON_FOOT) && (gLevelPhase == 1)) {
+        gGroundHeight = -400;
+    }
+
     player->pos.x += player->vel.x;
     player->flags_228 = 0;
     player->alternateView = false;
@@ -447,7 +456,10 @@ void Cutscene_EnterWarpZone(Player* player) {
                 func_demo_80049968(&gActors[2], 2);
             }
 
-            func_demo_80049968(&gActors[3], 3);
+            if ((player->form != FORM_ON_FOOT) || (gCurrentLevel == LEVEL_METEO)) {
+                func_demo_80049968(&gActors[3], 3);
+            }
+            
             player->csTimer = 50;
             break;
 
@@ -820,7 +832,7 @@ void Cutscene_AllRangeMode(Player* player) {
             gCsFrameCount = 0;
             /* fallthrough */
         case 1:
-            if (player->pos.y < 350.0f) {
+            if ((player->pos.y) < 350.0f && (player->form != FORM_ON_FOOT)) {
                 Math_SmoothStepToF(&player->pos.y, 350.0f, 0.1f, D_ctx_80177A48[3], 0.0f);
             }
 
@@ -868,6 +880,11 @@ void Cutscene_AllRangeMode(Player* player) {
                         Object_SetInfo(&actor->info, actor->obj.id);
                     }
                 }
+
+                if (player->form = FORM_ON_FOOT) {
+                    gRunning = false;
+                    player->baseSpeed = 0;
+                }
             }
 
             Matrix_RotateY(gCalcMatrix, D_ctx_80177A48[1] * M_DTOR, MTXF_NEW);
@@ -910,6 +927,12 @@ void Cutscene_AllRangeMode(Player* player) {
     player->trueZpos = player->pos.z + player->camDist;
     player->cam.at.z += player->vel.z;
     player->cam.eye.z += player->vel.z;
+
+    if (player->form = FORM_ON_FOOT) {
+        if (player->cam.eye.y < gGroundHeight) {
+            player->cam.eye.y = gGroundHeight;
+        }
+    }
 
     player->bankAngle = player->rot.z + player->zRotBank + player->zRotBarrelRoll;
     player->bobPhase += 10.0f;
@@ -1823,7 +1846,10 @@ void OnFoot_Cutscene_LevelComplete(Player* player) {
 
     gCsFrameCount++;
 
-    if ((gCurrentLevel != LEVEL_TITANIA) && (gCurrentLevel != LEVEL_TITANIA)) {
+    player->baseSpeed = 0;
+    gRunning = false;
+
+    if ((gCurrentLevel != LEVEL_TITANIA) && (gCurrentLevel != LEVEL_MACBETH)) {
         if ((gCurrentLevel == LEVEL_VENOM_ANDROSS) || ((gCurrentLevel == LEVEL_VENOM_2) && (gLevelPhase == 1))) {
             Andross_80193C4C(player);
         } else if (gCurrentLevel == LEVEL_SECTOR_X) {

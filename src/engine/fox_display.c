@@ -172,7 +172,14 @@ bool Display_OnFootCharacter_OverrideLimbDraw(s32 limbIndex, Gfx** gfxPtr, Vec3f
 
     gSPSetGeometryMode(gMasterDisp++, G_CULL_BACK);
 
-    if (player->num == 1) {
+    if (gPilotNum == 1) {
+        /* if (limbIndex == 0) { // correct for Peppy being rotated 90 degrees unless he runs
+            if (rot->z < 90) {
+                rot->z = 90;
+            } else {
+                rot->z = 0;
+            }
+        } */
         if (limbIndex == 16) {
             rot->y += player->unk_154;
             rot->y -= player->unk_180;
@@ -199,14 +206,14 @@ bool Display_OnFootCharacter_OverrideLimbDraw(s32 limbIndex, Gfx** gfxPtr, Vec3f
         }
     } else {
         if (limbIndex == 11) {
-            if (player->num == 0) {
+            if (gPilotNum == 0) {
                 rot->y += -player->unk_154 * 0.8f;
             }
-            if (player->num == 2) {
+            if (gPilotNum == 2) {
                 rot->y += player->unk_154;
                 rot->y -= player->unk_180;
             }
-            if (player->num == 3) {
+            if (gPilotNum == 3) {
                 rot->y += player->unk_154 * 0.8f;
             }
         }
@@ -214,7 +221,7 @@ bool Display_OnFootCharacter_OverrideLimbDraw(s32 limbIndex, Gfx** gfxPtr, Vec3f
             rot->y += -player->unk_158 * 0.8f;
             rot->x -= player->unk_15C;
         }
-        if ((limbIndex == 17) && (player->num != 2)) {
+        if ((limbIndex == 17) && (gPilotNum != 2)) {
             rot->y += player->unk_180;
             rot->x -= player->unk_180;
             rot->y += -player->unk_158 * 0.2f;
@@ -232,7 +239,7 @@ void Display_OnFootFox_PostLimbDraw(s32 limbIndex, Vec3f* rot, void* data) {
         sp1C.x = 3.0f;
         sp1C.y = 1.0f;
         sp1C.z = -28.0f;
-        Matrix_MultVec3f(gGfxMatrix, &sp1C, &D_display_801613B0[player->num]);
+        Matrix_MultVec3f(gGfxMatrix, &sp1C, &D_display_801613B0[gPilotNum]);
     }
 }
 
@@ -244,7 +251,7 @@ void Display_OnFootPeppy_PostLimbDraw(s32 limbIndex, Vec3f* rot, void* data) {
         sp1C.x = 13.0f;
         sp1C.y = 2.0f;
         sp1C.z = 28.0f;
-        Matrix_MultVec3f(gGfxMatrix, &sp1C, &D_display_801613B0[player->num]);
+        Matrix_MultVec3f(gGfxMatrix, &sp1C, &D_display_801613B0[gPilotNum]);
     }
 }
 
@@ -256,7 +263,7 @@ void Display_OnFootSlippy_PostLimbDraw(s32 limbIndex, Vec3f* rot, void* data) {
         sp1C.x = 0.0f;
         sp1C.y = 2.0f;
         sp1C.z = 29.0f;
-        Matrix_MultVec3f(gGfxMatrix, &sp1C, &D_display_801613B0[player->num]);
+        Matrix_MultVec3f(gGfxMatrix, &sp1C, &D_display_801613B0[gPilotNum]);
     }
 }
 
@@ -268,7 +275,7 @@ void Display_OnFootFalco_PostLimbDraw(s32 limbIndex, Vec3f* rot, void* data) {
         sp1C.x = 19.0f;
         sp1C.y = 1.0f;
         sp1C.z = 32.0f;
-        Matrix_MultVec3f(gGfxMatrix, &sp1C, &D_display_801613B0[player->num]);
+        Matrix_MultVec3f(gGfxMatrix, &sp1C, &D_display_801613B0[gPilotNum]);
     }
 }
 
@@ -276,12 +283,12 @@ void Display_OnFootMuzzleFlash(Player* player) {
     Matrix_Push(&gGfxMatrix);
 
     // @port: Tag the transform.
-    FrameInterpolation_RecordOpenChild("Display_OnFootMuzzleFlash", player->num);
+    FrameInterpolation_RecordOpenChild("Display_OnFootMuzzleFlash", gPilotNum);
 
     Matrix_Copy(gGfxMatrix, &gIdentityMatrix);
     if ((player->state == PLAYERSTATE_ACTIVE) && (player->csTimer != 0)) {
-        Matrix_Translate(gGfxMatrix, D_display_801613B0[player->num].x, D_display_801613B0[player->num].y,
-                         D_display_801613B0[player->num].z, MTXF_APPLY);
+        Matrix_Translate(gGfxMatrix, D_display_801613B0[gPilotNum].x, D_display_801613B0[gPilotNum].y,
+                         D_display_801613B0[gPilotNum].z, MTXF_APPLY);
         Matrix_Scale(gGfxMatrix, D_display_800CA23C[player->csTimer - 1], D_display_800CA23C[player->csTimer - 1],
                      D_display_800CA23C[player->csTimer - 1], MTXF_APPLY);
         Matrix_SetGfxMtx(&gMasterDisp);
@@ -324,9 +331,9 @@ void Display_OnFootCharacter(Player* player) {
     if (gPlayerNum == player->num) {
         sp58.x = 0.0f;
         sp58.y = 0.0f + player->unk_154 * -40;
-        if ((gGroundSurface == SURFACE_WATER) && (player->grounded)) {
-            sp58.y *= -1;
-        }
+        /* if ((gGroundSurface == SURFACE_WATER) && (player->grounded)) {
+            sp58.y = 0.0f + player->unk_154 * 40;
+        } */
         sp58.z = 2000.0f;
         Matrix_MultVec3f(gGfxMatrix, &sp58, &D_display_801613E0[0]);
         sp58.y *= 2;
@@ -531,7 +538,7 @@ void Display_JetpackThrusters(Player* player) {
         if (gLevelMode == LEVELMODE_ALL_RANGE) {
             Matrix_Translate(gGfxMatrix, player->pos.x + 10.0f * cos(player->camYaw) - 10.0f * sin(player->camYaw), player->pos.y - 3.0f, player->pos.z + 10.0f * sin(player->camYaw) + 10.0f * cos(player->camYaw), MTXF_APPLY);
         } else {
-            Matrix_Translate(gGfxMatrix, player->pos.x + 10.0f, player->pos.y - 3.0f, 10.0f, MTXF_APPLY);
+            Matrix_Translate(gGfxMatrix, player->pos.x + 10.0f, player->pos.y - 3.0f, 10, MTXF_APPLY);
         }
         Matrix_RotateY(gGfxMatrix, -gPlayer[gPlayerNum].camYaw, MTXF_APPLY);
         Matrix_Scale(gGfxMatrix, sp2C, sp2C, sp2C, MTXF_APPLY);
@@ -2136,7 +2143,7 @@ void Display_Update(void) {
             playerPos.y = player->pos.y;
             playerPos.z = player->trueZpos;
             FrameInterpolation_RecordOpenChild(player, i);
-            if (!gTurretModeEnabled) {
+            if ((!gTurretModeEnabled) && (gPlayer[0].form != FORM_ON_FOOT)) {
                 Display_Player_Update(player, 1);
             }
             FrameInterpolation_RecordCloseChild();
@@ -2231,7 +2238,6 @@ void Display_Update(void) {
                 Display_LandmasterMuzzleFlash(player);
             } else if (player->form == FORM_ON_FOOT) {
                 Display_OnFootMuzzleFlash(player);
-                Display_Reticle(player);
             }
         }
     }

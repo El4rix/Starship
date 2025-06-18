@@ -268,6 +268,10 @@ s32 PlayerShot_CheckObjectHitbox(PlayerShot* shot, f32* hitboxData, Object* obj)
         checkDist = 3500.0f;
     }
 
+    if ((gPlayer[0].form == FORM_ON_FOOT) && (gCurrentLevel == LEVEL_CORNERIA) && ((obj->pos.y == -30) || (obj->pos.y == 235))) {
+        return 0;
+    }
+
     if ((fabsf(shot->obj.pos.z - obj->pos.z) < checkDist) && (fabsf(shot->obj.pos.x - obj->pos.x) < checkDist) &&
         (fabsf(shot->obj.pos.y - obj->pos.y) < checkDist)) {
         count = *hitboxData;
@@ -2107,12 +2111,13 @@ void PlayerShot_UpdateBomb(PlayerShot* shot) {
                 break;
             }
 
-            if ((gPlayer[shot->sourceId].form == FORM_LANDMASTER) || (gPlayer[shot->sourceId].form == FORM_ON_FOOT)) {
+            if ((gPlayer[shot->sourceId].form == FORM_LANDMASTER) || 
+                ((gPlayer[shot->sourceId].form == FORM_ON_FOOT) && ((gLevelType == LEVELTYPE_PLANET) || (gCurrentLevel == LEVEL_METEO) || (gCurrentLevel == LEVEL_BOLSE)))) {
                 shot->vel.y -= 1.0f;
                 Math_SmoothStepToF(&shot->obj.rot.x, -90.0f, 0.05f, 1.0f, 0.0f);
             }
 
-            if (shot->timer < 25) {
+            if ((shot->timer < 25) || ((gPlayer[shot->sourceId].form == FORM_ON_FOOT) && (shot->timer < 40))) {
                 if (gVersusMode) {
                     if (gControllerPress[shot->sourceId].button & gBombButton[shot->sourceId]) {
                         PlayerShot_ExplodeBomb(shot);

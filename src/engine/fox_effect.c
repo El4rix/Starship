@@ -1094,7 +1094,7 @@ void Effect_Effect372_Setup1(Effect372* this, f32 xPos, f32 unused_posY, f32 zPo
     this->obj.id = OBJ_EFFECT_372;
 
     this->obj.pos.x = xPos;
-    this->obj.pos.y = gGroundHeight;
+    this->obj.pos.y = unused_posY;
     this->obj.pos.z = zPos;
 
     this->unk_44 = 180;
