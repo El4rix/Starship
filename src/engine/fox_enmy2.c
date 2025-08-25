@@ -915,7 +915,9 @@ void func_enmy2_8006D0F4(Actor* this) {
 }
 
 void MeteoTunnel_Update(MeTunnel* this) {
-    this->obj.rot.z += 1.0f;
+    if (gPlayer[0].form != FORM_ON_FOOT) {
+        this->obj.rot.z += 1.0f;
+    }
 }
 
 typedef enum EventInfoSfx {
@@ -2339,7 +2341,7 @@ void ActorEvent_800701E0(ActorEvent* this) {
         sp3C.z = this->vel.z;
 
         if ((Object_CheckCollision(this->index, &this->obj.pos, &sp3C, 0) != 0) ||
-            (this->obj.pos.y < (gGroundHeight + 20.0f))) {
+            ((this->obj.pos.y < (gGroundHeight + 20.0f)) && (gPlayer[0].form != FORM_ON_FOOT))) {
             this->obj.status = OBJ_DYING;
             this->obj.pos.z -= this->vel.z;
             this->dmgType = DMG_BEAM;
@@ -3476,8 +3478,12 @@ void ActorEvent_Update(ActorEvent* this) {
             (this->eventType == EVID_ME_METEOR_6) || (this->eventType == EVID_ME_SECRET_MARKER_2) ||
             (this->eventType == EVID_WZ_METEOR_1) || (this->eventType == EVID_WZ_METEOR_2) ||
             (this->eventType == EVID_ME_METEOR_7)) {
-            this->obj.rot.y -= this->fwork[11] * this->fwork[12];
-            this->obj.rot.x += this->fwork[11] * this->fwork[12];
+            if ((gPlayer[0].form == FORM_ON_FOOT) && (this->obj.pos.y <= gGroundHeight + 90)) { // Keep grounded meteors from rolling
+
+            } else {
+                this->obj.rot.y -= this->fwork[11] * this->fwork[12];
+                this->obj.rot.x += this->fwork[11] * this->fwork[12];
+            }
         } else {
             this->fwork[10] -= this->fwork[11];
             this->fwork[23] += this->fwork[11] * this->fwork[12];
@@ -3868,6 +3874,28 @@ void ActorEvent_Update(ActorEvent* this) {
         D_ctx_80178238[this->index + 1] = 1;
     }
     */
+
+    if (gPlayer[0].form == FORM_ON_FOOT) {
+        if ((this->eventType == EVID_ME_METEOR_1) || (this->eventType == EVID_ME_METEOR_2) ||
+            (this->eventType == EVID_ME_METEOR_4) || (this->eventType == EVID_ME_METEOR_5) ||
+            (this->eventType == EVID_ME_BIG_METEOR) || (this->eventType == EVID_ME_ROCK_GULL) ||
+            (this->eventType == EVID_ME_METEOR_6) || (this->eventType == EVID_ME_SECRET_MARKER_2) ||
+            (this->eventType == EVID_WZ_METEOR_1) || (this->eventType == EVID_WZ_METEOR_2) ||
+            (this->eventType == EVID_ME_METEOR_7)) {
+
+            if (this->obj.pos.y <= gGroundHeight + 70) {
+                this->vel.x = 0;
+                this->vel.z = 0;
+
+                if (this->eventType == EVID_ME_BIG_METEOR) {    // fix big meteors getting in way
+                    if ((this->obj.pos.x > -200) && (this->obj.pos.x < 200)) {
+                        Object_Kill(&this->obj, this->sfxSource);
+                        Meteo_Effect346_Spawn(this);
+                    }
+                }
+            }
+        }
+    }
 }
 
 UNK_TYPE D_800D129C[140] = { 0 }; // unused
@@ -4393,7 +4421,7 @@ void func_enmy2_800763A4(Actor* this) {
 
             sp60 = Object_CheckCollision(this->index, &this->obj.pos, &vel, 0);
 
-            if ((sp60 != 0) || (this->obj.pos.y < (gGroundHeight + 30.0f))) {
+            if ((sp60 != 0) || ((this->obj.pos.y < (gGroundHeight + 30.0f)) && (gCurrentLevel != LEVEL_METEO))) { // on_foot not Meteo
                 if ((Rand_ZeroOne() < 0.5f) && (this->work_04C < 3) && (gLevelType == LEVELTYPE_PLANET) &&
                     (sp60 != 999) && (gGroundSurface != SURFACE_WATER) &&
                     ((this->vel.z < -20.0f) || (this->vel.z > 0.0f))) {

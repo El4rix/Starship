@@ -210,6 +210,9 @@ void Cutscene_WarpZoneComplete(Player* player) {
             if (gCsFrameCount > 450) {
                 Math_SmoothStepToF(&D_ctx_80177A48[0], 1.0f, 0.1f, 0.004f, 0.0f);
                 player->baseSpeed += 2.0f;
+                if (player->form == FORM_ON_FOOT) {
+                    player->pos.z -= 100.0f;
+                }
                 player->rot.x += 0.1f;
                 player->unk_190 = 2.0f;
 
@@ -402,11 +405,19 @@ void Cutscene_EnterWarpZone(Player* player) {
     s32 var_v0;
     s32 pad[4];
 
-    if ((player->form = FORM_ON_FOOT) && (gLevelPhase == 1)) {
-        gGroundHeight = -400;
-    }
+    if (player->form == FORM_ON_FOOT) {
 
-    player->pos.x += player->vel.x;
+        Math_SmoothStepToF(&player->rot.y, 0.0f, 0.1f, 5.0f, 0.0f);
+
+        player->rot_104.y = player->yRot_114 = player->rot.y = 0;
+
+        if (gLevelPhase == 1) {
+            gGroundHeight = -400;
+        }
+    } else {
+        player->pos.x += player->vel.x;
+    }
+    
     player->flags_228 = 0;
     player->alternateView = false;
     player->pos.y += player->vel.y;
@@ -456,7 +467,7 @@ void Cutscene_EnterWarpZone(Player* player) {
                 func_demo_80049968(&gActors[2], 2);
             }
 
-            if ((player->form != FORM_ON_FOOT) || (gCurrentLevel == LEVEL_METEO)) {
+            if ((player->form != FORM_ON_FOOT) || (gCurrentLevel != LEVEL_SECTOR_X)) {
                 func_demo_80049968(&gActors[3], 3);
             }
             
@@ -517,8 +528,10 @@ void Cutscene_EnterWarpZone(Player* player) {
             }
 
             if (player->csTimer == 60) {
-                gActors[3].state = var_v0;
-                AUDIO_PLAY_SFX(NA_SE_ARWING_WARP_DASH, gActors[3].sfxSource, 0);
+                if ((player->form != FORM_ON_FOOT) || (gCurrentLevel != LEVEL_SECTOR_X)) {
+                    gActors[3].state = var_v0;
+                    AUDIO_PLAY_SFX(NA_SE_ARWING_WARP_DASH, gActors[3].sfxSource, 0);
+                }
                 SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 50);
                 SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_FANFARE, 50);
             }
@@ -2826,7 +2839,13 @@ void func_demo_8004F798(ActorCutscene* this) {
 
         case 1:
             this->fwork[29] = 10.0f;
-            this->vel.z -= 100.0f;
+
+            if (gPlayer[0].form == FORM_ON_FOOT) { // fix warp cutscene issue for on foot
+                this->vel.z = -20.0f;
+            } else {
+                this->vel.z -= 100.0f;
+            }
+            
             if ((this->obj.pos.z + gPathProgress) < -15000.0f) {
                 Object_Kill(&this->obj, this->sfxSource);
             }

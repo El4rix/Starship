@@ -601,17 +601,33 @@ void Object_LoadLevelObjects(void) {
         if (objInit->id <= OBJ_INVALID) {
             break;
         }
-        if ((gPathProgress <= objInit->zPos1) && (objInit->zPos1 <= gPathProgress + 200.0f)) {
-            if ((gCurrentLevel == LEVEL_VENOM_1) && (objInit->id >= ACTOR_EVENT_ID)) {
-                if (((objInit->rot.y < 180.0f) && (objInit->xPos < gPlayer[0].xPath)) ||
-                    ((objInit->rot.y > 180.0f) && (gPlayer[0].xPath < objInit->xPos))) {
+
+        if (gPlayer[0].form == FORM_ON_FOOT) {
+            if (((gPathProgress/*  - 1000 */) <= objInit->zPos1) && (objInit->zPos1 <= (gPathProgress/*  - 1000 */) + 200.0f)) { // Spawn enemies closer to you in On-Foot
+                if ((gCurrentLevel == LEVEL_VENOM_1) && (objInit->id >= ACTOR_EVENT_ID)) {
+                    if (((objInit->rot.y < 180.0f) && (objInit->xPos < gPlayer[0].xPath)) ||
+                        ((objInit->rot.y > 180.0f) && (gPlayer[0].xPath < objInit->xPos))) {
+                        Object_Load(objInit, xMax, xMin, yMax, yMin);
+                    }
+                } else {
                     Object_Load(objInit, xMax, xMin, yMax, yMin);
                 }
             } else {
-                Object_Load(objInit, xMax, xMin, yMax, yMin);
-            }
+                break;
+            } 
         } else {
-            break;
+            if ((gPathProgress <= objInit->zPos1) && (objInit->zPos1 <= gPathProgress + 200.0f)) {
+                if ((gCurrentLevel == LEVEL_VENOM_1) && (objInit->id >= ACTOR_EVENT_ID)) {
+                    if (((objInit->rot.y < 180.0f) && (objInit->xPos < gPlayer[0].xPath)) ||
+                        ((objInit->rot.y > 180.0f) && (gPlayer[0].xPath < objInit->xPos))) {
+                        Object_Load(objInit, xMax, xMin, yMax, yMin);
+                    }
+                } else {
+                    Object_Load(objInit, xMax, xMin, yMax, yMin);
+                }
+            } else {
+                break;
+            }
         }
     }
 }
@@ -2719,6 +2735,20 @@ void Object_Dying(s32 index, ObjectId objId) {
 
 void Actor_Move(Actor* this) {
     f32 var_fv0;
+
+    if ((gPlayer[0].form == FORM_ON_FOOT) && (this->obj.pos.z < gPlayer[0].pos.z - 2000)) { // Limit retreat speed of enemies in on-foot
+        if (this->vel.z < -30) {
+            this->vel.z = -30;
+        }
+    }
+
+    if ((gPlayer[0].form == FORM_ON_FOOT) && (gCurrentLevel == LEVEL_METEO) && 
+        (this->obj.id != OBJ_ACTOR_ME_HOPBOT)) { // Keep enemies from crashing into Meteo's new ground in on-foot
+        this->gravity = 0;
+        if (this->obj.pos.y < gGroundHeight + 70) {
+            this->obj.pos.y = gGroundHeight + 70;
+        }
+    }
 
     this->obj.pos.x += this->vel.x;
     this->obj.pos.z += this->vel.z;

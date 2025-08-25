@@ -187,7 +187,7 @@ void Meteo_MeMeteor1_Update(MeMeteor1* this) {
     Meteo_ReflectDamage(this);
 }
 
-void Meteo_MeMeteor2_Update(MeMeteor2* this) {
+void Meteo_MeMeteor2_Update(MeMeteor2* this) {  // first small meteors, and fractured chunks
     Vec3f vec;
 
     this->obj.rot.y += 1.7f;

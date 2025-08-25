@@ -89,17 +89,25 @@ void Titania_LevelStart(Player* player) {
             gBgColor = 0x78C1; // 120, 24, 0
 
         case 1:
+
+            if (player->form == FORM_ON_FOOT) {
+                player->grounded = true;
+            }
+
             D_ctx_80177A48[0] = 0.01f;
             sp64 = 20.0f;
             gCsCamEyeX = actor->obj.pos.x - 500.0f;
             gCsCamEyeY = actor->obj.pos.y - 500.0f;
             gCsCamEyeZ = actor->obj.pos.z - 750.0f;
 
-            if ((gCsFrameCount == 330) && (!gTurretModeEnabled)) {
+            if ((gCsFrameCount == 330) && (!gTurretModeEnabled) && (player->form != FORM_ON_FOOT)) {
                 Radio_PlayMessage(gMsg_ID_4113, RCID_FOX);
             }
 
             if (gCsFrameCount == 430) {
+                if (player->form == FORM_ON_FOOT) {
+                    player->grounded = false;
+                }
                 player->csState = 2;
                 player->csTimer = 10;
                 AUDIO_PLAY_SFX(NA_SE_ARWING_BOOST, player->sfxSource, 0);

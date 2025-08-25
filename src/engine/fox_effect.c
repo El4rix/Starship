@@ -2415,9 +2415,13 @@ void func_effect_8007E6B8(Effect* this, u32 objId, f32 xPos, f32 yPos, f32 zPos,
     this->obj.pos.z = zPos;
 
     Object_SetInfo(&this->info, this->obj.id);
+
     sp50 = Math_Atan2F(gPlayer[0].pos.x - xPos, gPlayer[0].trueZpos - zPos);
     temp_ft4 = sqrtf(SQ(gPlayer[0].pos.x - xPos) + SQ(gPlayer[0].trueZpos - zPos));
     sp54 = -Math_Atan2F(gPlayer[0].pos.y - yPos, temp_ft4);
+    if (gPlayer[0].form == FORM_ON_FOOT) {
+        sp54 += (gPlayer[0].baseSpeed / 200);   // fix some Meteo enemies aiming above/behind you when you run
+    }
 
     Matrix_RotateY(gCalcMatrix, sp50, MTXF_NEW);
     Matrix_RotateX(gCalcMatrix, sp54, MTXF_APPLY);

@@ -931,8 +931,7 @@ void Background_DrawBackdrop(void) {
                                 Matrix_Scale(gGfxMatrix, 0.4f, 0.4f, 1.0f, MTXF_APPLY);
                                 Matrix_SetGfxMtx(&gMasterDisp);
                                 gSPDisplayList(gMasterDisp++, D_ME_600DDF0);
-                            }
-                            if ((gPlayer[0].state == PLAYERSTATE_LEVEL_COMPLETE) && (gCsFrameCount > 260)) {
+                            } else if ((gPlayer[0].state == PLAYERSTATE_LEVEL_COMPLETE) && (gCsFrameCount > 260)) {
                                 Matrix_Translate(gGfxMatrix, bgXpos - 120.0f, -(bgYpos - 120.0f) - 30.0f, -290.0f,
                                                  MTXF_APPLY);
                                 Matrix_Scale(gGfxMatrix, 0.5f, 0.5f, 1.0f, MTXF_APPLY);
@@ -2204,7 +2203,7 @@ void Background_DrawGround(void) {
 
             if ((gLevelPhase == 1) && (gPlayer[0].state != PLAYERSTATE_LEVEL_COMPLETE)) {
                 gDPSetTextureImage(gMasterDisp++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, SEGMENTED_TO_VIRTUAL(D_CO_601B6C0));
-                temp_s0 = fabsf(Math_ModF(2.0f * (gPathTexScroll * 0.2133333f), 128.0f)); // 0.64f / 3.0f
+                temp_s0 = fabsf(Math_ModF(2.0f * (gGameFrameCount * 8 + gPathTexScroll * 0.2133333f), 128.0f)); // 0.64f / 3.0f
                 temp_fv0 = Math_ModF((10000.0f - gPlayer[gPlayerNum].xPath) * 0.32f, 128.0f);
                 gDPSetupTile(gMasterDisp++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32, temp_fv0, temp_s0,
                             G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, 5, 5, G_TX_NOLOD, G_TX_NOLOD);
@@ -2259,9 +2258,64 @@ void Background_DrawGround(void) {
                 Matrix_Scale(gGfxMatrix, 1.0f, 1.0f, 0.5f, MTXF_APPLY);
                 Matrix_SetGfxMtx(&gMasterDisp);
                 gSPDisplayList(gMasterDisp++, D_CO_601B640);
-
                 Matrix_Pop(&gGfxMatrix);
-            } else {
+
+                // Ceiling Water ========================================
+                // Drawing the original water in the middle
+                Matrix_Push(&gGfxMatrix);
+                Matrix_Translate(gGfxMatrix, 0.0f, gGroundHeight + 1200, -3000.0f, MTXF_APPLY); // Center water
+                Matrix_RotateZ(gGfxMatrix, 180 * M_DTOR, MTXF_APPLY);
+                Matrix_Scale(gGfxMatrix, 1.0f, 1.0f, 0.5f, MTXF_APPLY);
+                Matrix_SetGfxMtx(&gMasterDisp);
+                gSPDisplayList(gMasterDisp++, D_CO_601B640);
+                Matrix_Pop(&gGfxMatrix);
+
+                // Extend water to the left
+                Matrix_Push(&gGfxMatrix);
+                Matrix_Translate(gGfxMatrix, -8000.0f, gGroundHeight + 1200, -3000.0f, MTXF_APPLY); // Left water
+                Matrix_RotateZ(gGfxMatrix, 180 * M_DTOR, MTXF_APPLY);
+                Matrix_Scale(gGfxMatrix, 1.0f, 1.0f, 0.5f, MTXF_APPLY);
+                Matrix_SetGfxMtx(&gMasterDisp);
+                gSPDisplayList(gMasterDisp++, D_CO_601B640);
+                Matrix_Pop(&gGfxMatrix);
+
+                // Extend water to the right
+                Matrix_Push(&gGfxMatrix);
+                Matrix_Translate(gGfxMatrix, 8000.0f, gGroundHeight + 1200, -3000.0f, MTXF_APPLY); // Right water
+                Matrix_RotateZ(gGfxMatrix, 180 * M_DTOR, MTXF_APPLY);
+                Matrix_Scale(gGfxMatrix, 1.0f, 1.0f, 0.5f, MTXF_APPLY);
+                Matrix_SetGfxMtx(&gMasterDisp);
+                gSPDisplayList(gMasterDisp++, D_CO_601B640);
+                Matrix_Pop(&gGfxMatrix);
+
+                // Drawing the original water in the middle
+                Matrix_Push(&gGfxMatrix);
+                Matrix_Translate(gGfxMatrix, 0.0f, gGroundHeight + 1200, 3000.0f, MTXF_APPLY); // Center water
+                Matrix_RotateZ(gGfxMatrix, 180 * M_DTOR, MTXF_APPLY);
+                Matrix_Scale(gGfxMatrix, 1.0f, 1.0f, 0.5f, MTXF_APPLY);
+                Matrix_SetGfxMtx(&gMasterDisp);
+                gSPDisplayList(gMasterDisp++, D_CO_601B640);
+                Matrix_Pop(&gGfxMatrix);
+
+                // Extend water to the left
+                Matrix_Push(&gGfxMatrix);
+                Matrix_Translate(gGfxMatrix, -8000.0f, gGroundHeight + 1200, 3000.0f, MTXF_APPLY); // Left water
+                Matrix_RotateZ(gGfxMatrix, 180 * M_DTOR, MTXF_APPLY);
+                Matrix_Scale(gGfxMatrix, 1.0f, 1.0f, 0.5f, MTXF_APPLY);
+                Matrix_SetGfxMtx(&gMasterDisp);
+                gSPDisplayList(gMasterDisp++, D_CO_601B640);
+                Matrix_Pop(&gGfxMatrix);
+
+                // Extend water to the right
+                Matrix_Push(&gGfxMatrix);
+                Matrix_Translate(gGfxMatrix, 8000.0f, gGroundHeight + 1200, 3000.0f, MTXF_APPLY); // Right water
+                Matrix_RotateZ(gGfxMatrix, 180 * M_DTOR, MTXF_APPLY);
+                Matrix_Scale(gGfxMatrix, 1.0f, 1.0f, 0.5f, MTXF_APPLY);
+                Matrix_SetGfxMtx(&gMasterDisp);
+                gSPDisplayList(gMasterDisp++, D_CO_601B640);
+                Matrix_Pop(&gGfxMatrix);
+
+            } else if (gPlayer[0].state != PLAYERSTATE_LEVEL_COMPLETE) {
                 RCP_SetupDL_29(gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
                 switch (gCurrentLevel) {
                     case LEVEL_METEO:
