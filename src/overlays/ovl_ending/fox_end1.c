@@ -898,6 +898,7 @@ void Ending_8018A2A8(void) {
 }
 
 void Ending_8018A570(void) {
+    
     Ending_8018A024();
 
     Lights_SetOneLight(&gMasterDisp, gLight1x, gLight1y, gLight1z, gLight1R, gLight1G, gLight1B, gAmbientR, gAmbientG,
@@ -1042,6 +1043,7 @@ void Ending_Main(void) {
 
     switch (D_ending_80196D00) {
         case 0:
+            D_ending_80192E70 = 0; // So the ending still plays on subsequent runs
             gRadioState = 0;
             gGameFrameCount = 0;
             gSceneSetup = 0;

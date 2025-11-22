@@ -135,6 +135,9 @@ void Venom2_UpdateEvents(ActorAllRange* this) {
 
         case 3:
             gPauseEnabled = false;
+            if (gTurretModeEnabled) {
+                Cutscene_DrawGreatFox();
+            }
             if (gStarWolfMsgTimer < 600) {
                 player->cam.eye.x += wolf->vel.x * 0.23f;
                 player->cam.eye.y += wolf->vel.y * 0.23f;

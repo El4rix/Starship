@@ -319,7 +319,7 @@ void SectorZ_Missile_Update(ActorAllRange* this) {
 
     } else {
         this->fwork[MISSILE_TARGET_X] = gBosses[SZ_GREAT_FOX].obj.pos.x + xPitch + 400.0f;
-        this->fwork[MISSILE_TARGET_Y] = gBosses[SZ_GREAT_FOX].obj.pos.y + yPitch + 100.0f;
+        this->fwork[MISSILE_TARGET_Y] = 0.0f;
         this->fwork[MISSILE_TARGET_Z] = gBosses[SZ_GREAT_FOX].obj.pos.z;
         // Missile hit check
         if ((fabsf(this->fwork[MISSILE_TARGET_X] - this->obj.pos.x) < 800.0f) &&
@@ -613,7 +613,7 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
         }
     }
 
-    if (gTurretModeEnabled) {
+    //if (gTurretModeEnabled) {
         switch (gAllRangeEventTimer) {
             // Wave 1 ========================================================================
             case 1300:
@@ -741,7 +741,7 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
                 gAllRangeEventTimer = 2500;
                 break;
         }
-    } else {
+    /* } else {
         switch (gAllRangeEventTimer) {
             case 5850:
                 Radio_PlayMessage(gMsg_ID_16110, RCID_ROB64);
@@ -797,7 +797,7 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
                 AUDIO_PLAY_BGM(NA_BGM_BOSS_SZ);
                 break;
         }
-    }
+    } */
     
 
     ActorAllRange_UpdateEnemyEvents(this);
@@ -2544,6 +2544,10 @@ void SectorZ_SzGreatFox_Update(SzGreatFox* this) {
         if (gPlayer[0].state == PLAYERSTATE_ACTIVE) {
             this->obj.pos.y = -10000;
         } else if (gPlayer[0].state == PLAYERSTATE_STANDBY) {
+            this->obj.pos.y = 0;
+        }
+    } else {
+        if (gPlayer[0].state == PLAYERSTATE_ACTIVE) {
             this->obj.pos.y = 0;
         }
     }

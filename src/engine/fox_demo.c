@@ -3466,6 +3466,16 @@ void Cutscene_DrawGreatFox(void) {
             Matrix_Scale(gGfxMatrix, 0.05f, 0.05f, 0.05f, MTXF_APPLY);
             Matrix_SetGfxMtx(&gMasterDisp);
         }
+
+        if ((gLevelMode == LEVELMODE_ALL_RANGE) && (gPlayer[0].state == PLAYERSTATE_STANDBY)) {
+            Matrix_Push(&gGfxMatrix);
+            Matrix_Scale(gGfxMatrix, 0.5f, 0.5f, 0.5f, MTXF_APPLY);
+            Matrix_RotateY(gGfxMatrix, (gPlayer[0].unk_000) * M_DTOR, MTXF_APPLY);
+            if (gCurrentLevel == LEVEL_FORTUNA) {
+                Matrix_RotateY(gGfxMatrix, (gPlayer[0].unk_000 + 90) * M_DTOR, MTXF_APPLY);
+            }
+            Matrix_SetGfxMtx(&gMasterDisp);
+        }
     }
 
     PRINTF("Demo_Time=%d\n");
@@ -3555,6 +3565,11 @@ void Cutscene_DrawGreatFox(void) {
             gSPDisplayList(gMasterDisp++, dList);
         }
     }
+
+    if (gTurretModeEnabled && (gLevelMode == LEVELMODE_ALL_RANGE) && (gPlayer[0].state == PLAYERSTATE_STANDBY)) {
+        Matrix_Pop(&gGfxMatrix);
+    }
+
     // @port Pop the transform id.
     FrameInterpolation_RecordCloseChild();
 }

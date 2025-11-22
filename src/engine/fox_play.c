@@ -7434,6 +7434,7 @@ void Player_Update(Player* player) {
                     if (!gVersusMode) {
                         if (gTurretModeEnabled) {
                             Turret_Update360(player);
+                            player->draw = false;
                         } else {
                             Player_Update360(player);
                             player->draw = true;

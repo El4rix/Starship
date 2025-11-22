@@ -51,6 +51,12 @@ void Fortuna_SpawnEnemies(ActorEvent* this) {
                     if ((i == 5) && (Rand_ZeroOne() < 0.3f)) {
                         enemy->aiIndex = AI360_FALCO;
                     }
+                    if ((i == 6) && (gTurretModeEnabled)) {
+                        enemy->aiIndex = AI360_FOX;
+                    }
+                    if ((i == 7) && (gTurretModeEnabled) && (Rand_ZeroOne() < 0.3f)) {
+                        enemy->aiIndex = AI360_FOX;
+                    }
 
                     enemy->rot_0F4.x = 3.0f;
                     enemy->rot_0F4.y = sEnemySpawnAngle[this->counter_04E];
