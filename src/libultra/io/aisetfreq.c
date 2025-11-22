@@ -4,7 +4,7 @@ s32 osViClock2 = 0x02E6D354;
 
 s32 osAiSetFrequency(u32 freq) {
     return 1;
-    
+
     register u32 a1;
     register s32 a2;
     register float ftmp;

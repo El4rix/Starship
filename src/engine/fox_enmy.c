@@ -2924,7 +2924,8 @@ void Actor_Update(Actor* this) {
         }
     } else if (this->lockOnTimers[TEAM_ID_FOX] != 0) {
         bool rapidFire = CVarGetInteger("gRapidFire", 0) == 1;
-        if (!(gControllerHold[gMainController].button & A_BUTTON) || (rapidFire && (gControllerHold[gMainController].button & A_BUTTON))) {
+        if (!(gControllerHold[gMainController].button & A_BUTTON) ||
+            (rapidFire && (gControllerHold[gMainController].button & A_BUTTON))) {
             this->lockOnTimers[TEAM_ID_FOX]--;
         }
         gChargeTimers[0] = 0;

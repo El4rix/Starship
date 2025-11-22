@@ -19,6 +19,22 @@
 #include "assets/ast_katina.h"
 #include "assets/ast_allies.h"
 #include "port/hooks/Events.h"
+#include "fox_co.h"
+#include "fox_record.h"
+
+void UpdateVisPerFrameFromRecording(Record* record, s32 maxFrames) {
+    int i;
+
+    if (gCsFrameCount > record[maxFrames - 1].frame) {
+        return;
+    }
+
+    for (i = 0; i < maxFrames; i++) {
+        if (gCsFrameCount == record[i].frame) {
+            gVIsPerFrame = record[i].vis;
+        }
+    }
+}
 
 void func_demo_80048AC0(TeamId teamId) {
     s32 teamShield;
@@ -968,6 +984,8 @@ void Cutscene_CoComplete2(Player* player) {
     player->flags_228 = 0;
 
     Math_SmoothStepToF(&player->camRoll, 0.0f, 0.1f, 5.0f, 0.01f);
+
+    UpdateVisPerFrameFromRecording(gCarrierCutsceneRecord, ARRAY_COUNT(gCarrierCutsceneRecord));
 
     switch (player->csState) {
         case 10:
@@ -3318,6 +3336,10 @@ void ActorCutscene_Draw(ActorCutscene* this) {
             break;
 
         case ACTOR_CS_37:
+            // Fixes the white flash on the right side of the screen during the Sector Y Intro Cutscene.
+            if ((gCurrentLevel == LEVEL_SECTOR_Y) && (gCsFrameCount == 350) && (gPlayer[0].csState == 2)) {
+                break;
+            }
             RCP_SetupDL_49();
             gDPSetPrimColor(gMasterDisp++, 0, 0, this->iwork[0], this->iwork[1], this->iwork[2], this->iwork[3]);
             gDPSetEnvColor(gMasterDisp++, this->iwork[4], this->iwork[5], this->iwork[6], this->iwork[7]);

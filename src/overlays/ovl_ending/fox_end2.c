@@ -37,14 +37,14 @@ void Ending_8018CE20(u32 arg0) {
                 if ((D_ending_80192E74[i].unk_11 == 0) || (gVenomHardClear == 1)) {
                     if (D_ending_80192E74[i].unk_10 == 1) {
                         xPos = (SCREEN_WIDTH - Graphics_GetLargeTextWidth(D_ending_80192E74[i].unk_00)) / 2;
-                        RCP_SetupDL(&gMasterDisp, SETUPDL_83);
+                        RCP_SetupDL(&gMasterDisp, SETUPDL_83_OPTIONAL);
                         gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
                         gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, alpha);
                         Graphics_DisplayLargeText(xPos, D_ending_80192E74[i].unk_0E, 1.0f, 1.0f,
                                                   D_ending_80192E74[i].unk_00);
 
                     } else if (D_ending_80192E74[i].unk_10 == 2) {
-                        RCP_SetupDL(&gMasterDisp, SETUPDL_83);
+                        RCP_SetupDL(&gMasterDisp, SETUPDL_83_OPTIONAL);
                         gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
                         gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, alpha);
                         Lib_TextureRect_IA8(&gMasterDisp, D_ending_80192E74[i].unk_00, 192, 30, 64.0f, 105.0f, 1.0f,
@@ -144,7 +144,7 @@ void Ending_8018D638(u32 arg0, AssetInfo* asset) {
     gFillScreenAlpha = gFillScreenAlphaTarget = alpha;
     gFillScreenAlphaStep = 0;
 
-    RCP_SetupDL(&gMasterDisp, SETUPDL_83);
+    RCP_SetupDL(&gMasterDisp, SETUPDL_83_OPTIONAL);
 
     gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 255);
 
@@ -464,8 +464,24 @@ void Ending_8018EDB8(u32 arg0, AssetInfo* asset) {
 
     gDPLoadTextureBlock(gMasterDisp++, D_END_700EA38, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32, 0, G_TX_WRAP | G_TX_NOMIRROR,
                         G_TX_WRAP | G_TX_NOMIRROR, 5, 5, G_TX_NOLOD, G_TX_NOLOD);
-    gDPSetupTile(gMasterDisp++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32, arg0 * 14, 0, G_TX_NOMIRROR | G_TX_WRAP,
-                 G_TX_NOMIRROR | G_TX_WRAP, 5, 5, G_TX_NOLOD, G_TX_NOLOD);
+    int interpolatedFrames = GameEngine_GetInterpolationFrameCount();
+
+    float scrollArg = arg0 * 14;
+    float inc = 14 / (float) interpolatedFrames;
+
+    for (int i = 0; i < interpolatedFrames; i++) {
+        gDPSetInterpolation(gMasterDisp++, i);
+
+        gDPSetupTile2(gMasterDisp++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32, scrollArg, 0, G_TX_NOMIRROR | G_TX_WRAP,
+                      G_TX_NOMIRROR | G_TX_WRAP, 5, 5, G_TX_NOLOD, G_TX_NOLOD);
+
+        gDPSetTileSizeInterp(gMasterDisp, G_TX_RENDERTILE, scrollArg, 0, 32 << 2, 0);
+
+        gMasterDisp += 3;
+
+        scrollArg += inc;
+    }
+
     gSPDisplayList(gMasterDisp++, D_END_700E9E0);
 }
 
@@ -828,6 +844,10 @@ void Ending_80191234(u32 arg0, AssetInfo* asset) {
     gBgColor = 0;
     gStarCount = 0;
     gControllerLock = 10;
+
+    // @port: Ending seen at least once.
+    gSaveFile.save.data.padEE[0] = 1;
+    Save_Write();
 }
 
 void Ending_80191294(u32 arg0, AssetInfo* asset) {
@@ -1091,7 +1111,11 @@ void Ending_801924EC(u32 arg0) {
 }
 
 void Ending_801926D4(void) {
-    gControllerLock = 10000;
+    if (gSaveFile.save.data.padEE[0] == 1) {
+        gControllerLock = 0;
+    } else {
+        gControllerLock = 10000;
+    }
 
     Matrix_Push(&gGfxMatrix);
 

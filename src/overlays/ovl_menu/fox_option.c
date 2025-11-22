@@ -1959,7 +1959,7 @@ void Option_Data_Select(void) {
 }
 
 void Option_Data_Draw(void) {
-    s32 i;
+    s32 i = 0;
     s32 sp7C[2];
     s32 mask[2];
     static f32 D_menu_801AF084[2] = { 172.0f, 76.0f };
@@ -1974,8 +1974,7 @@ void Option_Data_Draw(void) {
 
     gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 255);
 
-    Lib_TextureRect_IA8(&gMasterDisp, D_OPT_80084B0, 176, 13, D_menu_801AF094[0], D_menu_801AF0AC[0] + (4.0f * i), 1.0f,
-                        1.0f);
+    Lib_TextureRect_IA8(&gMasterDisp, D_OPT_80084B0, 176, 13, D_menu_801AF094[0], D_menu_801AF0AC[0], 1.0f, 1.0f);
 
     if (D_menu_801B91CC < 2) {
         Lib_TextureRect_IA8_MirX(&gMasterDisp, aArrowTex, 8, 8, D_menu_801AF084[D_menu_801B91C0], 140.0f, 1.0f, 1.0f);
@@ -2250,7 +2249,7 @@ void Option_80197914(void) {
         // @port: Tag the transform.
         FrameInterpolation_RecordOpenChild("RANKING_BORDERS", i);
 
-                Matrix_Translate(gGfxMatrix, vec1->x, vec1->y, -500.0f, MTXF_APPLY);
+        Matrix_Translate(gGfxMatrix, vec1->x, vec1->y, -500.0f, MTXF_APPLY);
 
         // @port: Increase the scale by 2.5f to compensate for missing borders
         Matrix_Scale(gGfxMatrix, vec2->x * 4, vec2->y + 2.5f, 1.0f, MTXF_APPLY);
@@ -3492,6 +3491,9 @@ void Option_DrawMenuCard(OptionCardFrame arg0) {
 
     Matrix_Push(&gGfxMatrix);
 
+    // @port: Tag the transform.
+    FrameInterpolation_RecordOpenChild("MenuCard", (u32) &arg0);
+
     Matrix_Translate(gGfxMatrix, arg0.x, arg0.y, arg0.z, MTXF_APPLY);
     Matrix_Scale(gGfxMatrix, arg0.xScale, arg0.yScale, 1.0f, MTXF_APPLY);
     Matrix_RotateX(gGfxMatrix, M_DTOR * 90.0f, MTXF_APPLY);
@@ -3501,6 +3503,9 @@ void Option_DrawMenuCard(OptionCardFrame arg0) {
     gSPDisplayList(gMasterDisp++, D_OPT_8015550);
 
     Matrix_Pop(&gGfxMatrix);
+
+    // @port Pop the transform id.
+    FrameInterpolation_RecordCloseChild();
 
     Lib_InitPerspective(&gMasterDisp);
 }

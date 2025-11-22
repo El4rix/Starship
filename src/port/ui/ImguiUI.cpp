@@ -9,7 +9,7 @@
 
 #include <imgui_internal.h>
 #include <libultraship/libultraship.h>
-#include <Fast3D/gfx_pc.h>
+#include <Fast3D/interpreter.h>
 #include "port/Engine.h"
 #include "port/notification/notification.h"
 #include "utils/StringHelper.h"
@@ -116,6 +116,117 @@ static const char* voiceLangs[] = {
     "Original", /*"Japanese",*/ "Lylat"
 };
 
+void DrawSpeakerPositionEditor() {
+    static ImVec2 lastCanvasPos;
+    ImGui::Text("Speaker Position Editor");
+    ImVec2 canvasSize = ImVec2(200, 200); // Static canvas size
+    ImVec2 canvasPos = ImGui::GetCursorScreenPos();
+    ImVec2 center = ImVec2(canvasPos.x + canvasSize.x / 2, canvasPos.y + canvasSize.y / 2);
+
+    // Speaker positions
+    static ImVec2 speakerPositions[4];
+    static bool initialized = false;
+    static float radius = 80.0f;
+
+    // Reset positions if canvas position changed (window resized/moved)
+    if (!initialized || (lastCanvasPos.x != canvasPos.x || lastCanvasPos.y != canvasPos.y)) {
+        const char* cvarNames[4] = { "gPositionFrontLeft", "gPositionFrontRight", "gPositionRearLeft", "gPositionRearRight" };
+        float angles[4] = { 240.f, 300.f, 160.f, 20.f }; // Default angles
+        
+        for (int i = 0; i < 4; i++) {
+            int savedAngle = CVarGetInteger(cvarNames[i], -1);
+            if (savedAngle != -1) {
+                angles[i] = static_cast<float>(savedAngle);
+            }
+
+            float rad = angles[i] * (M_PI / 180.0f);
+            speakerPositions[i] = ImVec2(center.x + radius * cosf(rad), center.y + radius * sinf(rad));
+        }
+        initialized = true;
+        lastCanvasPos = canvasPos;
+    }
+
+    // Draw canvas
+    ImDrawList* drawList = ImGui::GetWindowDrawList();
+    drawList->AddRectFilled(canvasPos, ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y), IM_COL32(26, 26, 26, 255));
+    drawList->AddCircleFilled(center, 5.0f, IM_COL32(255, 255, 255, 255)); // Central person
+
+    // Draw circle line for speaker positions
+    drawList->AddCircle(center, radius, IM_COL32(163, 163, 163, 255), 100);
+
+    // Add markers at 0, 22.5, 45, etc.
+    for (float angle = 0; angle < 360; angle += 22.5f) {
+        float rad = angle * (M_PI / 180.0f);
+        ImVec2 markerStart = ImVec2(center.x + (radius - 5) * cosf(rad), center.y + (radius - 5) * sinf(rad));
+        ImVec2 markerEnd = ImVec2(center.x + radius * cosf(rad), center.y + radius * sinf(rad));
+        drawList->AddLine(markerStart, markerEnd, IM_COL32(163, 163, 163, 255));
+    }
+
+    const char* speakerLabels[4] = { "L", "R", "RL", "RR" };
+    const char* cvarNames[4] = { "gPositionFrontLeft", "gPositionFrontRight", "gPositionRearLeft", "gPositionRearRight" };
+
+    const float snapThreshold = 2.5f; // Degrees within which snapping occurs
+
+    for (int i = 0; i < 4; i++) {
+        // Draw speaker as a darker blue circle
+        drawList->AddCircleFilled(speakerPositions[i], 10.0f, IM_COL32(34, 52, 78, 255)); // Dark blue color
+        drawList->AddText(ImVec2(speakerPositions[i].x - 6, speakerPositions[i].y - 6), IM_COL32(255, 255, 255, 255), speakerLabels[i]);
+
+        // Handle dragging
+        ImGui::SetCursorScreenPos(ImVec2(speakerPositions[i].x - 10, speakerPositions[i].y - 10));
+        ImGui::InvisibleButton(speakerLabels[i], ImVec2(20, 20));
+        if (ImGui::IsItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
+            ImVec2 mouseDelta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
+            ImVec2 newPos = ImVec2(speakerPositions[i].x + mouseDelta.x, speakerPositions[i].y + mouseDelta.y);
+
+            // Constrain position to the circle
+            ImVec2 direction = ImVec2(newPos.x - center.x, newPos.y - center.y);
+            float length = sqrtf(direction.x * direction.x + direction.y * direction.y);
+            ImVec2 constrainedPos = ImVec2(center.x + (direction.x / length) * radius, center.y + (direction.y / length) * radius);
+
+            // Calculate angle of the constrained position
+            float angle = atan2f(constrainedPos.y - center.y, constrainedPos.x - center.x) * (180.0f / M_PI);
+            if (angle < 0) angle += 360.0f;
+
+            // Snap to the nearest 22.5-degree marker if within the snap threshold
+            float snappedAngle = roundf(angle / 22.5f) * 22.5f;
+            if (fabsf(snappedAngle - angle) <= snapThreshold) {
+                float rad = snappedAngle * (M_PI / 180.0f);
+                constrainedPos = ImVec2(center.x + radius * cosf(rad), center.y + radius * sinf(rad));
+            }
+
+            speakerPositions[i] = constrainedPos;
+            ImGui::ResetMouseDragDelta();
+
+            // Save the updated angle to CVar after dragging
+            float updatedAngle = atan2f(speakerPositions[i].y - center.y, speakerPositions[i].x - center.x) * (180.0f / M_PI);
+            if (updatedAngle < 0) updatedAngle += 360.0f;
+            CVarSetInteger(cvarNames[i], static_cast<int>(updatedAngle));
+            Ship::Context::GetInstance()->GetWindow()->GetGui()->SaveConsoleVariablesNextFrame(); // Mark for saving
+        }
+
+        // Calculate angle and save to CVar
+        float angle = atan2f(speakerPositions[i].y - center.y, speakerPositions[i].x - center.x) * (180.0f / M_PI);
+        if (angle < 0) angle += 360.0f;
+        CVarSetInteger(cvarNames[i], static_cast<int>(angle));
+    }
+
+    // Reset cursor position for button placement
+    ImGui::SetCursorScreenPos(ImVec2(canvasPos.x, canvasPos.y + canvasSize.y + 10));
+    if (ImGui::Button("Reset Positions")) {
+        float defaultAngles[4] = { 240.f, 300.f, 160.f, 20.f };
+        for (int i = 0; i < 4; i++) {
+            float rad = defaultAngles[i] * (M_PI / 180.0f);
+            speakerPositions[i] = ImVec2(center.x + radius * cosf(rad), center.y + radius * sinf(rad));
+            CVarSetInteger(cvarNames[i], static_cast<int>(defaultAngles[i]));
+        }
+        Ship::Context::GetInstance()->GetWindow()->GetGui()->SaveConsoleVariablesNextFrame();
+    }
+
+    // Reset cursor position to ensure canvas size remains static
+    ImGui::SetCursorScreenPos(ImVec2(canvasPos.x, canvasPos.y + canvasSize.y + 10));
+}
+
 void DrawSettingsMenu(){
     if(UIWidgets::BeginMenu("Settings")){
         if (UIWidgets::BeginMenu("Audio")) {
@@ -171,25 +282,54 @@ void DrawSettingsMenu(){
             if (Ship::Context::GetInstance()->GetAudio()->GetAvailableAudioBackends()->size() <= 1) {
                 UIWidgets::ReEnableComponent("");
             }
+            
+            UIWidgets::PaddedEnhancementCheckbox("Surround 5.1 (Needs reload)", "gAudioChannelsSetting", 1, 0);
+            
+            if (CVarGetInteger("gAudioChannelsSetting", 0) == 1) {
+                // Subwoofer threshold
+                UIWidgets::CVarSliderInt("Subwoofer threshold (Hz)", "gSubwooferThreshold", 10u, 1000u, 80u, {
+                    .tooltip = "The threshold for the subwoofer to be activated. Any sound under this frequency will be played on the subwoofer.",
+                    .format = "%d",
+                });
+
+                // Rear music volume slider
+                UIWidgets::CVarSliderFloat("Rear music volume", "gVolumeRearMusic", 0.0f, 1.0f, 1.0f, {
+                    .format = "%.0f%%",
+                    .isPercentage = true,
+                });
+
+                // Configurable positioning of speakers
+                DrawSpeakerPositionEditor();
+            }
 
             ImGui::EndMenu();
         }
-
-        if(GameEngine::HasVersion(SF64_VER_EU)){
+        
+        if (!GameEngine::HasVersion(SF64_VER_JP) || GameEngine::HasVersion(SF64_VER_EU)) {
             UIWidgets::Spacer(0);
             if (UIWidgets::BeginMenu("Language")) {
-                if (UIWidgets::CVarCombobox("Voices", "gVoiceLanguage", voiceLangs, 
-                {
-                    .tooltip = "Changes the language of the voice acting in the game",
-                    .defaultIndex = 0,
-                })) {
-                    Audio_SetVoiceLanguage(CVarGetInteger("gVoiceLanguage", 0));
-                };
-                ImGui::Dummy(ImVec2(ImGui::CalcTextSize(voiceLangs[0]).x + 55, 0.0f));
+                ImGui::Dummy(ImVec2(150, 0.0f));
+                if (!GameEngine::HasVersion(SF64_VER_JP) && GameEngine::HasVersion(SF64_VER_EU)){
+                    //UIWidgets::Spacer(0);
+                    if (UIWidgets::CVarCombobox("Voices", "gVoiceLanguage", voiceLangs, 
+                    {
+                        .tooltip = "Changes the language of the voice acting in the game",
+                        .defaultIndex = 0,
+                    })) {
+                        Audio_SetVoiceLanguage(CVarGetInteger("gVoiceLanguage", 0));
+                    };
+                } else {
+                    if (UIWidgets::Button("Install JP/EU Audio")) {
+                        if (GameEngine::GenAssetFile(false)){
+                            GameEngine::ShowMessage("Success", "Audio assets installed. Changes will be applied on the next startup.", SDL_MESSAGEBOX_INFORMATION);
+                        }
+                        Ship::Context::GetInstance()->GetWindow()->Close();
+                    }
+                }
                 ImGui::EndMenu();
             }
         }
-
+        
         UIWidgets::Spacer(0);
 
         if (UIWidgets::BeginMenu("Controller")) {
@@ -230,12 +370,7 @@ void DrawSettingsMenu(){
 
         { // FPS Slider
             const int minFps = 30;
-            static int maxFps;
-            if (Ship::Context::GetInstance()->GetWindow()->GetWindowBackend() == Ship::WindowBackend::FAST3D_DXGI_DX11) {
-                maxFps = 360;
-            } else {
-                maxFps = Ship::Context::GetInstance()->GetWindow()->GetCurrentRefreshRate();
-            }
+            static int maxFps = 360;
             int currentFps = 0;
         #ifdef __WIIU__
             UIWidgets::Spacer(0);
@@ -298,45 +433,28 @@ void DrawSettingsMenu(){
             CVarSetInteger("gInterpolationFPS", currentFps);
             Ship::Context::GetInstance()->GetWindow()->GetGui()->SaveConsoleVariablesNextFrame();
         #else
-            bool matchingRefreshRate =
-                CVarGetInteger("gMatchRefreshRate", 0) && Ship::Context::GetInstance()->GetWindow()->GetWindowBackend() != Ship::WindowBackend::FAST3D_DXGI_DX11;
+            bool matchingRefreshRate = CVarGetInteger("gMatchRefreshRate", 0);
             UIWidgets::CVarSliderInt((currentFps == 30) ? "FPS: Original (30)" : "FPS: %d", "gInterpolationFPS", minFps, maxFps, 60, {
                 .disabled = matchingRefreshRate
             });
         #endif
-            if (Ship::Context::GetInstance()->GetWindow()->GetWindowBackend() == Ship::WindowBackend::FAST3D_DXGI_DX11) {
-                UIWidgets::Tooltip(
-                    "Uses Matrix Interpolation to create extra frames, resulting in smoother graphics. This is purely "
-                    "visual and does not impact game logic, execution of glitches etc.\n\n"
-                    "A higher target FPS than your monitor's refresh rate will waste resources, and might give a worse result."
-                );
-            } else {
-                UIWidgets::Tooltip(
-                    "Uses Matrix Interpolation to create extra frames, resulting in smoother graphics. This is purely "
-                    "visual and does not impact game logic, execution of glitches etc."
-                );
-            }
+            UIWidgets::Tooltip(
+                "Uses Matrix Interpolation to create extra frames, resulting in smoother graphics. This is purely "
+                "visual and does not impact game logic, execution of glitches etc.\n\n"
+                "A higher target FPS than your monitor's refresh rate will waste resources, and might give a worse result."
+            );
         } // END FPS Slider
 
-        if (Ship::Context::GetInstance()->GetWindow()->GetWindowBackend() == Ship::WindowBackend::FAST3D_DXGI_DX11) {
-            UIWidgets::Spacer(0);
-            if (ImGui::Button("Match Refresh Rate")) {
-                int hz = Ship::Context::GetInstance()->GetWindow()->GetCurrentRefreshRate();
-                if (hz >= 30 && hz <= 360) {
-                    CVarSetInteger("gInterpolationFPS", hz);
-                    Ship::Context::GetInstance()->GetWindow()->GetGui()->SaveConsoleVariablesNextFrame();
-                }
-            }
-        } else {
-            UIWidgets::PaddedEnhancementCheckbox("Match Refresh Rate", "gMatchRefreshRate", true, false);
-        }
-
-        UIWidgets::Tooltip("Matches interpolation value to the current game's window refresh rate");
+        UIWidgets::PaddedEnhancementCheckbox("Match Refresh Rate", "gMatchRefreshRate", true, false);
+        UIWidgets::Tooltip("Matches interpolation value to the refresh rate of your display.");
 
         if (Ship::Context::GetInstance()->GetWindow()->GetWindowBackend() == Ship::WindowBackend::FAST3D_DXGI_DX11) {
-            UIWidgets::PaddedEnhancementSliderInt(CVarGetInteger("gExtraLatencyThreshold", 0) == 0 ? "Jitter fix: Off" : "Jitter fix: >= %d FPS",
-                                                  "##ExtraLatencyThreshold", "gExtraLatencyThreshold", 0, 360, "", 0, true, true, false);
-            UIWidgets::Tooltip("When Interpolation FPS setting is at least this threshold, add one frame of input lag (e.g. 16.6 ms for 60 FPS) in order to avoid jitter. This setting allows the CPU to work on one frame while GPU works on the previous frame.\nThis setting should be used when your computer is too slow to do CPU + GPU work in time.");
+            UIWidgets::PaddedEnhancementCheckbox("Render parallelization","gRenderParallelization", true, false, {}, {}, {}, true);
+            UIWidgets::Tooltip(
+                "This setting allows the CPU to work on one frame while GPU works on the previous frame.\n"
+                "Recommended if you can't reach the FPS you set, despite it being set below your refresh rate "
+                "or if you notice other performance problems.\n"
+                "Adds up to one frame of input lag under certain scenarios.");
         }
       
         UIWidgets::PaddedSeparator(true, true, 3.0f, 3.0f);
@@ -377,7 +495,8 @@ void DrawSettingsMenu(){
         }
 
         if (Ship::Context::GetInstance()->GetWindow()->CanDisableVerticalSync()) {
-            UIWidgets::PaddedEnhancementCheckbox("Enable Vsync", "gVsyncEnabled", true, false);
+            UIWidgets::PaddedEnhancementCheckbox("Enable Vsync", "gVsyncEnabled", true, false, false, "", UIWidgets::CheckboxGraphics::Cross, true);
+            UIWidgets::Tooltip("Removes tearing, but clamps your max FPS to your displays refresh rate.");
         }
 
         if (Ship::Context::GetInstance()->GetWindow()->SupportsWindowedFullscreen()) {
@@ -394,9 +513,7 @@ void DrawSettingsMenu(){
         ImGui::Text("Texture Filter (Needs reload)");
         UIWidgets::EnhancementCombobox("gTextureFilter", filters, 0);
 
-        if (Ship::Context::GetInstance()->GetConfig()->GetString("Window.Backend.Name") != windowBackendNames[Ship::WindowBackend::FAST3D_SDL_OPENGL]) {
-            UIWidgets::PaddedEnhancementCheckbox("Apply Point Filtering to UI Elements", "gHUDPointFiltering", true, false, false, "", UIWidgets::CheckboxGraphics::Cross, true);
-        }
+        UIWidgets::PaddedEnhancementCheckbox("Apply Point Filtering to UI Elements", "gHUDPointFiltering", true, false, false, "", UIWidgets::CheckboxGraphics::Cross, true);
         UIWidgets::Spacer(0);
 
         Ship::Context::GetInstance()->GetWindow()->GetGui()->GetGameOverlay()->DrawSettings();
@@ -432,13 +549,7 @@ void DrawMenuBarIcon() {
 
 void DrawGameMenu() {
     if (UIWidgets::BeginMenu("Starship")) {
-        if (UIWidgets::MenuItem("Reset",
-#ifdef __APPLE__
-                "Command-R"
-#else
-                "Ctrl+R"
-#endif
-        )) {
+        if (UIWidgets::MenuItem("Reset", "F4")) {
             gNextGameState = GSTATE_BOOT;
         }
 #if !defined(__SWITCH__) && !defined(__WIIU__)
@@ -446,11 +557,11 @@ void DrawGameMenu() {
         if (UIWidgets::MenuItem("Toggle Fullscreen", "F11")) {
             Ship::Context::GetInstance()->GetWindow()->ToggleFullscreen();
         }
+#endif
 
         if (UIWidgets::MenuItem("Quit")) {
             Ship::Context::GetInstance()->GetWindow()->Close();
         }
-#endif
         ImGui::EndMenu();
     }
 }
@@ -493,6 +604,10 @@ void DrawEnhancementsMenu() {
         if (UIWidgets::BeginMenu("Restoration")) {
             UIWidgets::CVarCheckbox("Sector Z: Missile cutscene bug", "gSzMissileBug", {
                 .tooltip = "Restores the missile cutscene bug present in JP 1.0"
+            });
+
+            UIWidgets::CVarCheckbox("Beta: Restore beta bomb explosion", "gRestoreBetaBombExplosion", {
+                .tooltip = "Restores the beta bomb explosion found inside the game"
             });
 
             UIWidgets::CVarCheckbox("Beta: Restore beta coin", "gRestoreBetaCoin", {

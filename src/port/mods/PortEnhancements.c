@@ -45,17 +45,17 @@ void OnDisplayUpdatePost(IEvent* event) {
 
         if ((gControllerHold[0].button & Z_TRIG) && (gControllerHold[0].button & R_TRIG) &&
             (gControllerPress[0].button & U_CBUTTONS)) {
-                gShowLevelClearStatusScreen = false;
-                gLevelStartStatusScreenTimer = 0;
-                gStarCount = 0;
-                gGameState = GSTATE_MAP;
-                gNextGameStateTimer = 2;
-                gMapState = 0;
-                gLastGameState = GSTATE_NONE;
-                gDrawMode = DRAW_NONE;
-                gControllerLock = 3;
-                gBackToMap = true;
-                gPlayerGlareAlphas[0] = 0;
+            gShowLevelClearStatusScreen = false;
+            gLevelStartStatusScreenTimer = 0;
+            gStarCount = 0;
+            gGameState = GSTATE_MAP;
+            gNextGameStateTimer = 2;
+            gMapState = 0;
+            gLastGameState = GSTATE_NONE;
+            gDrawMode = DRAW_NONE;
+            gControllerLock = 3;
+            gBackToMap = true;
+            gPlayerGlareAlphas[0] = 0;
         }
     }
 
@@ -164,20 +164,20 @@ void OnGameUpdatePost(IEvent* event) {
     }
 }
 
-void OnPlayUpdateEvent(IEvent* event){
+void OnPlayUpdateEvent(IEvent* event) {
     bool debugPaused = CVarGetInteger("gDebugPause", 0);
     bool shouldRepause = false;
-    if (CVarGetInteger("gLToDebugPause", 0)){
+    if (CVarGetInteger("gLToDebugPause", 0)) {
         if (gControllerPress[0].button & L_TRIG) {
             CVarSetInteger("gDebugPause", !debugPaused);
             shouldRepause = debugPaused && CVarGetInteger("gLToFrameAdvance", 0);
-        } 
+        }
     } else {
-        CVarSetInteger("gDebugPause", 0); //Unpause if we disable the shortcut
+        CVarSetInteger("gDebugPause", 0); // Unpause if we disable the shortcut
     }
 
     event->cancelled = CVarGetInteger("gDebugPause", 0);
-    if (shouldRepause){
+    if (shouldRepause) {
         CVarSetInteger("gDebugPause", 1);
     }
 }
@@ -229,7 +229,7 @@ void OnItemGoldRingDraw(ObjectDrawPostSetupEvent* event) {
     gSPDisplayList(gMasterDisp++, D_101D870);
 }
 
-void OnItemGoldRingUpdate(ObjectUpdateEvent* event){
+void OnItemGoldRingUpdate(ObjectUpdateEvent* event) {
     if (event->type != OBJECT_TYPE_ITEM) {
         return;
     }
@@ -274,21 +274,14 @@ void OnItemGoldRingUpdate(ObjectUpdateEvent* event){
 }
 
 static const char* sBoostGaugeArrow[] = {
-    sBoostGaugeArrow0,
-    sBoostGaugeArrow1,
-    sBoostGaugeArrow2,
-    sBoostGaugeArrow3,
-    sBoostGaugeArrow4,
-    sBoostGaugeArrow5,
-    sBoostGaugeArrow6,
-    sBoostGaugeArrow7,
-    sBoostGaugeArrow8,
+    sBoostGaugeArrow0, sBoostGaugeArrow1, sBoostGaugeArrow2, sBoostGaugeArrow3, sBoostGaugeArrow4,
+    sBoostGaugeArrow5, sBoostGaugeArrow6, sBoostGaugeArrow7, sBoostGaugeArrow8,
 };
 
-void OnBoostGaugeDraw(IEvent* event){
+void OnBoostGaugeDraw(IEvent* event) {
     bool restore = CVarGetInteger("gRestoreBetaBoostGauge", 0) == 1;
 
-    if(!restore){
+    if (!restore) {
         return;
     }
 
@@ -299,14 +292,17 @@ void OnBoostGaugeDraw(IEvent* event){
 
     RCP_SetupDL(&gMasterDisp, SETUPDL_76_OPTIONAL);
     gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 255);
-    Lib_TextureRect_CI8(&gMasterDisp, D_1012290, D_10126B0, 48, 22, OTRGetRectDimensionFromRightEdgeOverride(SCREEN_WIDTH - x), y, 1.0f, 1.0f);
-    Lib_TextureRect_CI8(&gMasterDisp, D_10126F0, D_1012750, 24, 4, OTRGetRectDimensionFromRightEdgeOverride(SCREEN_WIDTH - (x - 9)), y + 3, 1.0f, 1.0f);
-    Lib_TextureRect_RGBA16(&gMasterDisp, sBoostGaugeArrow[step], 32, 32, OTRGetRectDimensionFromRightEdgeOverride(SCREEN_WIDTH - (x - 6)), y - 1, 0.9f, 0.9f);
+    Lib_TextureRect_CI8(&gMasterDisp, D_1012290, D_10126B0, 48, 22,
+                        OTRGetRectDimensionFromRightEdgeOverride(SCREEN_WIDTH - x), y, 1.0f, 1.0f);
+    Lib_TextureRect_CI8(&gMasterDisp, D_10126F0, D_1012750, 24, 4,
+                        OTRGetRectDimensionFromRightEdgeOverride(SCREEN_WIDTH - (x - 9)), y + 3, 1.0f, 1.0f);
+    Lib_TextureRect_RGBA16(&gMasterDisp, sBoostGaugeArrow[step], 32, 32,
+                           OTRGetRectDimensionFromRightEdgeOverride(SCREEN_WIDTH - (x - 6)), y - 1, 0.9f, 0.9f);
 }
 
-void OnBombCounterDraw(IEvent* ev){
+void OnBombCounterDraw(IEvent* ev) {
     bool restore = CVarGetInteger("gRestoreBetaBoostGauge", 0) == 1;
-    if(!restore){
+    if (!restore) {
         return;
     }
 
@@ -314,28 +310,25 @@ void OnBombCounterDraw(IEvent* ev){
     HUD_BombCounter_Draw(253.0f, 18.0f);
 }
 
-void OnPreSetupRadioMsgEvent(PreSetupRadioMsgEvent* ev){
+void OnPreSetupRadioMsgEvent(PreSetupRadioMsgEvent* ev) {
     bool enemyRedRadio = CVarGetInteger("gEnemyRedRadio", 0);
-    if (!enemyRedRadio)
-    {
+    if (!enemyRedRadio) {
         return;
     }
-    if (gRadioMsgRadioId == RCID_BOSS_CORNERIA || gRadioMsgRadioId == RCID_BOSS_CORNERIA2 || 
+    if (gRadioMsgRadioId == RCID_BOSS_CORNERIA || gRadioMsgRadioId == RCID_BOSS_CORNERIA2 ||
         gRadioMsgRadioId == RCID_BOSS_METEO || gRadioMsgRadioId == RCID_BOSS_SECTORX ||
-        gRadioMsgRadioId == RCID_BOSS_SECTORY ||  gRadioMsgRadioId == RCID_BOSS_MACBETH ||
+        gRadioMsgRadioId == RCID_BOSS_SECTORY || gRadioMsgRadioId == RCID_BOSS_MACBETH ||
         gRadioMsgRadioId == RCID_BOSS_ZONESS || gRadioMsgRadioId == RCID_BOSS_AREA6 ||
-        gRadioMsgRadioId == RCID_CAIMAN_AREA6 || gRadioMsgRadioId == RCID_WOLF ||
-        gRadioMsgRadioId == RCID_PIGMA || gRadioMsgRadioId == RCID_LEON ||
-        gRadioMsgRadioId == RCID_ANDREW || gRadioMsgRadioId == RCID_WOLF_2 || 
-        gRadioMsgRadioId == RCID_PIGMA_2 || gRadioMsgRadioId == RCID_LEON_2 ||
-        gRadioMsgRadioId == RCID_ANDREW_2) {
-            *ev->radioRedBox = true;
-        }
+        gRadioMsgRadioId == RCID_CAIMAN_AREA6 || gRadioMsgRadioId == RCID_WOLF || gRadioMsgRadioId == RCID_PIGMA ||
+        gRadioMsgRadioId == RCID_LEON || gRadioMsgRadioId == RCID_ANDREW || gRadioMsgRadioId == RCID_WOLF_2 ||
+        gRadioMsgRadioId == RCID_PIGMA_2 || gRadioMsgRadioId == RCID_LEON_2 || gRadioMsgRadioId == RCID_ANDREW_2) {
+        *ev->radioRedBox = true;
+    }
 }
 
-void OnRadarMarkArwingDraw(DrawRadarMarkArwingEvent* ev){
+void OnRadarMarkArwingDraw(DrawRadarMarkArwingEvent* ev) {
     bool outlines = CVarGetInteger("gFighterOutlines", 0);
-    if (!outlines){
+    if (!outlines) {
         return;
     }
 
@@ -357,7 +350,7 @@ void OnRadarMarkArwingDraw(DrawRadarMarkArwingEvent* ev){
     }
 
     RCP_SetupDL(&gMasterDisp, SETUPDL_62);
-    gDPSetPrimColor(gMasterDisp++, 0, 0,0,0,0,255);
+    gDPSetPrimColor(gMasterDisp++, 0, 0, 0, 0, 0, 255);
     Matrix_Scale(gGfxMatrix, var_fv1, var_fv2, 1.0f, MTXF_APPLY);
     Matrix_SetGfxMtx(&gMasterDisp);
     gSPDisplayList(gMasterDisp++, aRadarMarkArwingDL);
@@ -368,13 +361,11 @@ void OnRadarMarkArwingDraw(DrawRadarMarkArwingEvent* ev){
     Matrix_Scale(gGfxMatrix, 0.8f, 0.7f, 1.0f, MTXF_APPLY);
     Matrix_SetGfxMtx(&gMasterDisp);
     gSPDisplayList(gMasterDisp++, aRadarMarkArwingDL);
-    
-
 }
 
 void OnRadarMarkWolfenDraw(IEvent* ev) {
     bool outlines = CVarGetInteger("gFighterOutlines", 0);
-    if (!outlines){
+    if (!outlines) {
         return;
     }
     ev->cancelled = true;
@@ -392,9 +383,9 @@ void OnRadarMarkWolfenDraw(IEvent* ev) {
     gSPDisplayList(gMasterDisp++, aStarWolfRadarMarkDL);
 }
 
-void OnLivesCounterDraw(IEvent* ev){
+void OnLivesCounterDraw(IEvent* ev) {
     bool restore = CVarGetInteger("gRestoreBetaBoostGauge", 0) == 1;
-    if(!restore){
+    if (!restore) {
         return;
     }
     ev->cancelled = true;
@@ -402,11 +393,10 @@ void OnLivesCounterDraw(IEvent* ev){
     HUD_LivesCount2_Draw(258.0f, SCREEN_HEIGHT - 20, gLifeCount[gPlayerNum]);
 }
 
-void OnPlayerShootChargedPre(PlayerActionPreShootChargedEvent* ev){
+void OnPlayerShootChargedPre(PlayerActionPreShootChargedEvent* ev) {
     if (CVarGetInteger("gRapidFire", 0) == 1) {
         ev->player->shotTimer = 4;
     }
-
 }
 
 void PortEnhancements_Init() {
@@ -433,7 +423,7 @@ void PortEnhancements_Init() {
     REGISTER_LISTENER(PlayerActionPostShootEvent, OnPlayerShootPost, EVENT_PRIORITY_NORMAL);
     REGISTER_LISTENER(PlayerActionPreShootChargedEvent, OnPlayerShootChargedPre, EVENT_PRIORITY_NORMAL);
 
-    //If we close the game while debug pause is active, we want it to be deactivated when we run again.
+    // If we close the game while debug pause is active, we want it to be deactivated when we run again.
     CVarSetInteger("gDebugPause", 0);
 }
 

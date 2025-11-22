@@ -36,6 +36,9 @@ cd starship
 # Generate sf64.o2r
 & 'C:\Program Files\CMake\bin\cmake.exe' --build .\build\x64 --target ExtractAssets
 
+# Generate starship.o2r
+& 'C:\Program Files\CMake\bin\cmake.exe' --build .\build\x64 --target GeneratePortO2R
+
 # Compile project
 # Add `--config Release` if you're packaging
 & 'C:\Program Files\CMake\bin\cmake.exe' --build .\build\x64
@@ -83,7 +86,7 @@ C:\Program Files\CMake\bin\cmake.exe --build build-cmake --target clean
 #### Debian/Ubuntu
 ```sh
 # using gcc
-apt-get install gcc g++ git cmake ninja-build lsb-release libsdl2-dev libpng-dev libsdl2-net-dev libzip-dev zipcmp zipmerge ziptool nlohmann-json3-dev libtinyxml2-dev libspdlog-dev libboost-dev libopengl-dev libogg-dev ibvorbis-dev
+apt-get install gcc g++ git cmake ninja-build lsb-release libsdl2-dev libpng-dev libsdl2-net-dev libzip-dev zipcmp zipmerge ziptool nlohmann-json3-dev libtinyxml2-dev libspdlog-dev libboost-dev libopengl-dev libogg-dev libvorbis-dev
 
 # or using clang
 apt-get install clang git cmake ninja-build lsb-release libsdl2-dev libpng-dev libsdl2-net-dev libzip-dev zipcmp zipmerge ziptool nlohmann-json3-dev libtinyxml2-dev libspdlog-dev libboost-dev libopengl-dev libogg-dev libvorbis-dev
@@ -133,6 +136,9 @@ cmake -H. -Bbuild-cmake -GNinja
 # Generate sf64.o2r
 cmake --build build-cmake --target ExtractAssets
 
+# Generate starship.o2r
+cmake --build build-cmake --target GeneratePortO2R
+
 # Compile the project
 # Add `--config Release` if you're packaging
 cmake --build build-cmake
@@ -160,7 +166,7 @@ cmake --build build-cmake --target clean
 ```
 
 ## macOS
-Requires Xcode (or xcode-tools) && `sdl2, libpng, glew, ninja, cmake, nlohmann-json, libzip, vorbis-tools` (can be installed via homebrew, macports, etc)
+Requires Xcode (or xcode-tools) && `sdl2, libpng, glew, ninja, cmake, nlohmann-json, tinyxml2, libzip, vorbis-tools` (can be installed via homebrew, macports, etc)
 
 **Important: For maximum performance make sure you have ninja build tools installed!**
 
@@ -180,12 +186,15 @@ cmake -H. -Bbuild-cmake -GNinja
 # Generate sf64.o2r
 cmake --build build-cmake --target ExtractAssets
 
+# Generate starship.o2r
+cmake --build build-cmake --target GeneratePortO2R
+
 # Compile the project
 # Add `--config Release` if you're packaging
 cmake --build build-cmake
 
 # Now you can run the executable file:
-./build-cmake/mm/starship-macos
+./build-cmake/Starship
 # To develop the project open the repository in VSCode (or your preferred editor)
 ```
 

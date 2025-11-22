@@ -3,14 +3,16 @@
 #include "utils/StringHelper.h"
 #include <sf64audio_provisional.h>
 #include "port/resource/type/audio/SoundFont.h"
+#include <tinyxml2.h>
 
 namespace SF64 {
-std::shared_ptr<Ship::IResource> ResourceFactoryBinarySoundFontV0::ReadResource(std::shared_ptr<Ship::File> file) {
-    if (!FileHasValidFormatAndReader(file)) {
+std::shared_ptr<Ship::IResource> ResourceFactoryBinarySoundFontV0::ReadResource(std::shared_ptr<Ship::File> file,
+                                                                                std::shared_ptr<Ship::ResourceInitData> initData) {
+    if (!FileHasValidFormatAndReader(file, initData)) {
         return nullptr;
     }
 
-    auto font = std::make_shared<SoundFont>(file->InitData);
+    auto font = std::make_shared<SoundFont>(initData);
     auto reader = std::get<std::shared_ptr<Ship::BinaryReader>>(file->Reader);
 
     font->mFont.numInstruments = reader->ReadUByte();
@@ -210,11 +212,12 @@ std::vector<EnvelopePointData> ResourceFactoryXMLSoundFontV0::ParseEnvelopes(Sou
     return envelopes;
 }
 
-std::shared_ptr<Ship::IResource> ResourceFactoryXMLSoundFontV0::ReadResource(std::shared_ptr<Ship::File> file) {
-    if (!FileHasValidFormatAndReader(file)) {
+std::shared_ptr<Ship::IResource> ResourceFactoryXMLSoundFontV0::ReadResource(std::shared_ptr<Ship::File> file,
+                                                                           std::shared_ptr<Ship::ResourceInitData> initData) {
+    if (!FileHasValidFormatAndReader(file, initData)) {
         return nullptr;
     }
-    auto audioSoundFont = std::make_shared<SoundFont>(file->InitData);
+    auto audioSoundFont = std::make_shared<SoundFont>(initData);
     auto child = std::get<std::shared_ptr<tinyxml2::XMLDocument>>(file->Reader)->FirstChildElement();
     // Header data
     memset(&audioSoundFont->mFont, 0, sizeof(audioSoundFont->mFont));

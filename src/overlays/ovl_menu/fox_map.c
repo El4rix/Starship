@@ -2097,6 +2097,10 @@ void Map_Texture_Sphere(u8* textureDest, u8* textureSrc, f32* offset) {
     if (*offset > 95.0f) {
         *offset = 0.0f;
     }
+
+#ifndef __SWITCH__
+    gSPInvalidateTexCache(gMasterDisp++, NULL);
+#endif
 }
 
 void Map_Prologue_Update(void) {
@@ -3795,6 +3799,12 @@ bool Map_Input_CursorY(void) {
 
     if ((stickY > -40) && (stickY < 40)) {
         stickY = 0;
+    }
+
+    if (gControllerPress[gMainController].button & D_JPAD) {
+        stickY = -30;
+    } else if (gControllerPress[gMainController].button & U_JPAD) {
+        stickY = +30;
     }
 
     if (stickY != 0) {

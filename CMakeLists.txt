@@ -1,8 +1,24 @@
 cmake_minimum_required(VERSION 3.16.0 FATAL_ERROR)
 
 # Set the project version and language
-project(Starship VERSION 0.1.0 LANGUAGES C CXX ASM)
+project(Starship VERSION 2.0.0 LANGUAGES C CXX ASM)
 include(FetchContent)
+
+set(NATO_PHONETIC_ALPHABET
+  "Alfa" "Bravo" "Charlie" "Delta" "Echo" "Foxtrot" "Golf" "Hotel"
+  "India" "Juliett" "Kilo" "Lima" "Mike" "November" "Oscar" "Papa"
+  "Quebec" "Romeo" "Sierra" "Tango" "Uniform" "Victor" "Whiskey"
+  "Xray" "Yankee" "Zulu"
+)
+
+# Get the patch version number from the project version
+math(EXPR PATCH_INDEX "${PROJECT_VERSION_PATCH}")
+
+# Use the patch number to select the correct word
+list(GET NATO_PHONETIC_ALPHABET ${PATCH_INDEX} PROJECT_PATCH_WORD)
+
+set(PROJECT_BUILD_NAME "Barnard ${PROJECT_PATCH_WORD}" CACHE STRING "" FORCE)
+set(PROJECT_TEAM "SonicDcer & Lywx" CACHE STRING "" FORCE)
 
 if(APPLE)
   enable_language(OBJCXX)
@@ -14,10 +30,6 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment ve
 # Set the C++ standard and enable the MSVC parallel build option
 set(CMAKE_CXX_STANDARD 20 CACHE STRING "The C++ standard to use")
 set(CMAKE_C_STANDARD 11 CACHE STRING "The C standard to use")
-set(PROJECT_TEAM "Lywx & YoshiCrystal")
-set(PROJECT_VERSION_MAJOR 2)
-set(PROJECT_VERSION_MINOR 0)
-set(PROJECT_VERSION_PATCH 0)
 #add_compile_options(-fsanitize=address)
 #add_link_options(-fsanitize=address)
 
@@ -35,11 +47,6 @@ vcpkg_install_packages(zlib bzip2 libzip libpng sdl2 glew glfw3 nlohmann-json ti
 
 set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-endif()
-
-if(NOT EXISTS ${CMAKE_BINARY_DIR}/config.yml)
-	execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/config.yml" "${CMAKE_BINARY_DIR}/config.yml")
-	execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/assets/" "${CMAKE_BINARY_DIR}/assets/")
 endif()
 
 if (MSVC)
@@ -111,6 +118,8 @@ if (UNIX AND NOT APPLE)
 find_package(OpenGL REQUIRED)
 endif()
 
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/properties.h.in ${CMAKE_CURRENT_SOURCE_DIR}/properties.h @ONLY)
+
 # Include directories
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -141,6 +150,7 @@ file(GLOB_RECURSE ALL_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "src/dmatable.c"
     "src/libc_math64.c"
     "src/libc_sprintf.c"
+    "Resource.rc"
 )
 
 # Exclude specific files from the ALL_FILES list
@@ -555,6 +565,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
   else()
       if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
         set(CPU_OPTION -msse2 -mfpmath=sse)
+      elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+        set(CPU_OPTION -mcpu=native)
       endif()
 
       target_compile_options(${PROJECT_NAME} PRIVATE
@@ -585,6 +597,13 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
   endif()
 endif()
 
+add_custom_command(
+	TARGET ${PROJECT_NAME} POST_BUILD
+	COMMENT "Copying asset yamls..."
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/config.yml" "$<TARGET_FILE_DIR:Starship>/config.yml"
+	COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/assets/" "$<TARGET_FILE_DIR:Starship>/assets/"
+)
+
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "NintendoSwitch")
 include(ExternalProject)
 ExternalProject_Add(TorchExternal
@@ -607,12 +626,16 @@ add_custom_target(
 )
 
 add_custom_target(
-    GeneratePortOTR
+    GeneratePortO2R
     DEPENDS TorchExternal
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMAND ${TORCH_EXECUTABLE} pack port starship.o2r o2r
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/starship.o2r" "${CMAKE_BINARY_DIR}/starship.o2r"
 )
+
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+  install(FILES "${CMAKE_BINARY_DIR}/starship.o2r" DESTINATION . COMPONENT ${PROJECT_NAME})
+endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 add_custom_target(CreateOSXIcons

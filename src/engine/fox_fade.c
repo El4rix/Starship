@@ -1,13 +1,17 @@
 #include "global.h"
 
 void Wipe_Horizontal(s32 frame) {
-    Graphics_FillRectangle(&gMasterDisp, OTRGetRectDimensionFromLeftEdge(0), 0, OTRGetRectDimensionFromRightEdge(frame), SCREEN_HEIGHT, 0, 0, 0, 255);
-    Graphics_FillRectangle(&gMasterDisp, OTRGetRectDimensionFromLeftEdge(SCREEN_WIDTH - frame), 0, OTRGetRectDimensionFromRightEdge(SCREEN_WIDTH), SCREEN_HEIGHT, 0, 0, 0, 255);
+    Graphics_FillRectangle(&gMasterDisp, OTRGetRectDimensionFromLeftEdge(0), 0, OTRGetRectDimensionFromRightEdge(frame),
+                           SCREEN_HEIGHT, 0, 0, 0, 255);
+    Graphics_FillRectangle(&gMasterDisp, OTRGetRectDimensionFromLeftEdge(SCREEN_WIDTH - frame), 0,
+                           OTRGetRectDimensionFromRightEdge(SCREEN_WIDTH), SCREEN_HEIGHT, 0, 0, 0, 255);
 }
 
 void Wipe_Vertical(s32 frame) {
-    Graphics_FillRectangle(&gMasterDisp, OTRGetRectDimensionFromLeftEdge(0), 0, OTRGetRectDimensionFromRightEdge(SCREEN_WIDTH), frame, 0, 0, 0, 255);
-    Graphics_FillRectangle(&gMasterDisp, OTRGetRectDimensionFromLeftEdge(0), SCREEN_HEIGHT - frame, OTRGetRectDimensionFromRightEdge(SCREEN_WIDTH), SCREEN_HEIGHT, 0, 0, 0, 255);
+    Graphics_FillRectangle(&gMasterDisp, OTRGetRectDimensionFromLeftEdge(0), 0,
+                           OTRGetRectDimensionFromRightEdge(SCREEN_WIDTH), frame, 0, 0, 0, 255);
+    Graphics_FillRectangle(&gMasterDisp, OTRGetRectDimensionFromLeftEdge(0), SCREEN_HEIGHT - frame,
+                           OTRGetRectDimensionFromRightEdge(SCREEN_WIDTH), SCREEN_HEIGHT, 0, 0, 0, 255);
 }
 
 void Wipe_Circular(s32 frame) {

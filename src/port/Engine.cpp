@@ -41,7 +41,7 @@
 #include "port/patches/DisplayListPatch.h"
 #include "port/mods/PortEnhancements.h"
 
-#include <Fast3D/gfx_pc.h>
+#include <Fast3D/interpreter.h>
 #include <filesystem>
 
 #ifdef __SWITCH__
@@ -63,6 +63,9 @@ std::vector<uint8_t*> MemoryPool;
 GameEngine* GameEngine::Instance;
 
 GameEngine::GameEngine() {
+    // Initialize context properties early to recognize paths properly for non-portable builds
+    this->context = Ship::Context::CreateUninitializedInstance("Starship", "ship", "starship.cfg.json");
+
 #ifdef __SWITCH__
     Ship::Switch::Init(Ship::PreInitPhase);
     Ship::Switch::Init(Ship::PostInitPhase);
@@ -70,20 +73,16 @@ GameEngine::GameEngine() {
 
     std::vector<std::string> archiveFiles;
     const std::string main_path = Ship::Context::GetPathRelativeToAppDirectory("sf64.o2r");
-    const std::string assets_path = Ship::Context::GetPathRelativeToAppDirectory("starship.o2r");
+    const std::string assets_path = Ship::Context::LocateFileAcrossAppDirs("starship.o2r");
 
 #ifdef _WIN32
     AllocConsole();
 #endif
 
-    if (!fs::exists("mods")) {
-        fs::create_directories("mods");
-    }
-
     if (std::filesystem::exists(main_path)) {
         archiveFiles.push_back(main_path);
     } else {
-        if (ShowYesNoBox("No O2R Files", "No O2R files found. Generate one now?") == IDYES) {
+        if (ShowYesNoBox("Starship - Asset Extraction", "Please provide a Starfox 64 ROM.\n\nSupported Versions:\nUS 1.0\nUS 1.1\n\nAssets will be extracted into an O2R file.") == IDYES) {
             if(!GenAssetFile()){
                 ShowMessage("Error", "An error occured, no O2R file was generated.\n\nExiting...");
                 exit(1);
@@ -91,7 +90,7 @@ GameEngine::GameEngine() {
                 archiveFiles.push_back(main_path);
             }
 
-            if (ShowYesNoBox("Extraction Complete", "ROM Extracted. Extract another?") == IDYES) {
+            if (ShowYesNoBox("Extraction Complete", "ROM Extracted. Extract another?\n\n Starship supports JP and EU ROMs for voice replacement.\n Voice replacement ROM assets can also be installed in:\n Settings->Language->Install JP/EU Audio") == IDYES) {
                 if(!GenAssetFile()){
                     ShowMessage("Error", "An error occured, no O2R file was generated.");
                 }
@@ -106,7 +105,11 @@ GameEngine::GameEngine() {
     }
 
     if (const std::string patches_path = Ship::Context::GetPathRelativeToAppDirectory("mods");
-        !patches_path.empty() && std::filesystem::exists(patches_path)) {
+        !patches_path.empty()) {
+        if (!std::filesystem::exists(patches_path)) {
+            std::filesystem::create_directories(patches_path);
+        }
+
         if (std::filesystem::is_directory(patches_path)) {
             for (const auto& p : std::filesystem::recursive_directory_iterator(patches_path)) {
                 const auto ext = p.path().extension().string();
@@ -121,8 +124,6 @@ GameEngine::GameEngine() {
             }
         }
     }
-
-    this->context = Ship::Context::CreateUninitializedInstance("Starship", "ship", "starship.cfg.json");
 
     this->context->InitConfiguration();    // without this line InitConsoleVariables fails at Config::Reload()
     this->context->InitConsoleVariables(); // without this line the controldeck constructor failes in
@@ -151,8 +152,8 @@ GameEngine::GameEngine() {
         std::unordered_map<Ship::StickIndex, std::vector<std::pair<Ship::Direction, SDL_GameControllerButton>>>(),
         // SDLAxisDirectionToButtonMappings
         std::unordered_map<CONTROLLERBUTTONS_T, std::vector<std::pair<SDL_GameControllerAxis, int32_t>>>{
-            { BTN_R, { { SDL_CONTROLLER_AXIS_TRIGGERRIGHT, 1 } } },
-            { BTN_Z, { { SDL_CONTROLLER_AXIS_TRIGGERLEFT, 1 } } },
+            { BTN_CLEFT, { { SDL_CONTROLLER_AXIS_TRIGGERRIGHT, 1 } } },
+            { BTN_CDOWN, { { SDL_CONTROLLER_AXIS_TRIGGERLEFT, 1 } } },
             { BTN_CUP, { { SDL_CONTROLLER_AXIS_RIGHTY, -1 } } },
             { BTN_CRIGHT, { { SDL_CONTROLLER_AXIS_RIGHTX, 1 } } }
         },
@@ -166,7 +167,8 @@ GameEngine::GameEngine() {
 
     auto window = std::make_shared<Fast::Fast3dWindow>(std::vector<std::shared_ptr<Ship::GuiWindow>>({}));
 
-    this->context->Init(archiveFiles, {}, 3, { 32000, 1024, 1680 }, window, controlDeck);
+    auto audioChannelsSetting = Ship::Context::GetInstance()->GetConfig()->GetCurrentAudioChannelsSetting();
+    this->context->Init(archiveFiles, {}, 3, { 32000, 1024, 1680, audioChannelsSetting }, window, controlDeck);
 
 #ifndef __SWITCH__
     Ship::Context::GetInstance()->GetLogger()->set_level(
@@ -263,21 +265,29 @@ GameEngine::GameEngine() {
     context->GetResourceManager()->SetAltAssetsEnabled(prevAltAssets);
 }
 
-bool GameEngine::GenAssetFile() {
+bool GameEngine::GenAssetFile(bool exitOnFail) {
     auto extractor = new GameExtractor();
 
     if (!extractor->SelectGameFromUI()) {
         ShowMessage("Error", "No ROM selected.\n\nExiting...");
-        exit(1);
+        if (exitOnFail) {
+            exit(1);
+        } else {
+            return false;
+        }
     }
 
     auto game = extractor->ValidateChecksum();
     if (!game.has_value()) {
         ShowMessage("Unsupported ROM", "The provided ROM is not supported.\n\nCheck the readme for a list of supported versions.");
-        exit(1);
+        if (exitOnFail) {
+            exit(1);
+        } else {
+            return false;
+        }
     }
 
-    ShowMessage(("Found " + game.value()).c_str(), "The extraction process will now begin.\n\nThis may take a few minutes.", SDL_MESSAGEBOX_INFORMATION);
+    ShowMessage(("Starship - Extraction - Found " + game.value()).c_str(), "The extraction process will now begin.\n\nThis may take a few minutes.", SDL_MESSAGEBOX_INFORMATION);
 
     return extractor->GenerateOTR();
 }
@@ -317,6 +327,10 @@ void GameEngine::StartFrame() const {
             CVarSetInteger("gEnhancements.Mods.AlternateAssets", !CVarGetInteger("gEnhancements.Mods.AlternateAssets", 0));
             break;
         }
+        case KbScancode::LUS_KB_F4: {
+            gNextGameState = GSTATE_BOOT;
+            break;
+        }
         default:
             break;
     }
@@ -333,7 +347,7 @@ void GameEngine::StartFrame() const {
 
 #endif
 
-#define NUM_AUDIO_CHANNELS 2
+#define MAX_NUM_AUDIO_CHANNELS 6
 
 extern "C" u16 audBuffer = 0;
 #include <sf64audio_provisional.h>
@@ -363,6 +377,7 @@ void GameEngine::HandleAudioThread() {
         // gVIsPerFrame = 2;
 
 #define AUDIO_FRAMES_PER_UPDATE (gVIsPerFrame > 0 ? gVIsPerFrame : 1)
+#define MAX_AUDIO_FRAMES_PER_UPDATE 5 // Compile-time constant with max value of gVIsPerFrame
 
         std::unique_lock<std::mutex> Lock(audio.mutex);
         int samples_left = AudioPlayerBuffered();
@@ -374,19 +389,22 @@ void GameEngine::HandleAudioThread() {
             countermin++;
         }
 
-        s16 audio_buffer[SAMPLES_HIGH * NUM_AUDIO_CHANNELS * 3] = { 0 };
+        const int32_t num_audio_channels = GetNumAudioChannels();
+
+        s16 audio_buffer[SAMPLES_HIGH * MAX_NUM_AUDIO_CHANNELS * MAX_AUDIO_FRAMES_PER_UPDATE] = { 0 };
         for (int i = 0; i < AUDIO_FRAMES_PER_UPDATE; i++) {
-            AudioThread_CreateNextAudioBuffer(audio_buffer + i * (num_audio_samples * NUM_AUDIO_CHANNELS),
+            AudioThread_CreateNextAudioBuffer(audio_buffer + i * (num_audio_samples * num_audio_channels),
                                               num_audio_samples);
         }
 #ifdef PIPE_DEBUG
         if (outfile.is_open()) {
             outfile.write(reinterpret_cast<char*>(audio_buffer),
-                          num_audio_samples * (sizeof(int16_t) * NUM_AUDIO_CHANNELS * AUDIO_FRAMES_PER_UPDATE));
+                          num_audio_samples * (sizeof(int16_t) * num_audio_channels * AUDIO_FRAMES_PER_UPDATE));
         }
 #endif
         AudioPlayerPlayFrame((u8*) audio_buffer,
-                             num_audio_samples * (sizeof(int16_t) * NUM_AUDIO_CHANNELS * AUDIO_FRAMES_PER_UPDATE));
+                             num_audio_samples * (sizeof(int16_t) * num_audio_channels * AUDIO_FRAMES_PER_UPDATE));
+        
         audio.processing = false;
         audio.cv_from_thread.notify_one();
     }
@@ -436,11 +454,16 @@ void GameEngine::RunCommands(Gfx* Commands, const std::vector<std::unordered_map
         return;
     }
 
+    auto interpreter = wnd->GetInterpreterWeak().lock().get();
+
     // Process window events for resize, mouse, keyboard events
     wnd->HandleEvents();
 
+    interpreter->mInterpolationIndex = 0;
+
     for (const auto& m : mtx_replacements) {
         wnd->DrawAndRunGraphicsCommands(Commands, m);
+        interpreter->mInterpolationIndex++;
     }
 
     bool curAltAssets = CVarGetInteger("gEnhancements.Mods.AlternateAssets", 0);
@@ -464,7 +487,7 @@ void GameEngine::ProcessGfxCommands(Gfx* commands) {
     wnd->SetRendererUCode(UcodeHandlers::ucode_f3dex);
 
     std::vector<std::unordered_map<Mtx*, MtxF>> mtx_replacements;
-    int target_fps = CVarGetInteger("gInterpolationFPS", 60);
+    int target_fps = GameEngine::Instance->GetInterpolationFPS();
     static int last_fps;
     static int last_update_rate;
     static int time;
@@ -493,11 +516,9 @@ void GameEngine::ProcessGfxCommands(Gfx* commands) {
 
     time -= fps;
 
-    int threshold = CVarGetInteger("gExtraLatencyThreshold", 80);
-
     if (wnd != nullptr) {
         wnd->SetTargetFps(fps);
-        wnd->SetMaximumFrameLatency(threshold > 0 && target_fps >= threshold ? 2 : 1);
+        wnd->SetMaximumFrameLatency(CVarGetInteger("gRenderParallelization", 1) ? 2 : 1);
     }
 
     // When the gfx debugger is active, only run with the final mtx
@@ -513,16 +534,25 @@ void GameEngine::ProcessGfxCommands(Gfx* commands) {
 }
 
 uint32_t GameEngine::GetInterpolationFPS() {
-    if (Ship::Context::GetInstance()->GetWindow()->GetWindowBackend() == Ship::WindowBackend::FAST3D_DXGI_DX11) {
-        return CVarGetInteger("gInterpolationFPS", 60);
-    }
-
     if (CVarGetInteger("gMatchRefreshRate", 0)) {
         return Ship::Context::GetInstance()->GetWindow()->GetCurrentRefreshRate();
+
+    } else if (CVarGetInteger("gVsyncEnabled", 1) ||
+               !Ship::Context::GetInstance()->GetWindow()->CanDisableVerticalSync()) {
+        return std::min<uint32_t>(Ship::Context::GetInstance()->GetWindow()->GetCurrentRefreshRate(),
+                                  CVarGetInteger("gInterpolationFPS", 60));
     }
 
-    return std::min<uint32_t>(Ship::Context::GetInstance()->GetWindow()->GetCurrentRefreshRate(),
-                              CVarGetInteger("gInterpolationFPS", 60));
+    return CVarGetInteger("gInterpolationFPS", 60);
+}
+
+uint32_t GameEngine::GetInterpolationFrameCount()
+{
+	return ceil((float)GetInterpolationFPS() / (60.0f / gVIsPerFrame));
+}
+
+extern "C" uint32_t GameEngine_GetInterpolationFrameCount() {
+	return GameEngine::GetInterpolationFrameCount();
 }
 
 void GameEngine::ShowMessage(const char* title, const char* message, SDL_MessageBoxFlags type) {
@@ -538,6 +568,9 @@ int GameEngine::ShowYesNoBox(const char* title, const char* box) {
     int ret;
 #ifdef _WIN32
     ret = MessageBoxA(nullptr, box, title, MB_YESNO | MB_ICONQUESTION);
+#elif defined(__SWITCH__)
+    SPDLOG_ERROR(box);
+    return IDYES;
 #else
     SDL_MessageBoxData boxData = { 0 };
     SDL_MessageBoxButtonData buttons[2] = { { 0 } };
@@ -586,8 +619,16 @@ extern "C" uint32_t GameEngine_GetSamplesPerFrame() {
 
 // End
 
+Fast::Interpreter* GameEngine_GetInterpreter() {
+    return static_pointer_cast<Fast::Fast3dWindow>(Ship::Context::GetInstance()->GetWindow())
+             ->GetInterpreterWeak()
+             .lock()
+             .get();
+}
+
 extern "C" float GameEngine_GetAspectRatio() {
-    return gfx_current_dimensions.aspect_ratio;
+    auto interpreter = GameEngine_GetInterpreter();
+    return interpreter->mCurDimensions.aspect_ratio;
 }
 
 extern "C" uint32_t GameEngine_GetGameVersion() {
@@ -700,34 +741,33 @@ extern "C" uint32_t OTRGetCurrentHeight() {
     return GameEngine::Instance->context->GetWindow()->GetHeight();
 }
 
-extern "C" float OTRGetAspectRatio() {
-    return gfx_current_dimensions.aspect_ratio;
-}
-
 extern "C" float OTRGetHUDAspectRatio() {
-    if (CVarGetInteger("gHUDAspectRatio.Enabled", 0) == 0 || CVarGetInteger("gHUDAspectRatio.X", 0) == 0 || CVarGetInteger("gHUDAspectRatio.Y", 0) == 0)
-    {
-        return OTRGetAspectRatio();
+    if (CVarGetInteger("gHUDAspectRatio.Enabled", 0) == 0 || CVarGetInteger("gHUDAspectRatio.X", 0) == 0 || CVarGetInteger("gHUDAspectRatio.Y", 0) == 0) {
+        return GameEngine_GetAspectRatio();
     }
     return ((float)CVarGetInteger("gHUDAspectRatio.X", 1) / (float)CVarGetInteger("gHUDAspectRatio.Y", 1));
 }
 
 extern "C" float OTRGetDimensionFromLeftEdge(float v) {
-    return (gfx_native_dimensions.width / 2 - gfx_native_dimensions.height / 2 * OTRGetAspectRatio() + (v));
+    auto interpreter = GameEngine_GetInterpreter();
+    return (interpreter->mNativeDimensions.width / 2 - interpreter->mNativeDimensions.height / 2 * interpreter->mCurDimensions.aspect_ratio + (v));
 }
 
 extern "C" float OTRGetDimensionFromRightEdge(float v) {
-    return (gfx_native_dimensions.width / 2 + gfx_native_dimensions.height / 2 * OTRGetAspectRatio() -
-            (gfx_native_dimensions.width - v));
+    auto interpreter = GameEngine_GetInterpreter();
+    return (interpreter->mNativeDimensions.width / 2 + interpreter->mNativeDimensions.height / 2 * interpreter->mCurDimensions.aspect_ratio -
+            (interpreter->mNativeDimensions.width - v));
 }
 
 extern "C" float OTRGetDimensionFromLeftEdgeForcedAspect(float v, float aspectRatio) {
-    return (gfx_native_dimensions.width / 2 - gfx_native_dimensions.height / 2 * (aspectRatio > 0 ? aspectRatio : OTRGetAspectRatio()) + (v));
+    auto interpreter = GameEngine_GetInterpreter();
+    return (interpreter->mNativeDimensions.width / 2 - interpreter->mNativeDimensions.height / 2 * (aspectRatio > 0 ? aspectRatio : interpreter->mCurDimensions.aspect_ratio) + (v));
 }
 
 extern "C" float OTRGetDimensionFromRightEdgeForcedAspect(float v, float aspectRatio) {
-    return (gfx_native_dimensions.width / 2 + gfx_native_dimensions.height / 2 * (aspectRatio > 0 ? aspectRatio : OTRGetAspectRatio()) -
-            (gfx_native_dimensions.width - v));
+    auto interpreter = GameEngine_GetInterpreter();
+    return (interpreter->mNativeDimensions.width / 2 + interpreter->mNativeDimensions.height / 2 * (aspectRatio > 0 ? aspectRatio : interpreter->mCurDimensions.aspect_ratio) -
+            (interpreter->mNativeDimensions.width - v));
 }
 
 extern "C" float OTRGetDimensionFromLeftEdgeOverride(float v) {
@@ -740,12 +780,14 @@ extern "C" float OTRGetDimensionFromRightEdgeOverride(float v) {
 
 // Gets the width of the current render target area
 extern "C" uint32_t OTRGetGameRenderWidth() {
-    return gfx_current_dimensions.width;
+    auto interpreter = GameEngine_GetInterpreter();
+    return interpreter->mCurDimensions.width;
 }
 
 // Gets the height of the current render target area
 extern "C" uint32_t OTRGetGameRenderHeight() {
-    return gfx_current_dimensions.height;
+    auto interpreter = GameEngine_GetInterpreter();
+    return interpreter->mCurDimensions.height;
 }
 
 extern "C" int16_t OTRGetRectDimensionFromLeftEdge(float v) {
@@ -773,9 +815,10 @@ extern "C" int16_t OTRGetRectDimensionFromRightEdgeOverride(float v) {
 }
 
 extern "C" int32_t OTRConvertHUDXToScreenX(int32_t v) {
-    float gameAspectRatio = gfx_current_dimensions.aspect_ratio;
-    int32_t gameHeight = gfx_current_dimensions.height;
-    int32_t gameWidth = gfx_current_dimensions.width;
+    auto interpreter = GameEngine_GetInterpreter();
+    float gameAspectRatio = interpreter->mCurDimensions.aspect_ratio;
+    int32_t gameHeight = interpreter->mCurDimensions.height;
+    int32_t gameWidth = interpreter->mCurDimensions.width;
     float hudAspectRatio = 4.0f / 3.0f;
     int32_t hudHeight = gameHeight;
     int32_t hudWidth = hudHeight * hudAspectRatio;

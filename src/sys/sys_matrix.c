@@ -8,9 +8,7 @@
 
 #define gdSPDefMtxF(xx, yx, zx, wx, xy, yy, zy, wy, xz, yz, zz, wz, xw, yw, zw, ww) \
     {                                                                               \
-        {                                                                           \
-            xx, yx, zx, wx, xy, yy, zy, wy, xz, yz, zz, wz, xw, yw, zw, ww,         \
-        }                                                                           \
+        { xx, yx, zx, wx, xy, yy, zy, wy, xz, yz, zz, wz, xw, yw, zw, ww, }         \
     }
 
 Mtx gIdentityMtx =
@@ -46,7 +44,7 @@ void Matrix_Copy(Matrix* dst, Matrix* src) {
 void Matrix_Push(Matrix** mtxStack) {
     FrameInterpolation_RecordMatrixPush(mtxStack);
 
-    if(mtxStack == NULL || *mtxStack == NULL){
+    if (mtxStack == NULL || *mtxStack == NULL) {
         int bp = 0;
     }
 
@@ -385,7 +383,7 @@ void Matrix_RotateZ(Matrix* mtx, f32 angle, u8 mode) {
 // Creates rotation matrix about a given vector axis in mtx (MTXF_NEW) or applies one to mtx (MTXF_APPLY).
 // The vector specifying the axis does not need to be a unit vector.
 void Matrix_RotateAxis(Matrix* mtx, f32 angle, f32 axisX, f32 axisY, f32 axisZ, u8 mode) {
-//    FrameInterpolation_RecordMatrixRotateAxis()
+    //    FrameInterpolation_RecordMatrixRotateAxis()
     f32 rx;
     f32 ry;
     f32 rz;

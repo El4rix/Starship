@@ -1229,7 +1229,7 @@ void Aquas_BlueMarineTorpedo(Player* player) {
 
 void Aquas_BlueMarineLaser(Player* player) {
     s32 i;
-    
+
     CALL_CANCELLABLE_EVENT(PlayerActionPreShootEvent, player, gLaserStrength[gPlayerNum]) {
         for (i = 0; i < 3; i++) {
             if (gPlayerShots[i].obj.status == SHOT_FREE) {
@@ -1330,10 +1330,9 @@ void Aquas_BlueMarineShoot(Player* player) {
 
     bool rapidFire = CVarGetInteger("gRapidFire", 0) == 1;
 
-    if (rapidFire){
-        if (gInputHold->button & A_BUTTON)
-        {
-            if (player-> shotTimer > 0) {
+    if (rapidFire) {
+        if (gInputHold->button & A_BUTTON) {
+            if (player->shotTimer > 0) {
                 player->shotTimer--;
             }
             if (player->shotTimer <= 0) {
@@ -1341,8 +1340,7 @@ void Aquas_BlueMarineShoot(Player* player) {
                 player->shotTimer = 3;
             }
         }
-    } 
-    else {
+    } else {
         if (gInputPress->button & A_BUTTON) {
             Aquas_BlueMarineLaser(player);
         }
@@ -1537,11 +1535,10 @@ void Aquas_BlueMarineBoost(Player* player) {
 
         if ((gBoostButton[player->num] & gInputHold->button) && (player->unk_230 == 0) &&
             (player->state != PLAYERSTATE_U_TURN) && (player->boostCooldown == 0)) {
-            CALL_CANCELLABLE_EVENT(PlayerActionBoostEvent, player){
+            CALL_CANCELLABLE_EVENT(PlayerActionBoostEvent, player) {
                 if (player->boostMeter == 0) {
                     AUDIO_PLAY_SFX(NA_SE_MARINE_BOOST, player->sfxSource, 4);
                 }
-                
 
                 player->boostMeter += 3.0f;
                 if (player->boostMeter > 90.0f) {
@@ -1588,7 +1585,7 @@ void Aquas_BlueMarineBrake(Player* player) {
 
     if ((gInputHold->button & gBrakeButton[player->num]) && (player->unk_230 == 0) &&
         (player->state != PLAYERSTATE_U_TURN) && (player->boostCooldown == 0)) {
-        CALL_CANCELLABLE_EVENT(PlayerActionBrakeEvent, player){
+        CALL_CANCELLABLE_EVENT(PlayerActionBrakeEvent, player) {
             if (player->boostMeter == 0) {
                 AUDIO_PLAY_SFX(NA_SE_MARINE_BRAKE, player->sfxSource, 4);
             }

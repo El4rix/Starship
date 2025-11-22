@@ -3,8 +3,6 @@
 #include "Engine.h"
 #include "DisplayList.h"
 
-extern "C" uint8_t GameEngine_OTRSigCheck(const char* data);
-
 extern "C" void gSPDisplayList(Gfx* pkt, Gfx* dl) {
     char* imgData = (char*)dl;
 
@@ -18,6 +16,15 @@ extern "C" void gSPDisplayList(Gfx* pkt, Gfx* dl) {
     }
 
     __gSPDisplayList(pkt, dl);
+}
+
+extern "C" void gDPSetTileSizeInterp(Gfx* pkt, int t, float uls, float ult, float lrs, float lrt) 
+{
+	__gDPSetTileSizeInterp(pkt++, t, 0, 0, 0, 0);
+	memcpy(&pkt[0].words.w0, &uls, sizeof(float));
+	memcpy(&pkt[0].words.w1, &ult, sizeof(float));
+	memcpy(&pkt[1].words.w0, &lrs, sizeof(float));
+	memcpy(&pkt[1].words.w1, &lrt, sizeof(float));
 }
 
 extern "C" void gSPVertex(Gfx* pkt, uintptr_t v, int n, int v0) {

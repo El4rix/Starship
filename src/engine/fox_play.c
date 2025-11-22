@@ -183,26 +183,26 @@ void Play_UpdateDynaFloor(void) {
                 // spB4_copy[*spB0].n.n[2] *= -1.0f;
             }
             break;
-            
-            case LEVEL_ZONESS:
-                if ((gGameFrameCount % 2) != 0) {
-                    spB4 = SEGMENTED_TO_VIRTUAL(D_ZO_6009ED0);
-                    spB4_copy = D_ZO_6009ED0_copy;
-                } else {
-                    spB4 = SEGMENTED_TO_VIRTUAL(D_ZO_600C780);
-                    spB4_copy = D_ZO_600C780_copy;
-                }
-                spB0 = SEGMENTED_TO_VIRTUAL(D_ZO_602AC50);
 
-                memcpy(spB4_copy, spB4, 17 * 17 * sizeof(Vtx));
+        case LEVEL_ZONESS:
+            if ((gGameFrameCount % 2) != 0) {
+                spB4 = SEGMENTED_TO_VIRTUAL(D_ZO_6009ED0);
+                spB4_copy = D_ZO_6009ED0_copy;
+            } else {
+                spB4 = SEGMENTED_TO_VIRTUAL(D_ZO_600C780);
+                spB4_copy = D_ZO_600C780_copy;
+            }
+            spB0 = SEGMENTED_TO_VIRTUAL(D_ZO_602AC50);
 
-                for (i = 0; (i < 17 * 17); i++, spB0++) {
-                    // spB4_copy[*spB0] = spB4[*spB0];
-                    spB4_copy[*spB0].n.n[0] *= -1.0f; // Disable to fix mirror
-                    // spB4_copy[*spB0].n.n[1] *= -1.0f;
-                    // spB4_copy[*spB0].n.n[2] *= -1.0f;
-                }
-                break;
+            memcpy(spB4_copy, spB4, 17 * 17 * sizeof(Vtx));
+
+            for (i = 0; (i < 17 * 17); i++, spB0++) {
+                // spB4_copy[*spB0] = spB4[*spB0];
+                spB4_copy[*spB0].n.n[0] *= -1.0f; // Disable to fix mirror
+                // spB4_copy[*spB0].n.n[1] *= -1.0f;
+                // spB4_copy[*spB0].n.n[2] *= -1.0f;
+            }
+            break;
     }
 }
 
@@ -3819,20 +3819,20 @@ void Player_ArwingLaser(Player* player) {
             for (i = 0; i < ARRAY_COUNT(gPlayerShots) - 1; i++) {
                 if (gPlayerShots[i].obj.status == SHOT_FREE) {
                     Player_SetupArwingShot(player, &gPlayerShots[i], 0.0f, 0.0f, PLAYERSHOT_SINGLE_LASER,
-                                        400.0f / 3.0f);
+                                           400.0f / 3.0f);
                     Player_PlaySfx(player->sfxSource, NA_SE_ARWING_SHOT, player->num);
                     gMuzzleFlashScale[player->num] = 0.5f;
                     break;
                 }
             }
-        
+
             break;
         case LASERS_TWIN:
         case LASERS_HYPER:
             for (i = 0; i < ARRAY_COUNT(gPlayerShots) - 1; i++) {
                 if (gPlayerShots[i].obj.status == SHOT_FREE) {
                     Player_SetupArwingShot(player, &gPlayerShots[i], 0.0f, -10.0f, PLAYERSHOT_TWIN_LASER,
-                                        400.0f / 3.0f);
+                                           400.0f / 3.0f);
                     if (laser == LASERS_TWIN) {
                         Player_PlaySfx(player->sfxSource, NA_SE_ARWING_TWIN_LASER, player->num);
                         gMuzzleFlashScale[player->num] = 0.5f;
@@ -3973,8 +3973,7 @@ bool Player_UpdateLockOn(Player* player) {
     if (rapidFire) {
         if (CVarGetInteger("gLtoCharge", 0) == 1) {
             charging = (gInputHold->button & L_TRIG) && !(gInputHold->button & A_BUTTON);
-        }
-        else {
+        } else {
             charging = !(gInputHold->button & A_BUTTON);
         }
     } else {
@@ -4018,10 +4017,10 @@ bool Player_UpdateLockOn(Player* player) {
                     (gPlayerShots[14 - player->num].obj.id != PLAYERSHOT_LOCK_ON) ||
                     ((gPlayerShots[14 - player->num].obj.id == PLAYERSHOT_LOCK_ON) &&
                      (gPlayerShots[14 - player->num].unk_60 != 0))) {
-                    CALL_CANCELLABLE_EVENT(PlayerActionPreShootChargedEvent, player){
+                    CALL_CANCELLABLE_EVENT(PlayerActionPreShootChargedEvent, player) {
                         if (player->form == FORM_ARWING) {
-                            Player_SetupArwingShot(player, &gPlayerShots[14 - player->num], 0.0f, 0.0f, PLAYERSHOT_LOCK_ON,
-                                                70.0f);
+                            Player_SetupArwingShot(player, &gPlayerShots[14 - player->num], 0.0f, 0.0f,
+                                                   PLAYERSHOT_LOCK_ON, 70.0f);
                         } else {
                             Player_SetupTankShot(player, &gPlayerShots[14 - player->num], PLAYERSHOT_LOCK_ON, 70.0f);
                         }
@@ -4040,10 +4039,10 @@ bool Player_UpdateLockOn(Player* player) {
                 (gPlayerShots[14 - player->num].obj.id != PLAYERSHOT_LOCK_ON) ||
                 ((gPlayerShots[14 - player->num].obj.id == PLAYERSHOT_LOCK_ON) &&
                  (gPlayerShots[14 - player->num].scale > 1.0f))) {
-                CALL_CANCELLABLE_EVENT(PlayerActionPreShootChargedEvent, player){
+                CALL_CANCELLABLE_EVENT(PlayerActionPreShootChargedEvent, player) {
                     if (player->form == FORM_ARWING) {
                         Player_SetupArwingShot(player, &gPlayerShots[14 - player->num], 0.0f, 0.0f, PLAYERSHOT_LOCK_ON,
-                                            70.0f);
+                                               70.0f);
                     } else {
                         Player_SetupTankShot(player, &gPlayerShots[14 - player->num], PLAYERSHOT_LOCK_ON, 70.0f);
                     }
@@ -4075,13 +4074,14 @@ bool Player_UpdateLockOn(Player* player) {
         }
         if (hasBombTarget && (gBombCount[player->num] != 0) &&
             (gPlayerShots[ARRAY_COUNT(gPlayerShots) - 1].obj.status == SHOT_FREE)) {
-            CALL_CANCELLABLE_EVENT(PlayerActionPreBombEvent, player){
+            CALL_CANCELLABLE_EVENT(PlayerActionPreBombEvent, player) {
                 gBombCount[player->num]--;
                 if (player->form == FORM_ARWING) {
                     Player_SetupArwingShot(player, &gPlayerShots[ARRAY_COUNT(gPlayerShots) - 1], 0.0f, 0.0f,
-                                        PLAYERSHOT_LOCK_ON, 60.0f);
+                                           PLAYERSHOT_LOCK_ON, 60.0f);
                 } else {
-                    Player_SetupTankShot(player, &gPlayerShots[ARRAY_COUNT(gPlayerShots) - 1], PLAYERSHOT_LOCK_ON, 60.0f);
+                    Player_SetupTankShot(player, &gPlayerShots[ARRAY_COUNT(gPlayerShots) - 1], PLAYERSHOT_LOCK_ON,
+                                         60.0f);
                 }
                 gPlayerShots[ARRAY_COUNT(gPlayerShots) - 1].unk_48 = 30.0f;
                 gPlayerShots[ARRAY_COUNT(gPlayerShots) - 1].unk_60 = 0;
@@ -4110,8 +4110,8 @@ void Player_Shoot(Player* player) {
                 } else {
                     Math_SmoothStepToF(&player->arwing.laserGunsYpos, 0.0f, 1.0f, 0.5f, 0.0f);
                 }
-                if (rapidFire && (gShootButton[player->num] & gInputHold->button)){
-                    if (player->shotTimer <= 0){
+                if (rapidFire && (gShootButton[player->num] & gInputHold->button)) {
+                    if (player->shotTimer <= 0) {
                         player->shotTimer = 3;
                     }
                 }
@@ -4133,16 +4133,15 @@ void Player_Shoot(Player* player) {
             if (!Player_UpdateLockOn(player)) {
                 if (rapidFire) {
                     if (gShootButton[player->num] & (gInputHold->button)) {
-                        if (player-> shotTimer > 0) {
+                        if (player->shotTimer > 0) {
                             player->shotTimer--;
                         }
-                        if (player->shotTimer <= 0){
+                        if (player->shotTimer <= 0) {
                             Player_TankCannon(player);
                             player->shotTimer = 3;
                         }
                     }
-                }
-                else {
+                } else {
                     if (gShootButton[player->num] & (gInputPress->button)) {
                         Player_TankCannon(player);
                     }
@@ -4407,7 +4406,7 @@ void Player_MoveArwing360(Player* player) {
     gPlayerTurnStickMod = 0.68f;
 
     sp7C = -gInputPress->stick_x;
-    
+
     sp78 = gInputPress->stick_y * (CVarGetInteger("gInvertYAxis", 0) == 1 ? -1 : 1);
 
     Math_SmoothStepToAngle(&player->aerobaticPitch, 0.0f, 0.1f, 5.0f, 0.01f);
@@ -5943,7 +5942,7 @@ void Player_Setup(Player* playerx) {
     gDisplayedHitCount = gHitCount;
     D_hud_80161730 = 0;
 
-    char buffer [48] = {"\0"};
+    char buffer[48] = { "\0" };
     sprintf(buffer, "gCheckpoint.%d.Set", gCurrentLevel);
     if (CVarGetInteger(buffer, 0)) {
         sprintf(buffer, "gCheckpoint.%d.gSavedGroundSurface", gCurrentLevel);
@@ -6402,7 +6401,7 @@ void Player_ArwingBoost(Player* player) {
         sp28 = 1.5f;
         sp2C = 0.35f;
     }
-    
+
     player->sfx.boost = 0;
 
     stickY = gInputPress->stick_y; // fake?
@@ -8929,7 +8928,7 @@ void Play_Main(void) {
             }
 
             gDrawMode = DRAW_PLAY;
-            CALL_CANCELLABLE_EVENT(PlayUpdateEvent){
+            CALL_CANCELLABLE_EVENT(PlayUpdateEvent) {
                 Play_Update();
             }
 

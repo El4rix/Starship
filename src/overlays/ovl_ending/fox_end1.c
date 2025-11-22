@@ -48,6 +48,25 @@ bool D_ending_80198584;
 s32 D_ending_80198588;
 s32 D_ending_8019858C;
 
+void Ending_Port_InitOverlay(void) {
+    D_ending_80192E70 = 0; // ending sequence frame counter
+    D_ending_80196D04 = 0; // ending text frame counter
+    memset(D_ending_80196D08, 0, sizeof(D_ending_80196D08));
+    D_ending_80196F88 = 0;
+    D_ending_80196F8C = 0;
+    D_ending_80196F90 = 0;
+    D_ending_80196F94 = 0;
+    D_ending_80196F98 = 0;
+    D_ending_80196F9C = 0.0f;
+    memset(D_ending_80196FA0, 0, sizeof(D_ending_80196FA0));
+    memset(D_ending_80197900, 0, sizeof(D_ending_80197900));
+    memset(D_ending_80198260, 0, sizeof(D_ending_80198260));
+    D_ending_80198580 = 0.0f;
+    D_ending_80198584 = false;
+    D_ending_80198588 = 0;
+    D_ending_8019858C = 0;
+}
+
 const char str1[] = "fogR= %d, fogG= %d, fogB= %d\n";
 const char str2[] = "ligR= %d, ligG= %d, ligB= %d\n";
 const char str3[] = "kanR= %d, kanG= %d, kanB= %d\n";
@@ -1041,6 +1060,17 @@ void Ending_Main(void) {
     gCsFrameCount++;
     gGameFrameCount++;
 
+    if (gSaveFile.save.data.padEE[0] == 1) {
+        gControllerLock = 0;
+        if (gControllerPress[0].button & START_BUTTON) {
+            D_ending_80196D00 = 7;
+            D_ending_80196D04 = 7200;
+            D_ending_80192E70 = 7200;
+        }
+    } else {
+        gControllerLock = 10000;
+    }
+
     switch (D_ending_80196D00) {
         case 0:
             D_ending_80192E70 = 0; // So the ending still plays on subsequent runs
@@ -1051,6 +1081,12 @@ void Ending_Main(void) {
             gCsCamAtX = gCsCamAtY = 0.0f;
             gCsCamAtZ = -100.0f;
             D_ending_80196D00 = 1;
+
+            // @port Bugfix:
+            // In the original game, these variables are set to zero when the overlay is reloaded.
+            // Since we don't use overlays, the absence of this initializer causes the ending not to play
+            // as it should after a the first playthrough.
+            Ending_Port_InitOverlay();
             break;
 
         case 1:

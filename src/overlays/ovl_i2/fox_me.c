@@ -6,6 +6,14 @@
 
 #include "global.h"
 #include "assets/ast_meteo.h"
+#include "fox_record.h"
+
+// MeCrusher destroy cutscene timings recorded from a real N64
+Record gMeCrusherCutsceneRecord[] = {
+    { 2, 0 },
+    { 3, 200 },
+    { 2, 224 },
+};
 
 Vec3f D_i2_80195430[] = {
     { 122.0, -5.0, -1200.0 },   { 122.0, -103.0, -727.0 }, { 142.0, -323.0, -848.0 }, { 362.0, -59.0, -435.0 },
@@ -2440,6 +2448,8 @@ void Meteo_LevelComplete(Player* player) {
     Math_SmoothStepToF(&player->camRoll, 0.0f, 0.1f, 3.0f, 0.0f);
     Math_SmoothStepToAngle(&player->aerobaticPitch, 0.0f, 0.1f, 20.0f, 0.0f);
     Math_SmoothStepToF(&player->boostSpeed, 0.0f, 0.1f, 3.0f, 0.0f);
+
+    UpdateVisPerFrameFromRecording(gMeCrusherCutsceneRecord, ARRAY_COUNT(gMeCrusherCutsceneRecord));
 
     switch (player->csState) {
         case 0:

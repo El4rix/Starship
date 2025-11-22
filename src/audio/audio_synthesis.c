@@ -5,14 +5,23 @@
 #include "port/Engine.h"
 
 #define DMEM_WET_SCRATCH 0x470
-#define DMEM_COMPRESSED_ADPCM_DATA 0x990
-#define DMEM_LEFT_CH 0x990
-#define DMEM_RIGHT_CH 0xB10
+#define DMEM_COMPRESSED_ADPCM_DATA 0xD50
+#define DMEM_LEFT_CH 0xD50
+#define DMEM_RIGHT_CH (DMEM_LEFT_CH + DMEM_1CH_SIZE)
+#define DMEM_CENTER_CH (DMEM_LEFT_CH + 2 * DMEM_1CH_SIZE)
+#define DMEM_SUBWOOFER_CH (DMEM_LEFT_CH + 3 * DMEM_1CH_SIZE)
+#define DMEM_REAR_LEFT_CH (DMEM_LEFT_CH + 4 * DMEM_1CH_SIZE)
+#define DMEM_REAR_RIGHT_CH (DMEM_LEFT_CH + 5 * DMEM_1CH_SIZE)
 #define DMEM_HAAS_TEMP 0x650
 #define DMEM_TEMP 0x450
 #define DMEM_UNCOMPRESSED_NOTE 0x5F0
-#define DMEM_WET_LEFT_CH 0xC90
-#define DMEM_WET_RIGHT_CH 0xE10 // = DMEM_WET_LEFT_CH + DMEM_1CH_SIZE
+#define DMEM_WET_LEFT_CH (DMEM_LEFT_CH + 6 * DMEM_1CH_SIZE)
+#define DMEM_WET_RIGHT_CH (DMEM_WET_LEFT_CH + DMEM_1CH_SIZE)
+#define DMEM_WET_CENTER_CH (DMEM_WET_LEFT_CH + 2 * DMEM_1CH_SIZE)
+#define DMEM_WET_SUBWOOFER_CH (DMEM_WET_LEFT_CH + 3 * DMEM_1CH_SIZE)
+#define DMEM_WET_REAR_LEFT_CH (DMEM_WET_LEFT_CH + 4 * DMEM_1CH_SIZE)
+#define DMEM_WET_REAR_RIGHT_CH (DMEM_WET_LEFT_CH + 5 * DMEM_1CH_SIZE)
+
 #define SAMPLE_SIZE sizeof(s16)
 
 typedef enum {
@@ -77,7 +86,7 @@ void AudioSynth_InitNextRingBuf(s32 sampleCount, s32 itemIndex, s32 reverbIndex)
 
     if ((reverb->downsampleRate != 1) && (reverb->framesToIgnore == 0)) {
         ringItem = &reverb->items[reverb->curFrame][itemIndex];
-        osInvalDCache(ringItem->toDownsampleLeft, 0x300);
+        osInvalDCache(ringItem->toDownsampleLeft, DMEM_1CH_SIZE * MAX_NUM_AUDIO_CHANNELS);
         j = 0;
         for (i = 0; i < ringItem->lengthA / 2; i++, j += reverb->downsampleRate) {
             reverb->leftRingBuf[ringItem->startPos + i] = ringItem->toDownsampleLeft[j];
@@ -389,138 +398,123 @@ void AudioSynth_HartleyTransform(f32* arg0, s32 arg1, f32* arg2) {
 #pragma GLOBAL_ASM("asm/us/rev1/nonmatchings/audio/audio_synthesis/AudioSynth_HartleyTransform.s")
 #endif
 
-// https://decomp.me/scratch/TZQNS
-#ifdef NON_MATCHING
 void func_80009124(s16** arg0) {
-    s16* var_a1;
-    s32 temp_a0;
-    u8 temp_s0;
-    u8 temp_s1;
+    s16* bufPtr;
+    s32 shiftFactor;
+    s32 mode;
+    u8 blockHeader;
     u8 temp_u1;
-    s32 temp_t5_4;
-    s32 temp_v0;
-    u8 temp_v1;
-    s32 var_s1;
-    s32 var_t2;
-    s32 var_v1;
-    u16 var_s0;
-    u32 var_t3;
+    s32 headerPart;
+    s32 block;
+    s32 decodedBufIndex;
+    u16 bufValue;
+    u32 header;
     s32 i;
     s32 j;
-    s16 new_var2;
 
-    var_a1 = *arg0;
+    bufPtr = *arg0;
 
-    for (i = 255; i >= 0; i--) {
-        D_80145D48[i] = 0.0f;
+    for (decodedBufIndex = 255; decodedBufIndex >= 0; decodedBufIndex--) {
+        D_80145D48[decodedBufIndex] = 0.0f;
     }
-    temp_v0 = *var_a1++;
-    var_t3 = temp_v0 << 0x10;
-    temp_v0 = *var_a1++;
-    var_t3 |= temp_v0;
+    headerPart = *bufPtr++;
+    header = headerPart << 0x10;
+    headerPart = *bufPtr++;
+    header |= headerPart;
 
-    for (var_t2 = 0; var_t2 < 4; var_t2++) {
-        var_v1 = var_t2 * 0x40;
-        temp_s0 = var_t3 >> 0x18;
-
-        var_t3 <<= 8;
-
-        temp_v1 = ((temp_s0 >> 4) & 0xF);
-        temp_a0 = temp_s0 & 0xF;
-        if (temp_v1 == 0) {
+    for (block = 0; block < 4; block++) {
+        decodedBufIndex = block * 0x40;
+        blockHeader = (header >> 0x18) & 0xFF;
+        header <<= 8;
+        mode = ((blockHeader >> 4) & 0xF);
+        if (mode == 0) {
             continue;
         }
-        switch (temp_v1) {
+        shiftFactor = blockHeader & 0xF;
+        switch (mode) {
             case 1:
                 while (true) {
-                    var_s0 = *var_a1++;
-                    for (var_s1 = 0; var_s1 < 4; var_s1++) {
-                        temp_u1 = (var_s0 >> 0xC) & 0xF;
-                        var_s0 <<= 4;
-                        D_80145D48[var_v1++] = ((temp_u1 & 7) - 4) << temp_a0;
+                    bufValue = *bufPtr++;
+                    for (i = 0; i < 4; i++) {
+                        temp_u1 = (bufValue >> 0xC) & 0xF;
+                        bufValue <<= 4;
+                        D_80145D48[(u32) decodedBufIndex++] = ((temp_u1 & 7) - 4) << shiftFactor;
                         if (temp_u1 >= 8) {
                             goto case_1_break;
                         }
                     }
                 }
             case_1_break:
-                break;
+                continue;
             case 2:
-                for (var_s1 = 0; var_s1 < 16; var_s1++) {
-                    var_s0 = *var_a1++;
-                    for (i = 0; i < 4; i++) {
-                        temp_u1 = (var_s0 >> 0xC) & 0xF;
-                        var_s0 <<= 4;
-                        D_80145D48[var_v1++] = (temp_u1 - 8) << temp_a0;
+                for (i = 0; i < 16; i++) {
+                    bufValue = *bufPtr++;
+                    for (j = 0; j < 4; j++) {
+                        temp_u1 = (bufValue >> 0xC) & 0xF;
+                        bufValue <<= 4;
+                        D_80145D48[decodedBufIndex++] = (temp_u1 - 8) << shiftFactor;
                     }
                 }
                 break;
             case 6:
                 while (true) {
-                    var_s0 = *var_a1++;
-                    temp_u1 = (var_s0 >> 8) & 0xFF;
-                    temp_t5_4 = temp_u1 >> 6;
-                    D_80145D48[var_v1] = ((temp_u1 & 0x3F) - 0x20) << temp_a0;
-                    if (temp_t5_4 == 0) {
+                    bufValue = *bufPtr++;
+                    temp_u1 = (bufValue >> 8) & 0xFF;
+                    D_80145D48[decodedBufIndex] = ((temp_u1 & 0x3F) - 0x20) << shiftFactor;
+                    if (temp_u1 >> 6 == 0) {
                         break;
                     }
-                    var_v1 += temp_t5_4;
-                    temp_u1 = var_s0 & 0xFF;
-                    temp_t5_4 = temp_u1 >> 6;
-                    D_80145D48[var_v1] = ((temp_u1 & 0x3F) - 0x20) << temp_a0;
-                    if (temp_t5_4 == 0) {
+                    decodedBufIndex += temp_u1 >> 6;
+                    temp_u1 = bufValue & 0xFF;
+                    D_80145D48[decodedBufIndex] = ((temp_u1 & 0x3F) - 0x20) << shiftFactor;
+                    if (temp_u1 >> 6 == 0) {
                         break;
                     }
-                    var_v1 += temp_t5_4;
+                    decodedBufIndex += temp_u1 >> 6;
                 }
                 break;
             case 3:
                 while (true) {
-                    var_s0 = *var_a1++;
-                    temp_u1 = (var_s0 >> 8) & 0xFF;
+                    bufValue = *bufPtr++;
+                    temp_u1 = (bufValue >> 8) & 0xFF;
 
-                    D_80145D48[var_v1++] = ((temp_u1 & 0x7F) - 0x40) << temp_a0;
+                    D_80145D48[decodedBufIndex++] = ((temp_u1 & 0x7F) - 0x40) << shiftFactor;
 
                     if (temp_u1 >= 0x80) {
                         break;
                     }
-                    temp_u1 = var_s0 & 0xFF;
-                    D_80145D48[var_v1++] = ((temp_u1 & 0x7F) - 0x40) << temp_a0;
+                    temp_u1 = bufValue & 0xFF;
+                    D_80145D48[decodedBufIndex++] = ((temp_u1 & 0x7F) - 0x40) << shiftFactor;
                     if (temp_u1 >= 0x80) {
                         break;
                     }
                 }
-                break;
+                continue;
             case 4:
                 while (true) {
-                    var_s0 = *var_a1++;
-                    temp_t5_4 = var_s0 >> 0xC;
-                    D_80145D48[var_v1] = ((var_s0 & 0xFFF) - 0x800) << temp_a0;
-                    if (temp_t5_4 == 0) {
+                    bufValue = *bufPtr++;
+                    D_80145D48[decodedBufIndex] = ((bufValue & 0xFFF) - 0x800) << shiftFactor;
+                    if (bufValue >> 0xC == 0) {
                         break;
                     }
-                    var_v1 += temp_t5_4;
+                    decodedBufIndex += bufValue >> 0xC;
                 }
                 break;
             case 5:
                 while (true) {
-                    var_s0 = *var_a1++;
-                    temp_t5_4 = var_s0 >> 0xF;
-                    D_80145D48[var_v1] = ((var_s0 & 0x7FFF) - 0x4000) << temp_a0;
-                    if (temp_t5_4 == 1) {
+                    bufValue = *bufPtr++;
+                    D_80145D48[decodedBufIndex] = ((bufValue & 0x7FFF) - 0x4000) << shiftFactor;
+                    if (bufValue >> 0xF == 1) {
                         break;
                     }
-                    var_v1++;
+                    decodedBufIndex++;
                 }
                 break;
         }
+        if (decodedBufIndex) {}
     }
-    *arg0 = var_a1;
+    *arg0 = bufPtr;
 }
-#else
-void func_80009124(s16** arg0);
-#pragma GLOBAL_ASM("asm/us/rev1/nonmatchings/audio/audio_synthesis/func_80009124.s")
-#endif
 
 void func_80009504(s16* arg0, UnkStruct_800097A8* arg1) {
     s32 i;
@@ -675,6 +669,7 @@ Acmd* AudioSynth_Update(Acmd* aList, s32* cmdCount, s16* aiBufStart, s32 aiBufLe
     }
 
     aiBufPtr = aiBufStart;
+
     for (i = gAudioBufferParams.ticksPerUpdate; i > 0; i--) {
         if (i == 1) {
             chunkLen = aiBufLen;
@@ -692,10 +687,11 @@ Acmd* AudioSynth_Update(Acmd* aList, s32* cmdCount, s16* aiBufStart, s32 aiBufLe
             }
         }
 
-        aCmdPtr =
-            AudioSynth_DoOneAudioUpdate((s16*) aiBufPtr, chunkLen, aCmdPtr, gAudioBufferParams.ticksPerUpdate - i);
+        aCmdPtr = AudioSynth_DoOneAudioUpdate(aiBufPtr, chunkLen, aCmdPtr, gAudioBufferParams.ticksPerUpdate - i);
         aiBufLen -= chunkLen;
-        aiBufPtr += chunkLen * 2;
+
+        int num_audio_channels = GetNumAudioChannels();
+        aiBufPtr += chunkLen * num_audio_channels;
     }
 
     for (j = 0; j < gNumSynthReverbs; j++) {
@@ -715,6 +711,11 @@ Acmd* AudioSynth_LoadReverbSamples(Acmd* aList, s32 aiBufLen, s16 reverbIndex, s
     s16 sp62;
     s16 sp60;
 
+    u16 left_channel = DMEM_LEFT_CH;
+    if (GetNumAudioChannels() == 6) {
+        left_channel = DMEM_REAR_LEFT_CH;
+    }
+
     aClearBuffer(aList++, DMEM_WET_LEFT_CH, DMEM_2CH_SIZE);
 
     if (gSynthReverbs[reverbIndex].downsampleRate == 1) {
@@ -723,7 +724,7 @@ Acmd* AudioSynth_LoadReverbSamples(Acmd* aList, s32 aiBufLen, s16 reverbIndex, s
             aList =
                 AudioSynth_LoadRingBufferPart(aList, sp64->lengthA + DMEM_WET_LEFT_CH, 0, sp64->lengthB, reverbIndex);
         }
-        aAddMixer(aList++, 0x300, DMEM_WET_LEFT_CH, DMEM_LEFT_CH);
+        aAddMixer(aList++, DMEM_2CH_SIZE, DMEM_WET_LEFT_CH, left_channel);
         aMix(aList++, 0x30, gSynthReverbs[reverbIndex].decayRatio + 0x8000, DMEM_WET_LEFT_CH, DMEM_WET_LEFT_CH);
     } else {
         sp62 = (sp64->startPos & 7) * 2;
@@ -739,7 +740,7 @@ Acmd* AudioSynth_LoadReverbSamples(Acmd* aList, s32 aiBufLen, s16 reverbIndex, s
         aSetBuffer(aList++, 0, sp62 + DMEM_UNCOMPRESSED_NOTE, DMEM_WET_RIGHT_CH, aiBufLen * 2);
         aResample(aList++, gSynthReverbs[reverbIndex].resampleFlags, gSynthReverbs[reverbIndex].unk_0A,
                   OS_K0_TO_PHYSICAL(gSynthReverbs[reverbIndex].unk_34));
-        aAddMixer(aList++, 0x300, DMEM_WET_LEFT_CH, DMEM_LEFT_CH);
+        aAddMixer(aList++, DMEM_2CH_SIZE, DMEM_WET_LEFT_CH, left_channel);
         aMix(aList++, 0x30, gSynthReverbs[reverbIndex].decayRatio + 0x8000, DMEM_WET_LEFT_CH, DMEM_WET_LEFT_CH);
     }
 
@@ -768,7 +769,7 @@ Acmd* AudioSynth_SaveReverbSamples(Acmd* aList, s16 reverbIndex, s16 updateIndex
                         OS_K0_TO_PHYSICAL(gSynthReverbs[reverbIndex]
                                               .items[gSynthReverbs[reverbIndex].curFrame][updateIndex]
                                               .toDownsampleLeft),
-                        0x300);
+                        DMEM_2CH_SIZE);
             gSynthReverbs[reverbIndex].resampleFlags = 0;
             break;
     }
@@ -807,7 +808,7 @@ Acmd* AudioSynth_DoOneAudioUpdate(s16* aiBuf, s32 aiBufLen, Acmd* aList, s32 upd
         }
     }
 
-    aClearBuffer(aList++, DMEM_LEFT_CH, DMEM_2CH_SIZE);
+    aClearBuffer(aList++, DMEM_LEFT_CH, DMEM_6CH_SIZE);
 
     j = 0;
     for (i = 0; i < gNumSynthReverbs; i++) {
@@ -834,10 +835,14 @@ Acmd* AudioSynth_DoOneAudioUpdate(s16* aiBuf, s32 aiBufLen, Acmd* aList, s32 upd
         j++;
     }
 
-    j = aiBufLen * 2;
+    int num_audio_channels = GetNumAudioChannels();
+    j = aiBufLen * num_audio_channels * sizeof(s16);
+    // Set rsp output buffer to DMEM_TEMP with size j
     aSetBuffer(aList++, 0, 0, DMEM_TEMP, j);
-    aInterleave(aList++, DMEM_LEFT_CH, DMEM_RIGHT_CH);
-    aSaveBuffer(aList++, DMEM_TEMP, OS_K0_TO_PHYSICAL(aiBuf), j * 2);
+    aInterleave(aList++, DMEM_LEFT_CH, DMEM_RIGHT_CH, DMEM_CENTER_CH, DMEM_SUBWOOFER_CH, DMEM_REAR_LEFT_CH,
+                DMEM_REAR_RIGHT_CH, num_audio_channels);
+    // Copy j bytes from DMEM_TEMP to aiBuf
+    aSaveBuffer(aList++, DMEM_TEMP, OS_K0_TO_PHYSICAL(aiBuf), j);
 
     return aList;
 }
@@ -908,6 +913,10 @@ Acmd* AudioSynth_ProcessNote(s32 noteIndex, NoteSubEu* noteSub, NoteSynthesisSta
         synthState->samplePosFrac = 0;
         synthState->curVolLeft = 0;
         synthState->curVolRight = 0;
+        synthState->curVolCenter = 0;
+        synthState->curVolLfe = 0;
+        synthState->curVolRLeft = 0;
+        synthState->curVolRRight = 0;
         synthState->numParts = synthState->prevHaasEffectRightDelaySize = synthState->prevHaasEffectLeftDelaySize = 0;
         note->noteSubEu.bitField0.finished = 0;
     }
@@ -1024,7 +1033,7 @@ Acmd* AudioSynth_ProcessNote(s32 noteIndex, NoteSubEu* noteSub, NoteSynthesisSta
                         sampleDmaStart = 0;
                         break;
 
-                   case CODEC_S16_INMEMORY:
+                    case CODEC_S16_INMEMORY:
                         buffAddr = func_800097A8(bookSample, numSamplesToLoadAdj, flags,
                                                  &synthState->synthesisBuffers->unk_40);
                         aLoadBuffer(aList++, OS_K0_TO_PHYSICAL(buffAddr), DMEM_UNCOMPRESSED_NOTE,
@@ -1036,12 +1045,23 @@ Acmd* AudioSynth_ProcessNote(s32 noteIndex, NoteSubEu* noteSub, NoteSynthesisSta
                         goto skip;
 
                     case CODEC_S16:
-                        aLoadBuffer(aList++, OS_K0_TO_PHYSICAL(bookSample->sampleAddr + synthState->samplePosInt * 2), DMEM_UNCOMPRESSED_NOTE,
-                                    (numSamplesToLoadAdj + SAMPLES_PER_FRAME) * 2);
+                        aClearBuffer(aList++, DMEM_UNCOMPRESSED_NOTE,
+                                     (numSamplesToLoadAdj + SAMPLES_PER_FRAME) * SAMPLE_SIZE);
+
                         flags = A_CONTINUE;
                         skipBytes = 0;
-                        numSamplesProcessed = numSamplesToLoadAdj;
+                        size_t bytesToRead;
+                        numSamplesProcessed += numSamplesToLoadAdj;
                         dmemUncompressedAddrOffset1 = numSamplesToLoadAdj;
+
+                        if (((synthState->samplePosInt * 2) + (numSamplesToLoadAdj) *SAMPLE_SIZE) < bookSample->size) {
+                            bytesToRead = (numSamplesToLoadAdj + 16) * SAMPLE_SIZE;
+                        } else {
+                            bytesToRead = bookSample->size - (synthState->samplePosInt * 2);
+                        }
+                        // 2S2H [Port] [Custom audio] Handle decoding OPUS data
+                        aLoadBuffer(cmd++, sampleAddr + (synthState->samplePosInt * 2), DMEM_UNCOMPRESSED_NOTE,
+                                    bytesToRead);
 
                         goto skip;
                 }
@@ -1051,7 +1071,7 @@ Acmd* AudioSynth_ProcessNote(s32 noteIndex, NoteSubEu* noteSub, NoteSynthesisSta
 
 #if __SANITIZE_ADDRESS__
                 uintptr_t actualAddrLoaded = samplesToLoadAddr - sampleDataChunkAlignPad;
-                uintptr_t offset = actualAddrLoaded - (uintptr_t)sampleAddr;
+                uintptr_t offset = actualAddrLoaded - (uintptr_t) sampleAddr;
                 if (offset + aligned > bookSample->size) {
                     aligned -= (offset + aligned - bookSample->size);
                 }
@@ -1167,7 +1187,8 @@ Acmd* AudioSynth_ProcessNote(s32 noteIndex, NoteSubEu* noteSub, NoteSynthesisSta
                 case 2:
                     switch (curPart) {
                         case 0:
-                            aInterl(aList++, skipBytes + DMEM_UNCOMPRESSED_NOTE, DMEM_WET_SCRATCH, ALIGN8(numSamplesToLoadAdj / 2));
+                            aInterl(aList++, skipBytes + DMEM_UNCOMPRESSED_NOTE, DMEM_WET_SCRATCH,
+                                    ALIGN8(numSamplesToLoadAdj / 2));
                             resampledTempLen = numSamplesToLoadAdj;
                             noteSamplesDmemAddrBeforeResampling = DMEM_WET_SCRATCH;
                             if (noteSub->bitField0.finished) {
@@ -1277,74 +1298,98 @@ Acmd* AudioSynth_FinalResample(Acmd* aList, NoteSynthesisState* synthState, s32 
 Acmd* AudioSynth_ProcessEnvelope(Acmd* aList, NoteSubEu* noteSub, NoteSynthesisState* synthState, s32 aiBufLen,
                                  u16 dmemSrc, s32 delaySide, s32 flags) {
     s16 rampReverb;
-    s16 rampRight;
-    s16 rampLeft;
-    u16 panVolLeft;
-    u16 panVolRight;
-    u16 curVolLeft;
-    u16 curVolRight;
+    s16 rampRight = 0, rampLeft = 0, rampCenter = 0, rampLfe = 0, rampRLeft = 0, rampRRight = 0;
+    u16 panVolLeft, panVolRight, panVolCenter, panVolLfe, panVolRLeft, panVolRRight;
+    u16 curVolLeft, curVolRight, curVolCenter, curVolLfe, curVolRLeft, curVolRRight;
     s32 sourceReverbVol;
     s32 temp = 0;
 
     curVolLeft = synthState->curVolLeft;
     curVolRight = synthState->curVolRight;
+    curVolCenter = synthState->curVolCenter;
+    curVolLfe = synthState->curVolLfe;
+    curVolRLeft = synthState->curVolRLeft;
+    curVolRRight = synthState->curVolRRight;
 
-    panVolLeft = noteSub->panVolLeft;
-    panVolRight = noteSub->panVolRight;
+    panVolLeft = 16 * noteSub->panVolLeft;
+    panVolRight = 16 * noteSub->panVolRight;
+    panVolCenter = 16 * noteSub->panVolCenter;
+    panVolLfe = 16 * noteSub->panVolLfe;
+    panVolRLeft = 16 * noteSub->panVolRLeft;
+    panVolRRight = 16 * noteSub->panVolRRight;
 
-    panVolLeft <<= 4;
-    panVolRight <<= 4;
-
+    s32 aiBufLenSmall = aiBufLen >> 3;
     if (panVolLeft != curVolLeft) {
-        rampLeft = (panVolLeft - curVolLeft) / (aiBufLen >> 3);
-    } else {
-        rampLeft = 0;
+        rampLeft = (panVolLeft - curVolLeft) / aiBufLenSmall;
     }
     if (panVolRight != curVolRight) {
-        rampRight = (panVolRight - curVolRight) / (aiBufLen >> 3);
-    } else {
-        rampRight = 0;
+        rampRight = (panVolRight - curVolRight) / aiBufLenSmall;
+    }
+    if (panVolRLeft != curVolRLeft) {
+        rampRLeft = (panVolRLeft - curVolRLeft) / aiBufLenSmall;
+    }
+    if (panVolRRight != curVolRRight) {
+        rampRRight = (panVolRRight - curVolRRight) / aiBufLenSmall;
+    }
+    if (panVolCenter != curVolCenter) {
+        rampCenter = (panVolCenter - curVolCenter) / aiBufLenSmall;
+    }
+    if (panVolLfe != curVolLfe) {
+        rampLfe = (panVolLfe - curVolLfe) / aiBufLenSmall;
     }
 
     sourceReverbVol = synthState->reverbVol;
 
     if (noteSub->reverb != sourceReverbVol) {
         temp = (((noteSub->reverb & 0x7F) - (sourceReverbVol & 0x7F)) << 8);
-        rampReverb = temp / (aiBufLen >> 3);
+        rampReverb = temp / aiBufLenSmall;
         synthState->reverbVol = noteSub->reverb;
     } else {
         rampReverb = 0;
     }
 
-    synthState->curVolLeft = curVolLeft + (rampLeft * (aiBufLen >> 3));
-    synthState->curVolRight = curVolRight + (rampRight * (aiBufLen >> 3));
+    synthState->curVolLeft = curVolLeft + (rampLeft * aiBufLenSmall);
+    synthState->curVolRight = curVolRight + (rampRight * aiBufLenSmall);
+    synthState->curVolCenter = curVolCenter + (rampCenter * aiBufLenSmall);
+    synthState->curVolLfe = curVolLfe + (rampLfe * aiBufLenSmall);
+    synthState->curVolRLeft = curVolRLeft + (rampRLeft * aiBufLenSmall);
+    synthState->curVolRRight = curVolRRight + (rampRRight * aiBufLenSmall);
+    uint32_t cutoffFreqLfe = CVarGetInteger("gSubwooferThreshold", 80);
 
     if (noteSub->bitField0.usesHeadsetPanEffects) {
+        int32_t num_audio_channels = 2;
         aClearBuffer(aList++, DMEM_HAAS_TEMP, DMEM_1CH_SIZE);
-        aEnvSetup1(aList++, (sourceReverbVol & 0x7F), rampReverb, rampLeft, rampRight);
-        aEnvSetup2(aList++, curVolLeft, curVolRight);
+        aEnvSetup1(aList++, (sourceReverbVol & 0x7F), rampReverb, rampLeft, rampRight, rampCenter, rampLfe, rampRLeft,
+                   rampRRight);
+        aEnvSetup2(aList++, curVolLeft, curVolRight, curVolCenter, curVolLfe, curVolRLeft, curVolRRight);
 
         switch (delaySide) {
             case HAAS_EFFECT_DELAY_LEFT:
-                aEnvMixer(aList++, dmemSrc, aiBufLen, 0, 0, ((sourceReverbVol & 0x80) >> 7),
-                          noteSub->bitField0.stereoStrongRight, noteSub->bitField0.stereoStrongLeft, 0x65B1C9E1, 0);
+                aEnvMixer(aList++, dmemSrc, aiBufLen, ((sourceReverbVol & 0x80) >> 7),
+                          noteSub->bitField0.stereoStrongRight, noteSub->bitField0.stereoStrongLeft,
+                          (DMEM_WET_LEFT_CH << 16) | DMEM_LEFT_CH, DMEM_HAAS_TEMP << 16, num_audio_channels,
+                          cutoffFreqLfe);
                 break;
 
             case HAAS_EFFECT_DELAY_RIGHT:
-                aEnvMixer(aList++, dmemSrc, aiBufLen, 0, 0, ((sourceReverbVol & 0x80) >> 7),
-                          noteSub->bitField0.stereoStrongRight, noteSub->bitField0.stereoStrongLeft, 0x9965C9E1, 0);
+                aEnvMixer(aList++, dmemSrc, aiBufLen, ((sourceReverbVol & 0x80) >> 7),
+                          noteSub->bitField0.stereoStrongRight, noteSub->bitField0.stereoStrongLeft,
+                          (DMEM_WET_LEFT_CH << 16) | DMEM_LEFT_CH, DMEM_HAAS_TEMP, num_audio_channels, cutoffFreqLfe);
                 break;
 
             default: // HAAS_EFFECT_DELAY_NONE
-                aEnvMixer(aList++, dmemSrc, aiBufLen, 0, 0, ((sourceReverbVol & 0x80) >> 7),
-                          noteSub->bitField0.stereoStrongRight, noteSub->bitField0.stereoStrongLeft, 0x99B1C9E1, 0);
+                aEnvMixer(aList++, dmemSrc, aiBufLen, ((sourceReverbVol & 0x80) >> 7),
+                          noteSub->bitField0.stereoStrongRight, noteSub->bitField0.stereoStrongLeft,
+                          (DMEM_WET_LEFT_CH << 16) | DMEM_LEFT_CH, 0, num_audio_channels, cutoffFreqLfe);
                 break;
         }
     } else {
-        aEnvSetup1(aList++, (sourceReverbVol & 0x7F), rampReverb, rampLeft, rampRight);
-        aEnvSetup2(aList++, curVolLeft, curVolRight);
-        aEnvMixer(aList++, dmemSrc, aiBufLen, 0, 0, ((sourceReverbVol & 0x80) >> 7),
-                  noteSub->bitField0.stereoStrongRight, noteSub->bitField0.stereoStrongLeft, 0x99B1C9E1, 0);
+        aEnvSetup1(aList++, (sourceReverbVol & 0x7F), rampReverb, rampLeft, rampRight, rampCenter, rampLfe, rampRLeft,
+                   rampRRight);
+        aEnvSetup2(aList++, curVolLeft, curVolRight, curVolCenter, curVolLfe, curVolRLeft, curVolRRight);
+        aEnvMixer(aList++, dmemSrc, aiBufLen, ((sourceReverbVol & 0x80) >> 7), noteSub->bitField0.stereoStrongRight,
+                  noteSub->bitField0.stereoStrongLeft, (DMEM_WET_LEFT_CH << 16) | DMEM_LEFT_CH, 0,
+                  GetNumAudioChannels(), cutoffFreqLfe);
     }
 
     return aList;

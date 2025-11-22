@@ -569,11 +569,11 @@ void Game_Update(void) {
                 Radio_Draw();
                 if (gShowHud) {
                     HUD_Draw();
-                    CALL_CANCELLABLE_EVENT(DrawEdgeArrowsHUDEvent){
+                    CALL_CANCELLABLE_EVENT(DrawEdgeArrowsHUDEvent) {
                         HUD_EdgeArrows_Update();
                     }
                 }
-                CALL_CANCELLABLE_EVENT(DrawBossHealthHUDEvent){
+                CALL_CANCELLABLE_EVENT(DrawBossHealthHUDEvent) {
                     HUD_DrawBossHealth();
                 }
             }
@@ -605,13 +605,15 @@ void Game_Update(void) {
 
         if (!partialFill) {
             Graphics_FillRectangle(&gMasterDisp, OTRGetRectDimensionFromLeftEdge(0), 0,
-                                   OTRGetRectDimensionFromRightEdge(SCREEN_WIDTH), SCREEN_HEIGHT,
-                                   gFillScreenRed, gFillScreenGreen, gFillScreenBlue, gFillScreenAlpha);
+                                   OTRGetRectDimensionFromRightEdge(SCREEN_WIDTH), SCREEN_HEIGHT, gFillScreenRed,
+                                   gFillScreenGreen, gFillScreenBlue, gFillScreenAlpha);
         }
         Audio_dummy_80016A50();
 
         // @port: @event: Call GamePostUpdateEvent
         CALL_EVENT(GamePostUpdateEvent);
+
+        gLastPathTexScroll = gPathTexScroll;
     }
 }
 

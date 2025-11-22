@@ -97,7 +97,7 @@ void func_versus_800BC9DC(f32 xPos, f32 yPos, f32 scale, s32 yScale) {
     s32 D_800D4AB0[] = { 40, 64, 64 };
 
     Lib_TextureRect_CI8(&gMasterDisp, D_800D4ABC[yScale], D_800D4AA4[yScale], D_800D4AB0[yScale], 40, xPos, yPos, scale,
-                     scale);
+                        scale);
 }
 
 void func_versus_800BCB44(f32 xPos, f32 yPos, f32 scale) {
@@ -110,7 +110,7 @@ void func_versus_800BCC48(f32 xPos, f32 yPos, f32 xScale, f32 yScale, s32 arg4) 
     s32 D_800D4AE8[] = { 104, 152, 168, 152 };
 
     Lib_TextureRect_CI8(&gMasterDisp, D_800D4AD8[arg4], D_800D4AC8[arg4], D_800D4AE8[arg4], 25, xPos, yPos, xScale,
-                     yScale);
+                        yScale);
 }
 
 void func_versus_800BCE24(f32 xPos, f32 yPos, f32 xScale, f32 yScale) {
@@ -168,8 +168,7 @@ void func_versus_800BD350(f32 xPos, f32 yPos) {
 }
 
 void func_versus_800BD3A8(f32 xPos, f32 yPos) {
-    Lib_TextureRect_CI4(&gMasterDisp, aVsHandicapFrameTex, aVsHandicapFrameTLUT, 80, 71, xPos, yPos, 1.0f,
-                     1.0f);
+    Lib_TextureRect_CI4(&gMasterDisp, aVsHandicapFrameTex, aVsHandicapFrameTLUT, 80, 71, xPos, yPos, 1.0f, 1.0f);
 }
 
 void func_versus_800BD4D4(f32 xPos, f32 yPos, s32 arg2) {
@@ -1261,6 +1260,9 @@ s32 func_versus_800C1138(s32 max, s32 arg1) {
 
 void Versus_InitMatch(void) {
     s32 i;
+
+    // Until Load_SceneFiles gets fixed, this fixes most of the audio issues in versus
+    AUDIO_SET_SPEC_ALT(SFXCHAN_3, AUDIOSPEC_16);
 
     for (i = 0, sVsPlayerCount = 0; i < 4; i++) {
         if (!gPlayerInactive[i]) {

@@ -146,6 +146,8 @@ f32 D_menu_801B9078;
 f32 D_menu_801B907C;
 f32 D_menu_801B9080;
 f32 D_menu_801B9084;
+
+// @port: Timer for drawing the mirrored Great Fox Deck.
 s32 segataSanshiroTimer = 0;
 
 TitleAnimation sTeamAnim[4] = {

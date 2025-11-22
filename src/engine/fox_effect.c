@@ -24,6 +24,7 @@
 #include "assets/ast_zoness.h"
 #include "port/interpolation/FrameInterpolation.h"
 #include "port/mods/PortEnhancements.h"
+#include "sf64_tagging.h"
 
 // rodata
 const char D_800D7230[] = "Enm->wrk3=<%d>\n";
@@ -217,6 +218,9 @@ void Effect_Effect372_Draw(Effect372* this) {
 }
 
 void Effect_Effect382_Draw(Effect382* this) {
+    // @port Skip interpolation
+    FrameInterpolation_ShouldInterpolateFrame(false);
+
     RCP_SetupDL_49();
     gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, this->unk_44);
     gDPSetEnvColor(gMasterDisp++, 255, 255, 255, this->unk_44);
@@ -224,6 +228,10 @@ void Effect_Effect382_Draw(Effect382* this) {
     Matrix_Translate(gGfxMatrix, 0.0f, 20.0f, 0.0f, MTXF_APPLY);
     Matrix_SetGfxMtx(&gMasterDisp);
     gSPDisplayList(gMasterDisp++, D_ZO_6024220);
+
+    // @port renable interpolation
+    FrameInterpolation_ShouldInterpolateFrame(true);
+
     RCP_SetupDL(&gMasterDisp, SETUPDL_64);
 }
 
@@ -363,11 +371,18 @@ void Effect_Effect389_Draw(Effect389* this) {
     for (i = 0; i < 10; i++) {
         if ((i >= this->unk_48) && (i < this->unk_46)) {
             Matrix_Push(&gGfxMatrix);
+
+            // @port: Tag the transform.
+            FrameInterpolation_RecordOpenChild("ElectricArc1", TAG_EFFECT(this) + i);
+
             Matrix_Translate(gGfxMatrix, 0.0f, -60.0f, 0.0f, MTXF_APPLY);
             Matrix_Scale(gGfxMatrix, 0.8f, 3.0f, 1.0f, MTXF_APPLY);
             Matrix_SetGfxMtx(&gMasterDisp);
             gSPDisplayList(gMasterDisp++, D_102F5E0);
             Matrix_Pop(&gGfxMatrix);
+
+            // @port: Pop the transform.
+            FrameInterpolation_RecordCloseChild();
         }
         Matrix_Translate(gGfxMatrix, 0.0f, -120.0f, 0.0f, MTXF_APPLY);
         Matrix_RotateZ(gGfxMatrix, D_800D1534[this->unk_4C][i] * M_DTOR, MTXF_APPLY);
@@ -738,6 +753,9 @@ void Effect_Effect357_Draw(Effect357* this) {
         gSPFogPosition(gMasterDisp++, gFogNear, 1005);
     }
 
+    // @port: Tag the transform.
+    FrameInterpolation_RecordOpenChild("Effect357", this->unk_4C | (this->index << 16) & 0x00FF);
+
     Graphics_SetScaleMtx(this->scale2);
 
     switch (gCurrentLevel) {
@@ -879,6 +897,8 @@ void Effect_Effect357_Draw(Effect357* this) {
             }
             break;
     }
+    // @port Pop the transform id.
+    FrameInterpolation_RecordCloseChild();
 
     RCP_SetupDL(&gMasterDisp, SETUPDL_64);
 
@@ -2268,11 +2288,18 @@ void Effect_Effect374_Draw(Effect374* this) {
             break;
 
         case 1:
+            // @port Skip interpolation
+            FrameInterpolation_ShouldInterpolateFrame(false);
+
             Matrix_Scale(gGfxMatrix, this->scale1, this->scale2, 2.5f, MTXF_APPLY);
             Matrix_SetGfxMtx(&gMasterDisp);
             RCP_SetupDL_40();
             gSPClearGeometryMode(gMasterDisp++, G_CULL_BACK);
             gSPDisplayList(gMasterDisp++, D_ENMY_PLANET_4008F70);
+
+            // @port renable interpolation
+            FrameInterpolation_ShouldInterpolateFrame(true);
+
             RCP_SetupDL(&gMasterDisp, SETUPDL_64);
             break;
     }
@@ -3791,7 +3818,7 @@ void Effect_Effect395_Update(Effect395* this) {
                     D_ctx_801779A8[0] = 50.0f;
                     if (this->unk_46 == 10) {
                         gFillScreenRed = gFillScreenGreen = gFillScreenBlue = 255;
-                        if (CVarGetInteger("gDisableGorgonFlash", 0) == 0){
+                        if (CVarGetInteger("gDisableGorgonFlash", 0) == 0) {
                             gFillScreenAlpha = gFillScreenAlphaTarget = 255;
                         }
                         gFillScreenAlphaTarget = 0;

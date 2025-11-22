@@ -152,9 +152,9 @@ s32 Save_Read(void) {
     OSMesg* sp24;
     s32 i;
 
-    //if(!Save_ReadData()) {
-    //    return 0;
-    //}
+    // if(!Save_ReadData()) {
+    //     return 0;
+    // }
 
     Save_ReadData();
 

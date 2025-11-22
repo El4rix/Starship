@@ -34,6 +34,7 @@ void Load_RomFile(void* vRomAddress, void* dest, ptrdiff_t size) {
 
 u8 Load_SceneFiles(Scene* scene) {
 #if 1
+    // TODO: BUG! sCurrentScene and scene never change so this will never be true.
     bool hasSceneChanged = memcmp(&sCurrentScene, scene, sizeof(Scene)) != 0;
     sCurrentScene = *scene;
     return hasSceneChanged;

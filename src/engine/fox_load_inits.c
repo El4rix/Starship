@@ -3,8 +3,7 @@
 #define NO_SEGMENT \
     { NULL, NULL }
 
-#define OVERLAY_OFFSETS(file)                                                                                   \
-    NO_OVERLAY
+#define OVERLAY_OFFSETS(file) NO_OVERLAY
 
 #define NO_OVERLAY                                        \
     {                                                     \
@@ -13,8 +12,7 @@
         }                                                 \
     }
 
-#define ROM_SEGMENT(file) \
-    NO_SEGMENT
+#define ROM_SEGMENT(file) NO_SEGMENT
 
 Scene sNoOvl_Logo[1] = {
     { NO_OVERLAY,

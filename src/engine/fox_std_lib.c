@@ -1,5 +1,6 @@
 #include "global.h"
 #include "assets/ast_text.h"
+#include "sf64_tagging.h"
 
 char D_801619A0[100];
 
@@ -33,7 +34,7 @@ void Lib_Texture_Scroll(u16* texture, s32 width, s32 height, u8 mode) {
     bool custom;
     GameEngine_GetTextureInfo(texture, &newWidth, &newHeight, &scale, &custom);
 
-    if(custom) {
+    if (custom) {
         u32* pixel = SEGMENTED_TO_VIRTUAL(texture);
         u32 tempPxl;
         s32 u;
@@ -41,7 +42,9 @@ void Lib_Texture_Scroll(u16* texture, s32 width, s32 height, u8 mode) {
         width = newWidth;
         height = newHeight;
 
-        for(s32 i = 0; i < (s32) scale; i++){
+        scale = 1; // TODO: a higher scale causes performance issues for large textures ?
+
+        for (s32 i = 0; i < (s32) scale; i++) {
             switch (mode) {
                 case 0:
                     for (u = 0; u < width; u++) {
@@ -80,6 +83,8 @@ void Lib_Texture_Scroll(u16* texture, s32 width, s32 height, u8 mode) {
                     }
                     break;
             }
+
+            gSPInvalidateTexCache(gMasterDisp++, pixel);
         }
     } else {
         u16* pixel = SEGMENTED_TO_VIRTUAL(texture);
@@ -192,7 +197,7 @@ void Lib_Texture_Mottle(u16* dst, u16* src, u8 mode) {
             break;
     }
 
-    gSPInvalidateTexCache(gMasterDisp++, dst8);
+    gSPInvalidateTexCache(gMasterDisp++, dst);
 }
 
 s32 Animation_GetLimbIndex(Limb* limb, Limb** skeleton) {
@@ -205,9 +210,6 @@ s32 Animation_GetLimbIndex(Limb* limb, Limb** skeleton) {
     }
     return 0;
 }
-
-#define TAG_LIMB_ADDRESS(ptr, data) ((((u32) (ptr) << 16) & 0xFFFF0000) | ((u32) (data) & 0x0000FFFF))
-#define TAG_LIMB(limb, data) ((u32) (0x80000000 | (TAG_LIMB_ADDRESS(limb, data))))
 
 void Animation_DrawLimb(s32 mode, Limb* limb, Limb** skeleton, Vec3f* jointTable, OverrideLimbDraw overrideLimbDraw,
                         PostLimbDraw postLimbDraw, void* data) {

@@ -210,7 +210,7 @@ void SectorX_8018FA04(f32 x, f32 y, f32 z) {
             slippy->obj.pos.y = y;
             slippy->obj.pos.z = z;
             Object_SetInfo(&slippy->info, slippy->obj.id);
-            slippy->info.hitbox = (f32*)SEGMENTED_TO_VIRTUAL(aSxBaseWallTile1Hitbox);
+            slippy->info.hitbox = (f32*) SEGMENTED_TO_VIRTUAL(aSxBaseWallTile1Hitbox);
             xRot = Math_Atan2F(gPlayer[0].pos.x - x, gPlayer[0].trueZpos - z);
             pad = sqrtf(SQ(gPlayer[0].pos.x - x) + SQ(gPlayer[0].trueZpos - z));
             yRot = -Math_Atan2F(gPlayer[0].pos.y - y, pad);

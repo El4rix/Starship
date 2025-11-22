@@ -13,18 +13,14 @@ f32 Math_ModF(f32 value, f32 mod) {
 }
 
 void Rand_Init(void) {
-#if defined(__SWITCH__) || defined(__linux__)
-    sRandSeed1 = (s32) osGetTime() % 30000 + 1;
-    sRandSeed2 = (s32) osGetTime() % 30000 + 1;
-    sRandSeed3 = (s32) osGetTime() % 30000 + 1;
-#else
     sRandSeed1 = (s32) osGetTime() % 30000;
     sRandSeed2 = (s32) osGetTime() % 30000;
     sRandSeed3 = (s32) osGetTime() % 30000;
-#endif
 }
 
 f32 Rand_ZeroOne(void) {
+    // LTODO: On these platforms, something corrupts the seeds, causing one of them to be 0.
+    // This is a workaround to circumvent this issue, that needs to be fixed.
 #if defined(__SWITCH__) || defined(__linux__)
     if ((sRandSeed1 == 0) || (sRandSeed2 == 0) || (sRandSeed2 == 0)) {
         Rand_Init();

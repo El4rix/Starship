@@ -1500,7 +1500,7 @@ void HUD_PauseScreen_Update(void) {
 
             case 3:
                 Graphics_FillRectangle(&gMasterDisp, OTRGetRectDimensionFromLeftEdge(0), 0,
-                                       OTRGetDimensionFromRightEdge(SCREEN_WIDTH)+1, SCREEN_HEIGHT, 0, 0, 0, 255);
+                                       OTRGetDimensionFromRightEdge(SCREEN_WIDTH) + 1, SCREEN_HEIGHT, 0, 0, 0, 255);
 
                 gFillScreenAlphaTarget = 0;
 
@@ -1550,7 +1550,7 @@ void HUD_PauseScreen_Update(void) {
 
             case 4:
                 Graphics_FillRectangle(&gMasterDisp, OTRGetRectDimensionFromLeftEdge(0), 0,
-                                       OTRGetDimensionFromRightEdge(SCREEN_WIDTH)+1, SCREEN_HEIGHT, 0, 0, 0, 255);
+                                       OTRGetDimensionFromRightEdge(SCREEN_WIDTH) + 1, SCREEN_HEIGHT, 0, 0, 0, 255);
                 if (sPauseScreenTimer[0] < 140) {
                     break;
                 }
@@ -1569,7 +1569,7 @@ void HUD_PauseScreen_Update(void) {
 
             case 5:
                 Graphics_FillRectangle(&gMasterDisp, OTRGetRectDimensionFromLeftEdge(0), 0,
-                                       OTRGetDimensionFromRightEdge(SCREEN_WIDTH)+1, SCREEN_HEIGHT, 0, 0, 0, 255);
+                                       OTRGetDimensionFromRightEdge(SCREEN_WIDTH) + 1, SCREEN_HEIGHT, 0, 0, 0, 255);
 
                 for (i = 0; i < 6; i++) {
                     if (gPrevPlanetTeamShields[i] == -1) {
@@ -1791,7 +1791,7 @@ void HUD_RadarMark_Arwing_Draw(s32 colorIdx) {
 
     RCP_SetupDL(&gMasterDisp, SETUPDL_62);
     gDPSetPrimColor(gMasterDisp++, 0, 0, arwingMarkColor[colorIdx][0], arwingMarkColor[colorIdx][1],
-        arwingMarkColor[colorIdx][2], arwingMarkColor[colorIdx][3]);
+                    arwingMarkColor[colorIdx][2], arwingMarkColor[colorIdx][3]);
     Matrix_Scale(gGfxMatrix, var_fv1, var_fv2, 1.0f, MTXF_APPLY);
     Matrix_SetGfxMtx(&gMasterDisp);
     gSPDisplayList(gMasterDisp++, aRadarMarkArwingDL);
@@ -1802,7 +1802,7 @@ void HUD_RadarMark_StarWolf_Draw(void) {
     gDPSetPrimColor(gMasterDisp++, 0, 0, 0, 0, 0, 255);
     Matrix_Scale(gGfxMatrix, 54.0f, 54.0f, 1.0f, MTXF_APPLY);
     Matrix_SetGfxMtx(&gMasterDisp);
-    gSPDisplayList(gMasterDisp++, aStarWolfRadarMarkDL);    
+    gSPDisplayList(gMasterDisp++, aStarWolfRadarMarkDL);
 }
 
 void HUD_RadarMark_Katt_Draw(void) {
@@ -1894,13 +1894,12 @@ void HUD_RadarMark_Draw(s32 type) {
         case RADARMARK_WOLF:
         case RADARMARK_LEON:
         case RADARMARK_PIGMA:
-        case RADARMARK_ANDREW:
-            {   //This won't compile without braces, for some reason.
-                CALL_CANCELLABLE_EVENT(DrawRadarMarkWolfenEvent) {
-                    HUD_RadarMark_StarWolf_Draw();
-                }
-                break;
+        case RADARMARK_ANDREW: { // This won't compile without braces, for some reason.
+            CALL_CANCELLABLE_EVENT(DrawRadarMarkWolfenEvent) {
+                HUD_RadarMark_StarWolf_Draw();
             }
+            break;
+        }
         case RADARMARK_KATT:
             HUD_RadarMark_Katt_Draw();
             break;
@@ -3627,7 +3626,7 @@ void HUD_VS_Radar(void) {
 }
 
 void HUD_SinglePlayer(void) {
-    CALL_CANCELLABLE_EVENT(DrawRadarHUDEvent){
+    CALL_CANCELLABLE_EVENT(DrawRadarHUDEvent) {
         if (gPlayState != PLAY_PAUSE) {
             HUD_Radar();
         }
@@ -6680,6 +6679,7 @@ void Venom1_LevelStart2(Player* player) {
 
         player->pos.x += player->vel.x;
         player->pos.y += player->vel.y;
+        gLastPathTexScroll = gPathTexScroll;
         gPathTexScroll += player->vel.z;
 
         player->bankAngle = player->rot.z + player->zRotBank + player->zRotBarrelRoll;

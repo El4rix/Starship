@@ -6,6 +6,7 @@
 
 #include "global.h"
 #include "assets/ast_sector_y.h"
+#include "fox_record.h"
 
 #define SHOGUN_SHIP (0)
 
@@ -28,6 +29,13 @@ void SectorY_8019C194(SyShogun*, f32, f32);
 void SectorY_801A0510(ActorCutscene*, s32);
 void SectorY_ActorDebris_Setup(Actor*, f32, f32, f32, f32, f32, f32, s32);
 void SectorY_ActorDebris_Spawn(f32, f32, f32, f32, f32, f32, s32);
+
+// SyRobot destroy cutscene timings recorded from a real N64
+Record gSyRobotCutsceneRecord[] = {
+    { 2, 0 },
+    { 3, 129 },
+    { 2, 230 },
+};
 
 f32 D_i6_801A8440[3];
 
@@ -478,6 +486,7 @@ void SectorY_80198F5C(SyShogun* this) {
         this->vel.y = 0.0f;
         this->vel.x = 0.0f;
 
+        // first and second robot explode
         if ((gPlayer[0].state == PLAYERSTATE_ACTIVE) || (gPlayer[0].state == PLAYERSTATE_U_TURN)) {
             this->timer_058 = 100;
             gPlayer[0].state = PLAYERSTATE_STANDBY;
@@ -2099,6 +2108,8 @@ void SectorY_LevelComplete(Player* player) {
     Vec3f sp54;
     SyShogun* boss = &gBosses[0];
     f32 temp_ft1;
+
+    UpdateVisPerFrameFromRecording(gSyRobotCutsceneRecord, ARRAY_COUNT(gSyRobotCutsceneRecord));
 
     switch (player->csState) {
         case 0:

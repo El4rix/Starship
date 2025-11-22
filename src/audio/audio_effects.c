@@ -200,7 +200,7 @@ f32 Audio_AdsrUpdate(AdsrState* adsr) {
             adsr->state = ADSR_STATE_LOOP;
         case_ADSR_STATE_LOOP:
         case ADSR_STATE_LOOP:
-            adsr->delay = (s16)BSWAP16(adsr->envelope[adsr->envIndex].delay);
+            adsr->delay = (s16) BSWAP16(adsr->envelope[adsr->envIndex].delay);
             switch (adsr->delay) {
                 case ADSR_DISABLE:
                     adsr->state = ADSR_STATE_DISABLED;
@@ -209,7 +209,7 @@ f32 Audio_AdsrUpdate(AdsrState* adsr) {
                     adsr->state = ADSR_STATE_HANG;
                     break;
                 case ADSR_GOTO:
-                    adsr->envIndex = (s16)BSWAP16(adsr->envelope[adsr->envIndex].arg);
+                    adsr->envIndex = (s16) BSWAP16(adsr->envelope[adsr->envIndex].arg);
                     goto case_ADSR_STATE_LOOP;
                 case ADSR_RESTART:
                     adsr->state = ADSR_STATE_INITIAL;
@@ -223,7 +223,7 @@ f32 Audio_AdsrUpdate(AdsrState* adsr) {
                         adsr->delay = 1;
                     }
 
-                    adsr->target = (s16)BSWAP16(adsr->envelope[adsr->envIndex].arg) / 32767.0f;
+                    adsr->target = (s16) BSWAP16(adsr->envelope[adsr->envIndex].arg) / 32767.0f;
                     adsr->target = SQ(adsr->target);
                     adsr->velocity = (adsr->target - adsr->current) / adsr->delay;
                     adsr->state = ADSR_STATE_FADE;

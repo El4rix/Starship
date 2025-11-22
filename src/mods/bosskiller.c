@@ -93,7 +93,8 @@ void KillBoss(void) {
                 break;
 
             case LEVEL_SECTOR_X:
-                if (boss[0].obj.status != OBJ_ACTIVE) break;
+                if (boss[0].obj.status != OBJ_ACTIVE)
+                    break;
 
                 // Spyborg's fake death
                 if ((eventState == 0) && (bossMercyTimer == 0)) {

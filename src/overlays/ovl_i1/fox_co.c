@@ -9,6 +9,41 @@
 #include "assets/ast_corneria.h"
 #include "fox_co.h"
 #include "port/hooks/Events.h"
+#include "fox_record.h"
+
+// Carrier destroy cutscene timings recorded from a real N64
+Record gCarrierCutsceneRecord[] = {
+    { 2, 0 },
+    { 3, 2 },
+    { 4, 16 },
+    { 3, 50 },
+    { 4, 58 },
+    { 5, 67 },
+    { 4, 68 },
+    { 5, 71 },
+    { 4, 73 },
+    { 5, 74 },
+    { 4, 106 },
+    { 3, 146 },
+    { 2, 194 },
+};
+
+// Granga destroy cutscene timings recorded from a real N64
+Record gGrangaCutsceneRecord[] = {
+    { 2, 0 },
+    { 3, 1 },
+    { 2, 5 },
+    { 3, 7 },
+    { 2, 52 },
+    { 3, 78 },
+    { 4, 103 },
+    { 3, 125 },
+    { 2, 153 },
+    { 3, 155 },
+    { 2, 157 },
+    { 3, 158 },
+    { 2, 160 },
+};
 
 u8 sFightCarrier;
 s32 sCoGrangaLimbs;
@@ -198,9 +233,7 @@ void Corneria_CoGranga_HandleDamage(CoGranga* this) {
 
                 this->state = GRANGA_EXPLODE;
 
-                // @port: Adjust timing to compensate the lack of lag.
-                // this->timer_050 = 100;
-                this->timer_050 = 138;
+                this->timer_050 = 100;
 
                 SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 80);
                 SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_FANFARE, 80);
@@ -2320,19 +2353,19 @@ void Corneria_CoCarrier_Update(CoCarrier* this) {
                 Math_SmoothStepToF(&this->vel.y, 0.0f, 0.1f, 2.0f, 0.00001f);
                 Math_SmoothStepToF(&this->vel.z, 0.0f, 0.1f, 2.0f, 0.00001f);
 
+                this->obj.rot.z -= 2.0f; // original value
+                this->gravity = 1.0f;    // original value
                 // @port: Adjust gravity and rot to compensate the lack of lag.
-                // this->obj.rot.z -= 2.0f
-                // this->gravity = 1.0f;
-                this->obj.rot.z -= 2.0f - 0.86f;
-                this->gravity = 1.0f - 0.43f;
+                // this->obj.rot.z -= 2.0f - 0.86f;
+                // this->gravity = 1.0f - 0.43f;
 
                 if (this->obj.pos.y < (gGroundHeight + 150.0f)) {
                     gCameraShake = 100;
                     func_effect_80081A8C(this->obj.pos.x, this->obj.pos.y, this->obj.pos.z, 40.0f, 12);
-                    
+
+                    this->timer_050 = 20; // original value
                     // @port: Adjust timings to compensate the lack of lag.
-                    // this->timer_050 = 20;
-                    this->timer_050 = 40;
+                    // this->timer_050 = 40;
                     this->vel.y = -10.0f;
                     this->gravity = 0.0f;
                     this->fwork[17] = 20.0f;
@@ -4078,6 +4111,8 @@ void Corneria_LevelComplete1(Player* player) {
     f32 temp_fa0;
     f32 temp_fa1;
     f32 temp_deg;
+
+    UpdateVisPerFrameFromRecording(gGrangaCutsceneRecord, ARRAY_COUNT(gGrangaCutsceneRecord));
 
     player->arwing.upperRightFlapYrot = player->arwing.upperLeftFlapYrot = player->arwing.bottomRightFlapYrot =
         player->arwing.bottomLeftFlapYrot = 0.0f;

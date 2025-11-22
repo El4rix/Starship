@@ -89,7 +89,8 @@ void AudioSeq_InitSequenceChannel(SequenceChannel* channel) {
     for (i = 0; i < 8; i++) {
         channel->seqScriptIO[i] = -1;
     }
-    channel->unused = 0;
+    channel->is_sfx = 0;
+    channel->is_voice = 0;
     Audio_InitNoteLists(&channel->notePool);
 }
 
@@ -148,7 +149,7 @@ void AudioSeq_SeqLayerDisable(SequenceLayer* layer) {
 void AudioSeq_SeqLayerFree(SequenceChannel* channel, s32 layerIndex) {
     if (layerIndex < 4) {
         SequenceLayer* layer = channel->layers[layerIndex];
-        
+
         if (layer != NULL) {
             AudioSeq_AudioListPushBack(&gLayerFreeList, &layer->listItem);
             AudioSeq_SeqLayerDisable(layer);
@@ -171,7 +172,7 @@ void AudioSeq_SequenceChannelDisable(SequenceChannel* channel) {
 SequenceChannel* AudioSeq_RequestFreeSeqChannel(void) {
     s32 i;
 
-    for (i = 0; i < 48; i++) {
+    for (i = 0; i < ARRAY_COUNT(gSeqChannels); i++) {
         if (gSeqChannels[i].seqPlayer == NULL) {
             return &gSeqChannels[i];
         }
@@ -784,7 +785,7 @@ void AudioSeq_SequenceChannelProcessScript(SequenceChannel* channel) {
     s8 sp4B;
     u8* seqData;
     s32 pad;
-    
+
     if (!channel->enabled) {
         return;
     }
@@ -908,13 +909,11 @@ void AudioSeq_SequenceChannelProcessScript(SequenceChannel* channel) {
 
                     case 0xEB:
                         cmd = AudioSeq_ScriptReadU8(state);
-                        sp52 = ((u16*) gSeqFontTable)[seqPlayer->seqId];
+                        sp52 = BSWAP16(((u16*) gSeqFontTable)[seqPlayer->seqId]);
                         loBits = gSeqFontTable[sp52];
                         cmd = gSeqFontTable[sp52 + loBits - cmd];
-                        //if (AudioHeap_SearchCaches(FONT_TABLE, CACHE_EITHER, cmd) != NULL) 
-						{
-                            channel->fontId = cmd;
-                        }
+                        // if (AudioHeap_SearchCaches(FONT_TABLE, CACHE_EITHER, cmd) != NULL)
+                        { channel->fontId = cmd; }
                         /* fallthrough */
                     case 0xC1:
                         cmd = AudioSeq_ScriptReadU8(state);
@@ -1019,10 +1018,8 @@ void AudioSeq_SequenceChannelProcessScript(SequenceChannel* channel) {
                         loBits = gSeqFontTable[sp52];
                         cmd = gSeqFontTable[sp52 + loBits - cmd];
 
-                        //if (AudioHeap_SearchCaches(FONT_TABLE, CACHE_EITHER, cmd) != NULL) 
-						{
-                            channel->fontId = cmd;
-                        }
+                        // if (AudioHeap_SearchCaches(FONT_TABLE, CACHE_EITHER, cmd) != NULL)
+                        { channel->fontId = cmd; }
                         break;
 
                     case 0xC7:
@@ -1519,7 +1516,6 @@ void AudioSeq_SequencePlayerProcessSequence(SequencePlayer* seqPlayer) {
             }
         }
     }
-
     for (i = 0; i < SEQ_NUM_CHANNELS; i++) {
         if (IS_SEQUENCE_CHANNEL_VALID(seqPlayer->channels[i]) == 1) {
             AudioSeq_SequenceChannelProcessScript(seqPlayer->channels[i]);
@@ -1571,7 +1567,7 @@ void AudioSeq_InitSequencePlayers(void) {
 #ifdef AVOID_UB
         for (j = 0; j < ARRAY_COUNT(gSeqChannels->layers); j++) {
 #else
-        for (j = 0; j < 64;
+        for (j = 0; j < ARRAY_COUNT(gSeqLayers);
              j++) { // bug: this is ARRAY_COUNT(gSeqLayers) instead of ARRAY_COUNT(gSeqChannels[i].layers)
 #endif
             gSeqChannels[i].layers[j] = NULL;
@@ -1586,7 +1582,7 @@ void AudioSeq_InitSequencePlayers(void) {
     }
 
     for (i = 0; i < ARRAY_COUNT(gSeqPlayers); i++) {
-        for (j = 0; j < 16; j++) {
+        for (j = 0; j < SEQ_NUM_CHANNELS; j++) {
             gSeqPlayers[i].channels[j] = &gSeqChannelNone;
         }
         gSeqPlayers[i].unk_07[0] = -1;

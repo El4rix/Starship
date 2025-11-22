@@ -10,6 +10,7 @@
 #include "assets/ast_landmaster.h"
 #include "assets/ast_enmy_planet.h"
 // #include "prevent_bss_reordering2.h"
+#include "fox_record.h"
 
 typedef struct {
     /* 0x00 */ f32 unk_00;
@@ -58,6 +59,29 @@ Vec3f D_i5_801BE430[50];
 Vec3f D_i5_801BE688[2];
 Vec3f D_i5_801BE6A0[12];
 s32 D_i5_801BE734[4];
+
+// Train cutscene timings recorded from a real N64
+Record gMacbethCutsceneRecord[] = {
+    // Train breaking barriers
+    { 2, 0 },
+    { 3, 2 },
+    { 2, 31 },
+    { 3, 400 },
+    { 2, 418 },
+    { 3, 433 },
+    { 4, 435 },
+    { 3, 444 },
+    { 2, 509 },
+    // { 3, 559 },
+    // { 2, 581 },
+    // { 3, 587 },
+    // Explosions
+    { 2, 589 },
+    { 3, 714 },
+    { 4, 821 },
+    { 5, 849 },
+    { 2, 942 },
+};
 
 UnkStruct_D_i5_801B8E50 D_i5_801B8E50[156] = {
     { 5174.4f, -2141.0f, 0.0f, 350.0f, OBJ_SCENERY_MA_TRAIN_TRACK_3 },
@@ -430,11 +454,10 @@ void Macbeth_Texture_RotateZ(u8* destTex, u8* srcTex, f32 angle) {
         }
     }
     Matrix_Pop(&gCalcMatrix);
+    gSPInvalidateTexCache(gMasterDisp++, destTex);
 }
 
 void Macbeth_Texture_Scroll(u8* tex, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
-    // return;
-
     // LTODO: this is causing corruption, overflow.
     // Texture at D_MA_6023228 might be the culprit.
     u8* texPtr = SEGMENTED_TO_VIRTUAL(tex);
@@ -455,6 +478,7 @@ void Macbeth_Texture_Scroll(u8* tex, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
         texPtr[((arg2 - 2) * arg1) + i] = b;
         texPtr[((arg2 - 1) * arg1) + i] = a;
     }
+    gSPInvalidateTexCache(gMasterDisp++, tex);
 }
 
 void Macbeth_Texture_Scroll2(u16* tex, s32 arg1, s32 arg2) {
@@ -472,6 +496,7 @@ void Macbeth_Texture_Scroll2(u16* tex, s32 arg1, s32 arg2) {
 
         texPtr[i] = a;
     }
+    gSPInvalidateTexCache(gMasterDisp++, tex);
 }
 
 void Macbeth_Train_Init(Actor* this) {
@@ -6111,11 +6136,17 @@ void Macbeth_MaBombDrop_Draw(MaBombDrop* this) {
             break;
 
         case 1:
+            // @port Skip interpolation
+            FrameInterpolation_ShouldInterpolateFrame(false);
+
             Matrix_Scale(gGfxMatrix, this->fwork[0], this->scale, 2.5f, MTXF_APPLY);
             Matrix_SetGfxMtx(&gMasterDisp);
             RCP_SetupDL_40();
             gSPClearGeometryMode(gMasterDisp++, G_CULL_BACK);
             gSPDisplayList(gMasterDisp++, D_ENMY_PLANET_4008F70);
+
+            // @port renable interpolation
+            FrameInterpolation_ShouldInterpolateFrame(true);
             RCP_SetupDL(&gMasterDisp, SETUPDL_64);
             break;
     }
@@ -6692,6 +6723,8 @@ void Macbeth_LevelComplete2(Player* player) {
     Vec3f spE4;
     Vec3f spD8;
     f32 zeroVar = 0.0f;
+
+    UpdateVisPerFrameFromRecording(gMacbethCutsceneRecord, ARRAY_COUNT(gMacbethCutsceneRecord));
 
     switch (player->csState) {
         case 0:
