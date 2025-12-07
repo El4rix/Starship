@@ -56,6 +56,15 @@ Vec3f sMissileWaveInitPos[] = {
     { 2000.0f, 0.0f, 35000.0f },
 };
 
+Vec3f sFootMissileWaveInitPos[] = {
+    {  0.0f, 0.0f, -30000.0f },
+    {  -12000.0f, 0.0f, -30000.0f },
+    {  12000.0f, 0.0f, -30000.0f },
+    {  -8000.0f, 5000.0f, -33000.0f },
+    {  8000.0f, 5000.0f, -33000.0f },
+
+};
+
 Vec3f sTurretMissileWaveInitPos[] = {
     /* Down */ { 0.0f, 100.0f, 30000.0f },
     /* Down */ { 4000.0f, 0.0f, 30000.0f },
@@ -118,7 +127,7 @@ void SectorZ_MissileExplode(ActorAllRange* this, bool shotDown) {
 
     if ((shotDown) || (gTurretModeEnabled)) {
         sMissileDestroyCount++;
-        if ((sMissileDestroyCount >= 6) && (!gTurretModeEnabled) &&
+        if ((sMissileDestroyCount >= 6) && (!gTurretModeEnabled) && (gPlayer[0].form != FORM_ON_FOOT) &&
             ((gPlayer[0].state == PLAYERSTATE_ACTIVE) || (gPlayer[0].state == PLAYERSTATE_U_TURN))) {
             gCsFrameCount = 0;
             gPlayer[0].state = PLAYERSTATE_LEVEL_COMPLETE;
@@ -148,7 +157,17 @@ void SectorZ_MissileExplode(ActorAllRange* this, bool shotDown) {
             AUDIO_PLAY_SFX(NA_SE_GREATFOX_BURNER, gActors[SZ_GREAT_FOX].sfxSource, 0);
             SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 1);
             SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_FANFARE, 1);
-        } 
+        } else if ((sMissileDestroyCount >= 9) && (gPlayer[0].form == FORM_ON_FOOT)) {
+            gCsFrameCount = 0;
+            gPlayer[0].state = PLAYERSTATE_LEVEL_COMPLETE;
+            gPlayer[0].csState = 1000;
+            gActors[SZ_GREAT_FOX].state = 6;
+            gPlayer[0].csTimer = 30;
+            AUDIO_PLAY_SFX(NA_SE_GREATFOX_ENGINE, gActors[SZ_GREAT_FOX].sfxSource, 0);
+            AUDIO_PLAY_SFX(NA_SE_GREATFOX_BURNER, gActors[SZ_GREAT_FOX].sfxSource, 0);
+            SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 1);
+            SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_FANFARE, 1);
+        }
 
         // Check for Katt's appearance
         if ((sMissileDestroyCount == 3) && (gLeveLClearStatus[LEVEL_ZONESS] != 0)) {
@@ -317,6 +336,24 @@ void SectorZ_Missile_Update(ActorAllRange* this) {
             }
         }
 
+    } else if (gPlayer[0].form == FORM_ON_FOOT) {
+        this->fwork[MISSILE_TARGET_X] = gBosses[SZ_GREAT_FOX].obj.pos.x + xPitch + 400.0f;
+        this->fwork[MISSILE_TARGET_Y] = -525.0f;
+        this->fwork[MISSILE_TARGET_Z] = gBosses[SZ_GREAT_FOX].obj.pos.z;
+        // Missile hit check
+        if ((fabsf(this->fwork[MISSILE_TARGET_X] - this->obj.pos.x) < 800.0f) &&
+            (fabsf(this->fwork[MISSILE_TARGET_Y] - this->obj.pos.y) < 800.0f) &&
+            (fabsf(this->fwork[MISSILE_TARGET_Z] - this->obj.pos.z) < 800.0f)) {
+            gCameraShake = 25;
+            gBosses[SZ_GREAT_FOX].dmgType = DMG_MISSILE;
+            SectorZ_MissileExplode(this, false);
+            if ((gPlayer[0].state == PLAYERSTATE_ACTIVE) || (gPlayer[0].state == PLAYERSTATE_U_TURN)) {
+                gPlayer[0].state = PLAYERSTATE_LEVEL_COMPLETE;
+                gPlayer[0].csState = 0;
+                gActors[SZ_GREAT_FOX].state = -31072;
+                return;
+            }
+        }
     } else {
         this->fwork[MISSILE_TARGET_X] = gBosses[SZ_GREAT_FOX].obj.pos.x + xPitch + 400.0f;
         this->fwork[MISSILE_TARGET_Y] = 0.0f;
@@ -347,15 +384,19 @@ void SectorZ_Missile_Update(ActorAllRange* this) {
     }
 
     // Level complete trigger check
-    if (((fabsf(this->fwork[MISSILE_TARGET_Z] - this->obj.pos.z) < 2000.0f) &&
-         (((gPlayer[0].cam.eye.z < 0.0f) || (D_edisplay_801615D0.y < 0.0f)) ||
-          bugFixCond)) &&
-        (((gPlayer[0].state == PLAYERSTATE_ACTIVE) || bugFixCond) ||
-         (gPlayer[0].state == PLAYERSTATE_U_TURN))) {
-        if (!gTurretModeEnabled) {
-            gPlayer[0].state = PLAYERSTATE_LEVEL_COMPLETE;
-            gPlayer[0].csState = 100;
-            gActors[SZ_GREAT_FOX].state = -31072;
+    if (gPlayer[0].form == FORM_ON_FOOT) {
+        
+    } else {
+        if (((fabsf(this->fwork[MISSILE_TARGET_Z] - this->obj.pos.z) < 2000.0f) &&
+            (((gPlayer[0].cam.eye.z < 0.0f) || (D_edisplay_801615D0.y < 0.0f)) ||
+            bugFixCond)) &&
+            (((gPlayer[0].state == PLAYERSTATE_ACTIVE) || bugFixCond) ||
+            (gPlayer[0].state == PLAYERSTATE_U_TURN))) {
+            if (!gTurretModeEnabled) {
+                gPlayer[0].state = PLAYERSTATE_LEVEL_COMPLETE;
+                gPlayer[0].csState = 100;
+                gActors[SZ_GREAT_FOX].state = -31072;
+            }
         }
     }
     // clang-format on
@@ -367,15 +408,20 @@ void SectorZ_SpawnMissile(ActorAllRange* this, s32 missileWaveIdx) {
     this->obj.id = OBJ_ACTOR_ALLRANGE;
     this->aiType = AI360_MISSILE;
 
-    if (!gTurretModeEnabled) {
-        this->obj.pos.x = sMissileWaveInitPos[missileWaveIdx].x;
-        this->obj.pos.y = sMissileWaveInitPos[missileWaveIdx].y;
-        this->obj.pos.z = sMissileWaveInitPos[missileWaveIdx].z;
-    } else {
+    if (gTurretModeEnabled) {
         this->obj.pos.x = sTurretMissileWaveInitPos[missileWaveIdx].x;
         this->obj.pos.y = sTurretMissileWaveInitPos[missileWaveIdx].y;
         this->obj.pos.z = sTurretMissileWaveInitPos[missileWaveIdx].z;
         this->aiIndex = missileWaveIdx + AI360_ENEMY;
+    } else if (gPlayer[0].form == FORM_ON_FOOT) {
+        this->obj.pos.x = sFootMissileWaveInitPos[missileWaveIdx].x;
+        this->obj.pos.y = sFootMissileWaveInitPos[missileWaveIdx].y;
+        this->obj.pos.z = sFootMissileWaveInitPos[missileWaveIdx].z;
+        this->aiIndex = missileWaveIdx + AI360_ENEMY;
+    } else {
+        this->obj.pos.x = sMissileWaveInitPos[missileWaveIdx].x;
+        this->obj.pos.y = sMissileWaveInitPos[missileWaveIdx].y;
+        this->obj.pos.z = sMissileWaveInitPos[missileWaveIdx].z;
     }
 
     this->state = 5;
@@ -541,7 +587,7 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
     }
 
     if (((this->timer_0C0 == 0) && (gPlayer[0].state != PLAYERSTATE_STANDBY)) &&
-        ((gAllRangeEventTimer < 200) || ((gAllRangeEventTimer > 4000) && (gAllRangeEventTimer < 4200)))) {
+        ((gAllRangeEventTimer < 200) || ((gAllRangeEventTimer > 1500) && (gAllRangeEventTimer < 1700)) || ((gAllRangeEventTimer > 4000) && (gAllRangeEventTimer < 4200)) || ((gAllRangeEventTimer > 6000) && (gAllRangeEventTimer < 6200)))) {
         this->timer_0C0 = 5;
 
         actor = &gActors[SZ_ESCORT_1];
@@ -596,6 +642,16 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
                             actor->state = 2;
                         }
                     }
+
+                    if (gPlayer[0].form == FORM_ON_FOOT) { // Tweak enemies targetting Fox
+                        if (actor->obj.pos.z < -10000) {
+                            actor->aiIndex = AI360_FOX;
+                        } else {
+                            if (actor->aiIndex == AI360_FOX) {
+                                actor->aiIndex = -1;
+                            }
+                        }
+                    }
                 }
                 actor->health = 24;
                 actor->iwork[11] = 1;
@@ -613,7 +669,7 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
         }
     }
 
-    //if (gTurretModeEnabled) {
+    if (gTurretModeEnabled) {
         switch (gAllRangeEventTimer) {
             // Wave 1 ========================================================================
             case 1300:
@@ -741,7 +797,51 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
                 gAllRangeEventTimer = 2500;
                 break;
         }
-    /* } else {
+    } else if (gPlayer[0].form == FORM_ON_FOOT) {
+        switch (gAllRangeEventTimer) {
+            case 1850:
+                Radio_PlayMessage(gMsg_ID_16050, RCID_ROB64);
+                AUDIO_PLAY_BGM(NA_BGM_BOSS_SZ);
+                break;
+            case 2000:
+                gRadarMissileAlarmTimer = 200;
+                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_CENTER], 0);
+
+                /* SectorZ_SpawnMissileEscort(&gActors[SZ_ESCORT_1], 0);
+                SectorZ_SpawnMissileEscort(&gActors[SZ_ESCORT_2], 1);
+                SectorZ_SpawnMissileEscort(&gActors[SZ_ESCORT_3], 2);
+                SectorZ_SpawnMissileEscort(&gActors[SZ_ESCORT_4], 3); */
+
+                /* this->state = 10;
+                this->fwork[10] = 0.0f;
+                this->timer_0BC = 10000; */
+                break;
+
+            case 3850:
+                Radio_PlayMessage(gMsg_ID_16100, RCID_ROB64);
+                break;
+
+            case 4000:
+                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_RIGHT], 2);
+                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_LEFT], 1);
+                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_CENTER], 0);
+                gRadarMissileAlarmTimer = 200;
+                break;
+
+            case 5850:
+                Radio_PlayMessage(gMsg_ID_16110, RCID_ROB64);
+                break;
+
+            case 6000:
+                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_RIGHT], 2);
+                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_LEFT], 1);
+                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_CENTER], 0);
+                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_DR_CENTER], 3);
+                SectorZ_SpawnMissile(&gActors[SZ_MISSILE_DR_RIGHT], 4);
+                gRadarMissileAlarmTimer = 200;
+                break;
+        }
+    } else {
         switch (gAllRangeEventTimer) {
             case 5850:
                 Radio_PlayMessage(gMsg_ID_16110, RCID_ROB64);
@@ -797,7 +897,7 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
                 AUDIO_PLAY_BGM(NA_BGM_BOSS_SZ);
                 break;
         }
-    } */
+    }
     
 
     ActorAllRange_UpdateEnemyEvents(this);
@@ -2380,6 +2480,15 @@ void SectorZ_SpaceJunkUpdate(SzSpaceJunk* this) {
         }
     }
 
+    if (gPlayer[0].form == FORM_ON_FOOT) {
+        this->obj.pos.x += 20.0f;
+
+        if (this->obj.pos.x > 10000) {
+            this->obj.pos.x = -20000;
+            this->obj.pos.z *= -0.5f;
+        }
+    }
+
     if (this->dmgType != DMG_NONE) {
         this->timer_0C6 = 20;
         this->dmgType = DMG_NONE;
@@ -2550,6 +2659,12 @@ void SectorZ_SzGreatFox_Update(SzGreatFox* this) {
         if (gPlayer[0].state == PLAYERSTATE_ACTIVE) {
             this->obj.pos.y = 0;
         }
+    }
+
+    if (gPlayer[0].form == FORM_ON_FOOT) {
+        this->obj.pos.z = 1300.0f;
+        this->rot_078.y = 0;
+        this->obj.rot.y = 180.f;
     }
 }
 

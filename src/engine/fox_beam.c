@@ -698,6 +698,23 @@ void PlayerShot_ApplyDamageToActor(PlayerShot* shot, Actor* actor, s32 hitIndex)
             actor->damage = 30;
         }
     }
+
+    if ((gPlayer[0].form == FORM_ON_FOOT)) {
+        if ((actor->eventType == EVID_TEAMMATE) || (actor->obj.id == OBJ_ACTOR_TEAM_BOSS) || (actor->obj.id == OBJ_ACTOR_TEAM_ARWING)
+        || (actor->aiType == AI360_SLIPPY) || (actor->aiType == AI360_PEPPY) || (actor->aiType == AI360_FALCO)) {
+            actor->damage = 4;
+        } else if (((gCurrentLevel == LEVEL_ZONESS) && (gBossActive == false)) || (gCurrentLevel == LEVEL_AQUAS)) {
+            actor->dmgType = RAND_INT(5);
+            if (actor->dmgType == 4) {
+                actor->dmgType = DMG_EXPLOSION;
+                actor->damage = 31;
+            } else {
+                actor->dmgType = DMG_BEAM;
+                //actor->damage = 10;
+            }
+        } 
+    }
+
     if (shot->obj.id == PLAYERSHOT_GFOX_LASER) {
         if ((gTurretModeEnabled)) {
             if ((actor->eventType == EVID_TEAMMATE) || (actor->obj.id == OBJ_ACTOR_TEAM_BOSS) || (actor->obj.id == OBJ_ACTOR_TEAM_ARWING)
@@ -1067,7 +1084,7 @@ void PlayerShot_CollisionCheck(PlayerShot* shot) {
                             } else {
                                 boss->damage = 30;
                             }
-                        } else if ((gCurrentLevel == LEVEL_AQUAS) && (gTurretModeEnabled)) {
+                        } else if ((gCurrentLevel == LEVEL_AQUAS) && ((gTurretModeEnabled) || (gPlayer[0].form == FORM_ON_FOOT))) {
                             boss->damage = RAND_INT(5) + 27;
                         } else {
                             boss->damage = 10;

@@ -430,7 +430,7 @@ void SectorY_80198F5C(SyShogun* this) {
     Effect_Effect390_Spawn(this->obj.pos.x, this->obj.pos.y, this->obj.pos.z, this->vel.x, this->vel.y, this->vel.z,
                            0.1f, 10);
     this->health -= this->damage;
-    if (gTurretModeEnabled) {
+    if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
         this->health += (this->damage * 0.75f);
     }
 
@@ -1423,6 +1423,12 @@ void SectorY_SyShogun_Update(SyShogun* this) {
     Vec3f src;
     Vec3f dest;
     s32 pad;
+
+    if ((gPlayer[0].form == FORM_ON_FOOT) && (gPlayer[0].state == PLAYERSTATE_ACTIVE) && ((this->obj.pos.x < -100) || (this->obj.pos.x > 100))) {
+        if (this->obj.pos.y < 400) {
+            this->obj.pos.y = 400;
+        }
+    }
 
     if (gPlayer[0].state != PLAYERSTATE_START_360) {
         if (this->swork[34] == 1) {
@@ -3824,7 +3830,7 @@ void SectorY_SyRobot_Update(SyRobot* this) {
             Effect_Effect390_Spawn(this->hitPos.x, this->hitPos.y, this->hitPos.z, this->vel.x, this->vel.y,
                                    this->vel.z, 0.1f, 10);
             this->health -= this->damage;
-            if (gTurretModeEnabled) {
+            if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
                 this->health += (this->damage * 0.75f);
             }
 

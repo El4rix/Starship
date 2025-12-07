@@ -996,7 +996,7 @@ void Meteo_MeCrusher_Update(MeCrusher* this) {
 
                     this[0].swork[9 + this->dmgPart] = 20;
                     this[0].swork[2 + this->dmgPart] -= this->damage;
-                    if (gTurretModeEnabled) {
+                    if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
                         this[0].swork[2 + this->dmgPart] += (this->damage * 0.5f);
                     }
 
@@ -1025,7 +1025,7 @@ void Meteo_MeCrusher_Update(MeCrusher* this) {
                         AUDIO_PLAY_SFX(NA_SE_EN_KNOCK_DOWN, this->sfxSource, 4);
                         this->swork[14] = 20;
                         this->swork[7] -= this->damage;
-                        if (gTurretModeEnabled) {
+                        if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
                             this->swork[7] += (this->damage * 0.5f);
                         }
                         if (this->swork[7] <= 0) {
@@ -1042,7 +1042,7 @@ void Meteo_MeCrusher_Update(MeCrusher* this) {
                         AUDIO_PLAY_SFX(NA_SE_EN_KNOCK_DOWN, this->sfxSource, 4);
                         this->swork[15] = 20;
                         this->swork[8] -= this->damage;
-                        if (gTurretModeEnabled) {
+                        if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
                             this->swork[8] += (this->damage * 0.5f);
                         }
                         if (this->swork[8] <= 0) {
@@ -1170,7 +1170,7 @@ void Meteo_MeCrusher_Update(MeCrusher* this) {
     if (this->swork[18] != 0) {
         s32 objId;
 
-        if ((ActorMissileSeek_ModeCheck(0) >= 4) || (gTurretModeEnabled)) {
+        if ((ActorMissileSeek_ModeCheck(0) >= 4) || (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT)) {
             objId = OBJ_ACTOR_MISSILE_SEEK_PLAYER;
         } else {
             objId = OBJ_ACTOR_MISSILE_SEEK_TEAM;
@@ -1627,6 +1627,29 @@ void Meteo_MeCrusher_Update(MeCrusher* this) {
             Math_SmoothStepToF(&this->fwork[18], 3.3f, 1.0f, 0.1f, 0.0f);
             Math_SmoothStepToF(&this->fwork[19], 3.3f, 1.0f, 0.1f, 0.0f);
             Math_SmoothStepToF(&this->fwork[20], 3.3f, 1.0f, 0.1f, 0.0f);
+        }
+    }
+
+    if (gPlayer[0].form == FORM_ON_FOOT) {
+        if (gPlayer[0].state == PLAYERSTATE_ACTIVE) {
+            if ((gGameFrameCount % 16) == 0) {
+                Effect_Effect367_Spawn(this->obj.pos.x, gGroundHeight + 5.0f, this->obj.pos.z, 6, 40, 0);
+                Effect_Effect367_Spawn(this->obj.pos.x, gGroundHeight + 5.0f, this->obj.pos.z, 6, 0, 5);
+                Effect_Effect367_Spawn(this->obj.pos.x, gGroundHeight + 5.0f, this->obj.pos.z, 6, 40, 10);
+
+                if (this->obj.pos.y < 500) {
+                    Effect_Effect364_Spawn(this->obj.pos.x, gGroundHeight + 5.0f, this->obj.pos.z, 30.0f);
+                    Effect_Effect364_Spawn(this->obj.pos.x, gGroundHeight + 5.0f, this->obj.pos.z, 30.0f);
+                    Effect_Effect364_Spawn(this->obj.pos.x + 200, gGroundHeight + 5.0f, this->obj.pos.z, 30.0f);
+                    Effect_Effect364_Spawn(this->obj.pos.x - 200, gGroundHeight + 5.0f, this->obj.pos.z, 30.0f);
+                    if (this->obj.pos.y < 300) {
+                        Effect_Effect364_Spawn(this->obj.pos.x + 400, gGroundHeight + 5.0f, this->obj.pos.z, 30.0f);
+                        Effect_Effect364_Spawn(this->obj.pos.x - 400, gGroundHeight + 5.0f, this->obj.pos.z, 30.0f);
+                        Effect_Effect364_Spawn(this->obj.pos.x + 500, gGroundHeight + 5.0f, this->obj.pos.z, 30.0f);
+                        Effect_Effect364_Spawn(this->obj.pos.x - 500, gGroundHeight + 5.0f, this->obj.pos.z, 30.0f);
+                    }
+                }
+            }
         }
     }
 }
@@ -2182,6 +2205,10 @@ void Meteo_LevelStart(Player* player) {
                 player->csState = 2;
                 D_ctx_80177A48[0] = 0.0f;
                 player->csTimer = 40;
+                if (player->form == FORM_ON_FOOT) {
+                    gFillScreenAlphaTarget = 255;
+                    gFillScreenAlphaStep = 64;
+                }
             }
 
             sp8F = false;
@@ -2296,6 +2323,10 @@ void Meteo_LevelStart(Player* player) {
                 player->cam.at.x = player->pos.x;
                 player->cam.at.y = (player->pos.y * player->unk_148) + 20.0f;
                 player->cam.at.z = player->trueZpos;
+
+                if (player->form == FORM_ON_FOOT) {
+                    gFillScreenAlphaTarget = 0;
+                }
 
                 for (i = 0; i < 4; i++) {
                     Object_Kill(&gActors[i].obj, gActors[i].sfxSource);

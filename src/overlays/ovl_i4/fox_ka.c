@@ -681,7 +681,7 @@ void Katina_BossHandleDamage(KaSaucerer* this) {
                 if (this->swork[10 + this->dmgPart] > 0) {
                     this->swork[00 + this->dmgPart] = 20;
                     this->swork[10 + this->dmgPart] -= this->damage;
-                    if (gTurretModeEnabled) {
+                    if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
                         this->swork[10 + this->dmgPart] += (this->damage * 0.5f);
                     }
 
@@ -705,7 +705,7 @@ void Katina_BossHandleDamage(KaSaucerer* this) {
                 if ((this->swork[BOSS_CORE_HP] > 0) && (this->state > 10)) {
                     this->swork[BOSS_CORE_FLASH_TIMER] = 20;
                     this->swork[BOSS_CORE_HP] -= this->damage;
-                    if (gTurretModeEnabled) {
+                    if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
                         this->swork[BOSS_CORE_HP] += (this->damage * 0.5f);
                     }
 

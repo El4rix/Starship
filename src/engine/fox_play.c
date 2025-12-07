@@ -518,6 +518,10 @@ void Play_Setup360_SY(void) {
     boss[1].obj.pos.x = 0.0f;
     boss[1].obj.pos.y = 0.0f;
     boss[1].obj.pos.z = 0.0f;
+    if (gPlayer[0].form == FORM_ON_FOOT) {
+        boss[1].obj.pos.x = 2500.0f;
+        boss[1].obj.pos.z = -7500.0f;
+    }
     boss[1].obj.id = OBJ_BOSS_SY_SHOGUN;
     Object_SetInfo(&boss[1].info, boss[1].obj.id);
 
@@ -526,6 +530,10 @@ void Play_Setup360_SY(void) {
     boss[2].obj.pos.x = 0.0f;
     boss[2].obj.pos.y = 0.0f;
     boss[2].obj.pos.z = 0.0f;
+    if (gPlayer[0].form == FORM_ON_FOOT) {
+        boss[2].obj.pos.x = 2500.0f;
+        boss[2].obj.pos.z = -7500.0f;
+    }
     boss[2].obj.id = OBJ_BOSS_SY_SHOGUN;
     Object_SetInfo(&boss[2].info, boss[2].obj.id);
 }
@@ -599,7 +607,7 @@ void Play_InitEnvironment(void) {
     }
 
     if (!D_ctx_8017782C) {
-        if ((gCurrentLevel == LEVEL_SOLAR) && (gPlayer[0].form != FORM_ON_FOOT)) {
+        if ((gCurrentLevel == LEVEL_SOLAR) /* && (gPlayer[0].form != FORM_ON_FOOT) */) {
             Audio_SetHeatAlarmParams(255, 1);
             AUDIO_PLAY_SFX(NA_SE_OVERHEAT_ALARM, gDefaultSfxSource, 4);
             Audio_KillSfxBySourceAndId(gPlayer[0].sfxSource, NA_SE_OB_MAGMA_BUBBLE);
@@ -2571,7 +2579,7 @@ void Player_FootCollisionCheck(Player* player) {        // On-Foot Collision
                 }
             }
 
-            for (i = 0, boss = &gBosses[0]; i < 200; i++, boss++) {     // 360 Bosses collision
+            /* for (i = 0, boss = &gBosses[0]; i < 200; i++, boss++) {     // 360 Bosses collision
                 if (boss->obj.status == OBJ_ACTIVE) {
                     spC8.x = boss->obj.pos.x - player->pos.x;
                     spC8.z = boss->obj.pos.z - player->trueZpos;
@@ -2583,7 +2591,7 @@ void Player_FootCollisionCheck(Player* player) {        // On-Foot Collision
                                                                 boss->obj.rot.z);
                     }
                 }
-            }
+            } */
 
         } else {
             for (i = 0, scenery = gScenery; i < ARRAY_COUNT(gScenery); i++, scenery++) {                  // On-Rails scenery collision
@@ -2709,16 +2717,16 @@ void Player_FootCollisionCheck(Player* player) {        // On-Foot Collision
 
         for (i = 0, boss = &gBosses[0]; i < ARRAY_COUNT(gBosses); i++, boss++) {                       // All boss collision
             if (boss->obj.status == OBJ_ACTIVE) {
-                /* if ((boss->obj.id == OBJ_BOSS_VE2_BASE) || (boss->obj.id == OBJ_BOSS_FO_BASE) ||
+                if ((boss->obj.id == OBJ_BOSS_VE2_BASE) || (boss->obj.id == OBJ_BOSS_FO_BASE) ||
                     (boss->obj.id == OBJ_BOSS_SZ_GREAT_FOX) || (boss->obj.id == OBJ_BOSS_BO_BASE)) {
                     temp_v0 =
                         Player_CheckPolyCollision(player, boss->obj.id, boss->obj.pos.x, boss->obj.pos.y,
                                                   boss->obj.pos.z, boss->obj.rot.x, boss->obj.rot.y, boss->obj.rot.z);
-                    if (temp_v0 != 0) {
+                    /* if (temp_v0 != 0) {
                         Player_ApplyDamage(player, temp_v0, boss->info.damage);
                         break;
-                    }
-                } */
+                    } */
+                }
 
                 if (boss->obj.id == OBJ_BOSS_BO_BASE_SHIELD) {
                     spfD4.x = fabsf(boss->obj.pos.x - player->pos.x) * .8333333f;
@@ -3584,7 +3592,7 @@ void Play_Init(void) {
                 }
                 if (gPlayer[0].form == FORM_ON_FOOT) {
                     gPlayer[0].pos.x = gPlayer[0].pos.z = 0; // Doesn't work
-                    gPlayer[0].pos.y = 1000;
+                    gPlayer[0].pos.y = -525;
                 }
                 break;
 
@@ -4151,7 +4159,7 @@ void Player_Shoot(Player* player) {
             break;
 
         case FORM_ON_FOOT:
-            if (gInputPress->button & A_BUTTON) {
+            /* if (gInputPress->button & A_BUTTON) {
                 player->shotTimer = 0;
             }
             if (gInputHold->button & A_BUTTON) {
@@ -4162,6 +4170,16 @@ void Player_Shoot(Player* player) {
                 if (player->shotTimer > 1) {
                     player->shotTimer = 0;
                 }
+            } */
+
+            if (gInputHold->button & A_BUTTON) {
+                player->shotTimer = 20;
+                if ((gGameFrameCount % 2) == 0) {
+                    Player_OnFootGun(player);
+                }
+            }
+            if (player->shotTimer > 0) {
+                player->shotTimer--;
             }
             Player_SmartBomb(player);
             break;
@@ -4316,7 +4334,7 @@ void Player_UpdatePath(Player* player) {
     }
 
     // Change path (rotation)
-    if ((player->pathChangeTimer != 0) && !gTurretModeEnabled) {
+    if ((player->pathChangeTimer != 0) && !gTurretModeEnabled && player->form != FORM_ON_FOOT) {
         player->pathChangeTimer--;
         Math_SmoothStepToF(&player->yRot_114, player->pathChangeYaw, 0.03f, 0.5f, 0.0001f);
         Math_SmoothStepToF(&player->xRot_120, player->pathChangePitch, 0.03f, 0.5f, 0.0001f);
@@ -4326,10 +4344,19 @@ void Player_UpdatePath(Player* player) {
     }
 
     if ((player->form == FORM_ON_FOOT) && (gLevelType == LEVELTYPE_SPACE) && (gCurrentLevel != LEVEL_METEO)) {
-        if (gInputHold->button & R_TRIG) {
-            //player->yPathTarget -= 10;
+        if ((gInputPress->button & R_TRIG) && (player->pos.y <= player->yPath)) {
+            Player_PlaySfx(player->sfxSource, NA_SE_ARWING_BRAKE, player->num);
         }
-        Math_SmoothStepToF(&player->yPath, player->yPathTarget, 0.1f, player->pathStep, 0.0001f);
+        if ((gInputHold->button & R_TRIG) && (player->pos.y <= player->yPath)) {
+            Math_SmoothStepToF(&player->yPath, player->yPathTarget - 1000, 0.1f, player->pathStep * 2, 0.1f);
+            player->baseSpeed = 30.0f;
+        } else {
+            Math_SmoothStepToF(&player->yPath, player->yPathTarget, 0.1f, 1, 0.1f);
+        }
+
+        if ((Math_FabsF(player->yPath - player->yPathTarget) > 10.0f)) {
+            player->pos.y = player->yPath;
+        }
     }
 }
 
@@ -5000,28 +5027,41 @@ void Player_OnFootUpdateSpeed(Player* player) {
             gStoppedRunning = false;
         }
 
+        if ((gCurrentLevel == LEVEL_SECTOR_Y) || (gCurrentLevel == LEVEL_SECTOR_X) || (gCurrentLevel == LEVEL_AREA_6)) {
+            if (gLevelMode != LEVELMODE_ALL_RANGE) {
+                gRunning = true;
+            }
+        } else if (gCurrentLevel == LEVEL_SECTOR_Z) {
+            gRunning = false;
+        }
+
         if (gRunning) {
             if ((gCurrentLevel == LEVEL_MACBETH) || (gCurrentLevel == LEVEL_TITANIA) || (gCurrentLevel == LEVEL_AQUAS)) {
                 sp2C = 20.0f;
+            } else if ((gCurrentLevel == LEVEL_SECTOR_Y) || (gCurrentLevel == LEVEL_SECTOR_X) || (gCurrentLevel == LEVEL_AREA_6)) {
+                sp2C = 40.0f;
             } else {
                 sp2C = 30.0f;
             }
+
             sp28 = D_800D30F4[gPlayerNum];
             sp24 = D_800D3104[gPlayerNum];
         }
     }
 
-    if ((gCurrentLevel == LEVEL_SECTOR_X) || 
-        (gCurrentLevel == LEVEL_SECTOR_Y) ||
-        (gCurrentLevel == LEVEL_AREA_6) || 
-        (gCurrentLevel == LEVEL_ZONESS) || 
-        (gCurrentLevel == LEVEL_SOLAR)) {
-            gRunning = true;
+    if (gLevelMode == LEVELMODE_ON_RAILS) {
+        if ((gCurrentLevel == LEVEL_SECTOR_X) || 
+            (gCurrentLevel == LEVEL_SECTOR_Y) ||
+            (gCurrentLevel == LEVEL_AREA_6) || 
+            (gCurrentLevel == LEVEL_ZONESS) || 
+            (gCurrentLevel == LEVEL_SOLAR)) {
+                gRunning = true;
         }
+    }
 
-    if ((gInputPress->button & U_JPAD) && gFaceZoom) {
+    if ((gInputPress->button & U_JPAD) && gFaceZoom && !(gInputHold->button & L_JPAD)&& !( gInputHold->button & R_JPAD)) {
         gFaceZoom = false;
-    } else if ((gInputPress->button & U_JPAD) && !gFaceZoom) {
+    } else if ((gInputPress->button & U_JPAD) && !gFaceZoom && !(gInputHold->button & L_JPAD)&& !( gInputHold->button & R_JPAD)) {
         gFaceZoom = true;
     }
 
@@ -5029,7 +5069,7 @@ void Player_OnFootUpdateSpeed(Player* player) {
     Math_SmoothStepToF(&player->unk_008, sp28, 0.1f, sp24, 0.00001f);
 }
 
-void Player_MoveOnFoot(Player* player) {
+void Player_MoveOnFoot360(Player* player) {
     Vec3f sp78[30];
     f32 sp74;
     f32 sp70;
@@ -5045,7 +5085,91 @@ void Player_MoveOnFoot(Player* player) {
     gGroundHeight = -0.0f;
 
     if (gCurrentLevel == LEVEL_SECTOR_Z) {
-        gGroundHeight = -1000.0f;
+        gGroundHeight = -1500.0f;
+        player->yPath = -525.0f;
+        if (player->pos.y <= player->yPath) {
+            player->pos.y = player->yPath;
+            player->grounded = true;
+            player->vel.y = 0.0f;
+        }
+        player->pos.x = 0.0f;
+        player->pos.z = 1000.0f;
+    }
+
+    if (gCurrentLevel == LEVEL_SECTOR_Y) {
+        player->yPath = 200.0f;
+        if (player->pos.y <= player->yPath) {
+            player->pos.y = player->yPath;
+            player->grounded = true;
+            player->vel.y = 0.0f;
+        }
+        if (player->pos.z < -1000) {
+            player->pos.z = -1000.0f;
+            player->vel.z = 0;
+        }
+        if (player->pos.z > 1000) {
+            player->pos.z = 1000.0f;
+            player->vel.z = 0;
+        }
+        player->pos.x = 2500.0f;
+        player->vel.x = 0;
+    }
+
+    if (gCurrentLevel == LEVEL_FORTUNA) {
+        if ((player->pos.y > 500.0f) && (player->pos.y <= 650.0f)
+            && ((sqrtf(SQ(player->pos.x) + SQ(player->pos.z))) < 650.0f)
+            && ((sqrtf(SQ(player->pos.x) + SQ(player->pos.z + 420.0f))) > 300.0f)
+            && ((sqrtf(SQ(player->pos.x + 350.0f) + SQ(player->pos.z - 250.0f))) > 250.0f)
+            && ((sqrtf(SQ(player->pos.x - 370.0f) + SQ(player->pos.z - 270.0f))) > 250.0f)
+            ) {
+            player->pos.y = 650.0f;
+            player->grounded = true;
+            player->vel.y = 0.0f;
+        }
+    }
+
+    if (gCurrentLevel == LEVEL_KATINA) {
+
+        player->yPath = 0.0f;
+
+        if (fabsf(player->pos.z) > fabs(player->pos.x)) {
+            if ((player->pos.z < 530) && (player->pos.z > 0)) {
+                player->yPath = 790 - player->pos.z * 1.5;
+            }
+            if ((player->pos.z > -530) && (player->pos.z < 0)) {
+                player->yPath = 790 + player->pos.z * 1.5;
+            }
+        } else {
+            if ((player->pos.x < 530) && (player->pos.x > 0)) {
+                player->yPath = 790 - player->pos.x * 1.5;
+            }
+            if ((player->pos.x > -530) && (player->pos.x < 0)) {
+                player->yPath = 790 + player->pos.x * 1.5;
+            }
+        }
+        if (((player->pos.x > -530) && (player->pos.x < 530) && (player->pos.z > -530) && (player->pos.z < 530))) {
+            player->yPath += player->baseSpeed;
+        }
+
+        if (((fabsf(player->pos.z) > 530) && (fabsf(player->pos.z) < 3000)) || ((fabsf(player->pos.x) > 530) && (fabsf(player->pos.x) < 3000))) {
+            if ((player->pos.z > -190) && (player->pos.z < 190)) {
+                player->yPath = 10;
+            }
+            if ((player->pos.x < 190) && (player->pos.x > -190)) {
+                player->yPath = 10;
+            }
+        }
+
+        if (player->yPath > 565) {
+            player->yPath = 565;
+        }
+
+        if (player->pos.y < player->yPath) {
+            player->pos.y = player->yPath;
+            player->grounded = true;
+            player->vel.y = 0.0f;
+        }
+        
     }
 
     player->camRoll = 0.0f;
@@ -5061,13 +5185,27 @@ void Player_MoveOnFoot(Player* player) {
     if (sp74 < -40.0f) {
         sp74 = -40.0f;
     }
-    if (var_fa0 < sp74) {
+    /* if (var_fa0 < sp74) {
         sp74 = var_fa0;
+    } */
+
+    if (sp74 == 0) {
+        //Math_SmoothStepToF(&player->unk_154, 0, 0.075f, 1.0f, 0.00001f);
+        //Math_SmoothStepToF(&player->unk_158, 0, 0.15f, 5.0f / 3, 0.00001f);
+        if (!(gInputHold->button & A_BUTTON) && (player->shotTimer < 1)) {
+            Math_SmoothStepToF(&player->unk_154, 0, 0.075f, 1.0f, 0.00001f);
+            Math_SmoothStepToF(&player->unk_158, 0, 0.15f, 5.0f / 3, 0.00001f);
+        }
+    } else {
+        player->shotTimer = 20;
+        Math_SmoothStepToF(&player->unk_154, sp74, 0.1f, 3.0f, 0.00001f);
+        Math_SmoothStepToF(&player->unk_158, sp74, 0.2f, 5.0f, 0.00001f);
     }
 
-    Math_SmoothStepToF(&player->unk_154, sp74, 0.1f, 3.0f, 0.00001f);
+
+    /* Math_SmoothStepToF(&player->unk_154, sp74, 0.1f, 3.0f, 0.00001f);
     Math_SmoothStepToF(&player->unk_180, 0.0f, 0.15f, 5.0f, 0.00001f);
-    Math_SmoothStepToF(&player->unk_158, sp74, 0.2f, 5.0f, 0.00001f);
+    Math_SmoothStepToF(&player->unk_158, sp74, 0.2f, 5.0f, 0.00001f); */
 
     gPlayerTurnRate = 3.0f;
     gPlayerTurnStickMod = 0.666f;
@@ -5129,12 +5267,11 @@ void Player_MoveOnFoot(Player* player) {
     player->pos.x += player->vel.x;
 
     // Roll Left/Right
-    if ((gInputHold->button & Z_TRIG) && (gInputPress->stick_x > 50) && (player->grounded) && ((gLevelType == LEVELTYPE_PLANET) || (gCurrentLevel == LEVEL_METEO))) {
+    if ((gInputHold->button & Z_TRIG) && (gInputPress->stick_x > 50) && (player->rollTimer == 0)) {
         AUDIO_PLAY_SFX(NA_SE_PASS, gDefaultSfxSource, 0);
         player->knockback.x = 25.0f * cos(player->camYaw);
         player->knockback.z = 25.0f * sin(player->camYaw);
         player->rot.z = 370;
-        player->pos.y += 50;
 
         player->sfx.bank = 1;
         player->rollState = 1;
@@ -5142,12 +5279,11 @@ void Player_MoveOnFoot(Player* player) {
         player->rollRate = player->baseRollRate = -30;
         player->sfx.roll = 1;
     }
-    if ((gInputHold->button & Z_TRIG) && (gInputPress->stick_x < -50) && (player->grounded) && ((gLevelType == LEVELTYPE_PLANET) || (gCurrentLevel == LEVEL_METEO))) {
+    if ((gInputHold->button & Z_TRIG) && (gInputPress->stick_x < -50) && (player->rollTimer == 0)) {
         AUDIO_PLAY_SFX(NA_SE_PASS, gDefaultSfxSource, 0);
         player->knockback.x = -25.0f * cos(player->camYaw);
         player->knockback.z = -25.0f * sin(player->camYaw);
         player->rot.z = -370;
-        player->pos.y += 50;
 
         player->sfx.bank = 1;
         player->rollState = 1;
@@ -5155,6 +5291,10 @@ void Player_MoveOnFoot(Player* player) {
         player->rollRate = player->baseRollRate = 30;
         player->sfx.roll = 1;
     }
+    if (player->grounded) {
+        player->rollTimer = 0;
+    }
+
     if (player->rot.z < 0) {
         Math_SmoothStepToF(&player->rot.z, 0, 0.5f, 100, 0.0f);
     }
@@ -5185,7 +5325,8 @@ void Player_MoveOnFoot(Player* player) {
     Math_SmoothStepToAngle(&player->zRot_0FC, player->rot_104.z, 0.15f, 15.0f, 0.005f);
 
     if (player->grounded) {
-        if (player->baseSpeed > 1.0f) {
+        if (((player->baseSpeed > 1.0f) && (gCurrentLevel != LEVEL_SECTOR_Y))
+        || ((gCurrentLevel == LEVEL_SECTOR_Y) && ((player->vel.z > 5) || (player->vel.z < -5)) && (player->pos.z > -1000) && (player->pos.z < 1000))) {
             player->unk_00C += player->unk_008;
 
             if ((s32) player->unk_00C >= Animation_GetFrameCount(&D_versus_301CFEC)) {
@@ -5278,12 +5419,17 @@ void Player_MoveOnFoot(Player* player) {
     }
 
     // Jumping
-    if (!(gInputHold->button & Z_TRIG) && player->grounded && player->gravity != 2.0f) {
-        player->vel.y = 15.0f;
+    if ((gInputPress->button & Z_TRIG) && player->grounded) {
+        player->vel.y = 20.0f;
     }
-    player->gravity = 2.0f;
-    if ((gInputHold->button & Z_TRIG) && (player->grounded)) {
-        player->gravity = 1.2f;
+
+    if (!(gInputHold->button & Z_TRIG) || (player->boostMeter == 90)) {
+        player->gravity = 2.0f;
+    }
+
+    if ((gInputPress->button & Z_TRIG) && (player->grounded == false)) {
+        player->gravity = -1.0f;
+        player->rollTimer = 10;
     }
 
     // Jetpack ===========
@@ -5294,7 +5440,7 @@ void Player_MoveOnFoot(Player* player) {
     Math_SmoothStepToF(&player->unk_170, 0.0f, 1.0f, 0.2f, 0.0f);
     Math_SmoothStepToF(&player->unk_16C, 0.0f, 1.0f, 0.2f, 0.0f);
 
-    if ((gInputHold->button & Z_TRIG) && (player->grounded == false) && (player->radioDamageTimer == 0) /* && !player->boostCooldown */) {
+    if ((gInputHold->button & Z_TRIG) && (player->gravity == -1.0f) && (player->radioDamageTimer == 0)) {
 
         player->unk_188 = 0.0f;
         Math_SmoothStepToF(&player->unk_170, 1.0f, 1.0f, 0.4f, 0.0f);
@@ -5316,7 +5462,13 @@ void Player_MoveOnFoot(Player* player) {
             Effect_Effect359_Spawn(RAND_FLOAT_CENTERED(20.0f) + player->pos.x, player->groundPos.y + 10.0f,
                                    player->trueZpos - 10.0f, RAND_FLOAT(2.0f) + 3.5f, 255, 16, 1);
         }
+
+        player->boostMeter++;
     } else {
+        if (player->boostMeter > 0) {
+            player->boostMeter--;
+        }
+        
         player->zRotBank = 0;
         Audio_KillSfxBySourceAndId(player->sfxSource, NA_SE_TANK_GO_UP);
         D_800C9F3C = 0;
@@ -5459,14 +5611,19 @@ void Player_MoveOnFootRails(Player* player) {
     } */
 
     if (sp74 == 0) {
-        Math_SmoothStepToF(&player->unk_154, sp74, 0.075f, 1.0f, 0.00001f);
-        Math_SmoothStepToF(&player->unk_180, 0.0f, 0.15f, 5.0f / 3, 0.00001f);
-        Math_SmoothStepToF(&player->unk_158, sp74, 0.15f, 5.0f / 3, 0.00001f);
+        //Math_SmoothStepToF(&player->unk_154, 0, 0.075f, 1.0f, 0.00001f);
+        //Math_SmoothStepToF(&player->unk_158, 0, 0.15f, 5.0f / 3, 0.00001f);
+        if (!(gInputHold->button & A_BUTTON) && (player->shotTimer < 1)) {
+            Math_SmoothStepToF(&player->unk_154, 0, 0.075f, 1.0f, 0.00001f);
+            Math_SmoothStepToF(&player->unk_158, 0, 0.15f, 5.0f / 3, 0.00001f);
+        }
     } else {
+        player->shotTimer = 20;
         Math_SmoothStepToF(&player->unk_154, sp74, 0.1f, 3.0f, 0.00001f);
-        Math_SmoothStepToF(&player->unk_180, 0.0f, 0.15f, 5.0f, 0.00001f);
         Math_SmoothStepToF(&player->unk_158, sp74, 0.2f, 5.0f, 0.00001f);
     }
+
+    Math_SmoothStepToF(&player->unk_180, 0.0f, 0.15f, 5.0f, 0.00001f);
 
     /* Math_SmoothStepToF(&player->unk_154, sp74, 0.1f, 3.0f, 0.00001f);
     Math_SmoothStepToF(&player->unk_180, 0.0f, 0.15f, 5.0f, 0.00001f);
@@ -5537,12 +5694,21 @@ void Player_MoveOnFootRails(Player* player) {
     player->vel.z = sp4C.z;
     player->pos.x += player->vel.x;
 
+    if (gCurrentLevel == LEVEL_AQUAS) {
+        Aquas_801A99D4(player);             // Darkens Environment
+        if (gBossActive) {
+            if (player->trueZpos < gBosses[0].obj.pos.z + 3000) {
+                player->vel.z = 0.0f;
+            }
+        }
+    }
+
     // Roll Left/Right
-    if ((gInputHold->button & Z_TRIG) && (gInputPress->stick_x > 50) && (player->grounded) && ((gLevelType == LEVELTYPE_PLANET) || (gCurrentLevel == LEVEL_METEO))) {
+    if ((gInputHold->button & Z_TRIG) && (gInputPress->stick_x > 50) && (player->rollTimer == 0) && ((gLevelType == LEVELTYPE_PLANET) || (gCurrentLevel == LEVEL_METEO))) {
         AUDIO_PLAY_SFX(NA_SE_PASS, gDefaultSfxSource, 0);
         player->knockback.x = 25.0f;
         player->rot.z = 370;
-        player->pos.y += 50;
+        //player->pos.y += 50;
 
         player->sfx.bank = 1;
         player->rollState = 1;
@@ -5550,17 +5716,20 @@ void Player_MoveOnFootRails(Player* player) {
         player->rollRate = player->baseRollRate = -30;
         player->sfx.roll = 1;
     }
-    if ((gInputHold->button & Z_TRIG) && (gInputPress->stick_x < -50) && (player->grounded) && ((gLevelType == LEVELTYPE_PLANET) || (gCurrentLevel == LEVEL_METEO))) {
+    if ((gInputHold->button & Z_TRIG) && (gInputPress->stick_x < -50) && (player->rollTimer == 0) && ((gLevelType == LEVELTYPE_PLANET) || (gCurrentLevel == LEVEL_METEO))) {
         AUDIO_PLAY_SFX(NA_SE_PASS, gDefaultSfxSource, 0);
         player->knockback.x = -25.0f;
         player->rot.z = -370;
-        player->pos.y += 50;
+        //player->pos.y += 50;
 
         player->sfx.bank = 1;
         player->rollState = 1;
         player->rollTimer = 10;
         player->rollRate = player->baseRollRate = 30;
         player->sfx.roll = 1;
+    }
+    if (player->grounded) {
+        player->rollTimer = 0;
     }
 
     Math_SmoothStepToF(&player->rot.z, 0, 0.5f, 100, 0.0f);
@@ -5593,8 +5762,10 @@ void Player_MoveOnFootRails(Player* player) {
     Math_SmoothStepToAngle(&player->zRot_0FC, player->rot_104.z, 0.15f, 15.0f, 0.005f);
 
     if (player->grounded) {
-        if (((player->baseSpeed > 1.0f) && (gCurrentLevel != LEVEL_ZONESS) && (gCurrentLevel != LEVEL_SOLAR) && ((gLevelType == LEVELTYPE_PLANET) || (gCurrentLevel == LEVEL_METEO)))
-        || ((gCurrentLevel == LEVEL_SOLAR) && ((player->vel.x > 5) || (player->vel.x < -5)))) {
+        if (((player->baseSpeed > 1.0f) && (gCurrentLevel != LEVEL_ZONESS) && (gCurrentLevel != LEVEL_SOLAR) 
+            && ((player->vel.z < -1.0f) || (player->vel.x > 5.0f) || (player->vel.x < -5.0f)) 
+            && ((gLevelType == LEVELTYPE_PLANET) || (gCurrentLevel == LEVEL_METEO)))
+            || ((gCurrentLevel == LEVEL_SOLAR) && ((player->vel.x > 5) || (player->vel.x < -5)))) {
             player->unk_00C += player->unk_008;
 
             if ((s32) player->unk_00C >= Animation_GetFrameCount(&D_versus_301CFEC)) {
@@ -5688,12 +5859,17 @@ void Player_MoveOnFootRails(Player* player) {
     }
 
     // Jumping
-    if (!(gInputHold->button & Z_TRIG) && player->grounded && player->gravity != 2.0f) {
-        player->vel.y = 15.0f;
+    if ((gInputPress->button & Z_TRIG) && player->grounded) {
+        player->vel.y = 20.0f;
     }
-    player->gravity = 2.0f;
-    if ((gInputHold->button & Z_TRIG) && (player->grounded)) {
-        player->gravity = 1.2f;
+
+    if (!(gInputHold->button & Z_TRIG) || (player->boostMeter == 90)) {
+        player->gravity = 2.0f;
+    }
+
+    if ((gInputPress->button & Z_TRIG) && (player->grounded == false)) {
+        player->gravity = -1.0f;
+        player->rollTimer = 10;
     }
 
     // Jetpack ===========
@@ -5704,7 +5880,7 @@ void Player_MoveOnFootRails(Player* player) {
     Math_SmoothStepToF(&player->unk_170, 0.0f, 1.0f, 0.2f, 0.0f);
     Math_SmoothStepToF(&player->unk_16C, 0.0f, 1.0f, 0.2f, 0.0f);
 
-    if ((gInputHold->button & Z_TRIG) && (player->grounded == false) && (player->radioDamageTimer == 0) /* && !player->boostCooldown */) {
+    if ((gInputHold->button & Z_TRIG) && (player->gravity == -1.0f) && (player->radioDamageTimer == 0) && (player->boostMeter < 90)) {
 
         player->unk_188 = 0.0f;
         Math_SmoothStepToF(&player->unk_170, 1.0f, 1.0f, 0.4f, 0.0f);
@@ -5726,7 +5902,11 @@ void Player_MoveOnFootRails(Player* player) {
             Effect_Effect359_Spawn(RAND_FLOAT_CENTERED(20.0f) + player->pos.x, player->groundPos.y + 10.0f,
                                    player->trueZpos - 10.0f, RAND_FLOAT(2.0f) + 3.5f, 255, 16, 1);
         }
+        player->boostMeter++;
     } else {
+        if (player->boostMeter > 0) {
+            player->boostMeter--;
+        }
         player->zRotBank = 0;
         Audio_KillSfxBySourceAndId(player->sfxSource, NA_SE_TANK_GO_UP);
         D_800C9F3C = 0;
@@ -5769,7 +5949,7 @@ void Player_MoveOnFootRails(Player* player) {
     }
 
     player->pos.z += player->vel.z;
-    //player->trueZpos = player->pos.z;
+    player->trueZpos = player->pos.z;
 }
 
 f32 D_800D3114[4] = { 10000.0f, -10000.0f, 10000.0f, -10000.0f };
@@ -5897,13 +6077,9 @@ void Player_Setup(Player* playerx) {
             break;
     }
 
-    player->form = FORM_ON_FOOT;
+    player->form = FORM_ON_FOOT; // Always turn On Foot Mode on
     gPilotNum = 0;
-    if (gLevelMode == LEVELMODE_ALL_RANGE) {
-        gRunning = false;
-    } else {
-        gRunning = true;
-    }
+    gRunning = true;
 
     if (gCurrentLevel != LEVEL_CORNERIA) {
         gSavedGroundSurface = SURFACE_GRASS;
@@ -6238,6 +6414,17 @@ void Player_Setup(Player* playerx) {
         turretDestX = player->pos.x = 0;
         AUDIO_PLAY_SFX(NA_SE_GREATFOX_ENGINE, gDefaultSfxSource, 0);
     }
+
+    /* AqBacoon* core = &gBosses[0];               // Boss test for on foot
+
+    Boss_Initialize(core);
+    core->obj.status = OBJ_INIT;
+    core->obj.pos.x = 0.0f;
+    core->obj.pos.y = 0.0f;
+    core->obj.pos.z = -5000.0f;
+    //core->obj.rot.x = 180.0f;
+    core->obj.id = OBJ_BOSS_AQ_BACOON;
+    Object_SetInfo(&core->info, core->obj.id); */
 }
 
 void Player_UpdateArwingRoll(Player* player) {
@@ -7103,7 +7290,7 @@ void Player_Update360(Player* player) {
 
         case FORM_ON_FOOT:
             Player_OnFootUpdateSpeed(player);
-            Player_MoveOnFoot(player);
+            Player_MoveOnFoot360(player);
             Player_Shoot(player);
             //Player_CollisionCheck(player);
             Player_FootCollisionCheck(player);
@@ -7271,10 +7458,10 @@ void Player_Update(Player* player) {
     } */
 
     // Swap Characters
-    if ((player->form == FORM_ON_FOOT) && (gControllerPress[player->num].button & L_JPAD)) {
+    if ((player->form == FORM_ON_FOOT) && (gControllerPress[player->num].button & L_JPAD) && !(gControllerHold[player->num].button & R_JPAD) && !(gControllerHold[player->num].button & U_JPAD) && !(gControllerHold[player->num].button & D_JPAD)) {
         gPilotNum--;
     }
-    if ((player->form == FORM_ON_FOOT) && (gControllerPress[player->num].button & R_JPAD)) {
+    if ((player->form == FORM_ON_FOOT) && (gControllerPress[player->num].button & R_JPAD) && !(gControllerHold[player->num].button & L_JPAD) && !(gControllerHold[player->num].button & U_JPAD) && !(gControllerHold[player->num].button & D_JPAD)) {
         gPilotNum++;
     }
     if ((player->form == FORM_ON_FOOT) && (gPilotNum > 3)) {
@@ -7344,8 +7531,8 @@ void Player_Update(Player* player) {
             if (gTurretModeEnabled) {
                 Turret_Cutscene_LevelStart(player);
             } else if (player->form == FORM_ON_FOOT) {
-                Cutscene_LevelStart(player);
-                //OnFoot_Cutscene_LevelStart(player);
+                //Cutscene_LevelStart(player);
+                OnFoot_Cutscene_LevelStart(player);
 
                 if (player->grounded == false) {
                     switch (gPilotNum) {                                                      // Jumping animation
@@ -7612,6 +7799,15 @@ void Player_Update(Player* player) {
             Player_UpdateShields(player);
             if (gTurretModeEnabled) {
                 Turret_Cutscene_AllRangeMode(player);
+            } else if (player->form == FORM_ON_FOOT) {
+                if (gCurrentLevel == LEVEL_SECTOR_Y) {
+                    player->unk_188 = 0.0f;                                             // Jetpack
+                    Math_SmoothStepToF(&player->unk_170, 1.0f, 1.0f, 0.4f, 0.0f);
+                    Math_SmoothStepToF(&player->unk_16C, 1.0f, 1.0f, 0.4f, 0.0f);
+                    AUDIO_PLAY_SFX(NA_SE_TANK_GO_UP, player->sfxSource, 0);
+                    player->zRotBank += ((__cosf(gGameFrameCount * M_DTOR * 8.0f) * 10.0f) - player->zRotBank) * 0.1f;
+                }
+                Cutscene_AllRangeMode(player);
             } else {
                 Cutscene_AllRangeMode(player);
             }
@@ -8274,7 +8470,7 @@ void Camera_UpdateOnFoot(Player* player, s32 arg1) {
     player->cam.eye.z = 100 - player->camDist + (player->baseSpeed * 2); // zoom out when running
 
     //if ((player->grounded == true) || (player->vel.y > -8)) { // adjust angle/zoom when looking up/down
-        Math_SmoothStepToF(&player->cam.at.y, -(gInputPress->stick_y * 5) + player->pos.y + 50, 0.1f, 100.0f, 0.001f);
+        Math_SmoothStepToF(&player->cam.at.y, /* -(gInputPress->stick_y * 5) */ -(player->unk_154) * 5 + player->pos.y + 50, 0.1f, 100.0f, 0.001f);
         player->cam.eye.z -= (player->cam.at.y - player->pos.y) / 3;
         player->cam.eye.y -= (player->cam.at.y - player->pos.y) / 6;
     /* } else {
@@ -8684,7 +8880,7 @@ void Play_UpdateLevel(void) {
             }
             Lib_Texture_Mottle(D_SO_601E1E8, D_SO_6020F60, 3);
 
-            if (gPlayer[0].pos.y > 600.0f) {
+            if ((gPlayer[0].pos.y > 600.0f) || (gPlayer[0].form == FORM_ON_FOOT)) {
                 cycleMask = 8 - 1;
                 heightParam = 5;
             } else if (gPlayer[0].pos.y > 500.0f) {

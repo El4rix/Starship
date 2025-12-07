@@ -718,6 +718,89 @@ void Cutscene_LevelStart(Player* player) {
     }
 }
 
+void OnFoot_Cutscene_LevelStart(Player* player) {
+    gCsFrameCount++;
+    if (gLevelMode == LEVELMODE_ON_RAILS) {
+        switch (gCurrentLevel) {
+            case LEVEL_CORNERIA:
+                Corneria_LevelStart(player);
+                Player_FloorCheck(player);
+                break;
+
+            case LEVEL_METEO:
+                Meteo_LevelStart(player);
+                break;
+
+            case LEVEL_SECTOR_X:
+                SectorX_LevelStart(player);
+                break;
+
+            case LEVEL_TITANIA:
+                Titania_LevelStart(player);
+                Player_FloorCheck(player);
+                break;
+
+            case LEVEL_ZONESS:
+                Zoness_LevelStart(player);
+                break;
+
+            case LEVEL_MACBETH:
+                Macbeth_LevelStart(player);
+                break;
+
+            case LEVEL_SECTOR_Y:
+                SectorY_801A0AC0(player);
+                break;
+
+            case LEVEL_SOLAR:
+                Solar_LevelStart(player);
+                break;
+
+            case LEVEL_VENOM_1:
+                Venom1_LevelStart(player);
+                Player_FloorCheck(player);
+                break;
+
+            case LEVEL_AQUAS:
+                Aquas_CsLevelStart(player);
+                break;
+
+            case LEVEL_AREA_6:
+                Area6_LevelStart(player);
+                break;
+        }
+        func_demo_8004990C(player);
+    } else {
+        switch (gCurrentLevel) {
+            case LEVEL_FORTUNA:
+                AllRange_FortunaIntro(player);
+                Player_FloorCheck(player);
+                break;
+
+            case LEVEL_VENOM_2:
+                Venom2_LevelStart(player);
+                Player_FloorCheck(player);
+                break;
+
+            case LEVEL_BOLSE:
+                Bolse_LevelStart(player);
+                Player_FloorCheck(player);
+                break;
+
+            case LEVEL_KATINA:
+                Katina_LevelStart(player);
+                Player_FloorCheck(player);
+                break;
+
+            case LEVEL_SECTOR_Z:
+                SectorZ_LevelStart(player);
+
+            default:
+                break;
+        }
+    }
+}
+
 f32 D_demo_800CA050[] = { 210.0f, -210.0f, 0.0f };
 f32 D_demo_800CA05C[] = { -60.0f, -60.0f, -120.0f };
 f32 D_demo_800CA068[] = { -150.0f, -150.0f, -300.0f };
@@ -913,6 +996,11 @@ void Cutscene_AllRangeMode(Player* player) {
                 if (player->form = FORM_ON_FOOT) {
                     gRunning = false;
                     player->baseSpeed = 0;
+                    player->pos.x = 0;
+                    if (gCurrentLevel == LEVEL_SECTOR_Y) {
+                        player->cam.eye.z = 500;
+                        player->pos.y = 500;
+                    }
                 }
             }
 
@@ -961,6 +1049,20 @@ void Cutscene_AllRangeMode(Player* player) {
         if (player->cam.eye.y < gGroundHeight) {
             player->cam.eye.y = gGroundHeight;
         }
+        player->unk_154 = 
+        player->unk_158 = 
+        player->unk_180 = 
+        //player->rot.y = 
+        player->unk_15C = 
+        player->unk_164 = 
+        player->unk_168 = 
+        player->unk_17C = 
+        player->unk_174 = 
+        player->unk_178 = 
+        player->rot_104.y = 
+        player->yRot_114 = 0;
+        
+        gRunning = true;
     }
 
     player->bankAngle = player->rot.z + player->zRotBank + player->zRotBarrelRoll;
@@ -3474,6 +3576,16 @@ void Cutscene_DrawGreatFox(void) {
     s32 j;
     f32 sp9C[4];
     Gfx* dList;
+
+    if ((gPlayer[0].form == FORM_ON_FOOT) && gPlayer[0].state == PLAYERSTATE_ACTIVE) {
+        if (gCurrentLevel == LEVEL_SECTOR_Z) {
+            Matrix_Push(&gGfxMatrix);
+            Matrix_Translate(gGfxMatrix, 0, 275, 260, MTXF_APPLY);
+            Matrix_Scale(gGfxMatrix, 1.5f, 1.5f, 1.0f, MTXF_APPLY);
+            Matrix_SetGfxMtx(&gMasterDisp);
+            Matrix_Pop(&gGfxMatrix);
+        }
+    }
 
     if (gTurretModeEnabled) {
         if ((gCurrentLevel == LEVEL_TITANIA) && (gPlayer[0].state == PLAYERSTATE_ACTIVE)) {

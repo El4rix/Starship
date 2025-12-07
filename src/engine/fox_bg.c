@@ -933,11 +933,21 @@ void Background_DrawBackdrop(void) {
 
                         case LEVEL_METEO:
                             if (gPlayer[0].form == FORM_ON_FOOT) {
-                                Matrix_Translate(gGfxMatrix, bgXpos - 120.0f, -(bgYpos - 120.0f) + 100.0f, -290.0f,
+                                if (gPlayer[0].state == PLAYERSTATE_LEVEL_INTRO) {
+                                    RCP_SetupDL(&gMasterDisp, SETUPDL_64);
+                                    gDPSetPrimColor(gMasterDisp++, 0, 0, 220, 140, 60, 255);
+                                    Matrix_Translate(gGfxMatrix, bgXpos - 120.0f, -(bgYpos - 120.0f) - 75.0f, -290.0f,
                                                  MTXF_APPLY);
-                                Matrix_Scale(gGfxMatrix, 0.4f, 0.4f, 1.0f, MTXF_APPLY);
-                                Matrix_SetGfxMtx(&gMasterDisp);
-                                gSPDisplayList(gMasterDisp++, D_ME_600DDF0);
+                                    Matrix_Scale(gGfxMatrix, gCsFrameCount * gCsFrameCount * 0.000003, gCsFrameCount * gCsFrameCount * 0.000003, 1, MTXF_APPLY);
+                                    Matrix_SetGfxMtx(&gMasterDisp);
+                                    gSPDisplayList(gMasterDisp++, D_SX_60010C0);
+                                } else {
+                                    Matrix_Translate(gGfxMatrix, bgXpos - 120.0f, -(bgYpos - 120.0f) + 100.0f, -290.0f,
+                                                 MTXF_APPLY);
+                                    Matrix_Scale(gGfxMatrix, 0.4f, 0.4f, 1.0f, MTXF_APPLY);
+                                    Matrix_SetGfxMtx(&gMasterDisp);
+                                    gSPDisplayList(gMasterDisp++, D_ME_600DDF0);
+                                }
                             } else if ((gPlayer[0].state == PLAYERSTATE_LEVEL_COMPLETE) && (gCsFrameCount > 260)) {
                                 Matrix_Translate(gGfxMatrix, bgXpos - 120.0f, -(bgYpos - 120.0f) - 30.0f, -290.0f,
                                                  MTXF_APPLY);
@@ -1326,11 +1336,11 @@ void AllRangeGround_Draw(void) {
                 gSPDisplayList(gMasterDisp++, D_FO_6001360);
                 break;
             case LEVEL_SECTOR_Z:
-                if (gPlayer[0].form == FORM_ON_FOOT) {
+                /* if (gPlayer[0].form == FORM_ON_FOOT) {
                     gSPDisplayList(gMasterDisp++, D_BO_600A810);
                 } else {
                     gSPDisplayList(gMasterDisp++, D_Sector_Z_Ground);
-                }
+                } */
                 break;
             case LEVEL_SECTOR_Y:
                 gSPDisplayList(gMasterDisp++, D_Sector_Y_Ground);
@@ -2315,7 +2325,7 @@ void Background_DrawGround(void) {
                 break;
             }
 
-            if ((gLevelPhase == 1) && (gPlayer[0].state != PLAYERSTATE_LEVEL_COMPLETE)) {
+            if ((gLevelPhase == 1) && (gPlayer[0].state != PLAYERSTATE_LEVEL_COMPLETE)) {                               // On Foot Warp Zone
                 gDPSetTextureImage(gMasterDisp++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, SEGMENTED_TO_VIRTUAL(D_CO_601B6C0));
                 temp_s0 = fabsf(Math_ModF(2.0f * (gGameFrameCount * 8 + gPathTexScroll * 0.2133333f), 128.0f)); // 0.64f / 3.0f
                 temp_fv0 = Math_ModF((10000.0f - gPlayer[gPlayerNum].xPath) * 0.32f, 128.0f);

@@ -220,6 +220,11 @@ void Scenery_Load(Scenery* this, ObjectInit* objInit) {
     this->obj.rot.y = objInit->rot.y;
     this->obj.rot.z = objInit->rot.z;
     this->obj.id = objInit->id;
+    if (gPlayer[0].form == FORM_ON_FOOT) {
+        if (this->obj.id == OBJ_SCENERY_CO_BUMP_4 || this->obj.id == OBJ_SCENERY_CO_BUILDING_1) {
+            this->obj.pos.y = 0;
+        }
+    }
     Object_SetInfo(&this->info, this->obj.id);
 }
 
@@ -602,7 +607,7 @@ void Object_LoadLevelObjects(void) {
             break;
         }
 
-        if (gPlayer[0].form == FORM_ON_FOOT) {
+        if ((gPlayer[0].form == FORM_ON_FOOT) && ((gCurrentLevel != LEVEL_SECTOR_Y) && (gCurrentLevel != LEVEL_SECTOR_X) && (gCurrentLevel != LEVEL_AREA_6))) {
             if (((gPathProgress/*  - 1000 */) <= objInit->zPos1) && (objInit->zPos1 <= (gPathProgress/*  - 1000 */) + 200.0f)) { // Spawn enemies closer to you in On-Foot
                 if ((gCurrentLevel == LEVEL_VENOM_1) && (objInit->id >= ACTOR_EVENT_ID)) {
                     if (((objInit->rot.y < 180.0f) && (objInit->xPos < gPlayer[0].xPath)) ||
@@ -2073,6 +2078,13 @@ void Item_CheckBounds(Item* this) {
         }
     }
 
+    if ((gPlayer[0].form == FORM_ON_FOOT) && (gCurrentLevel == LEVEL_SECTOR_Z)) { // Items move toward to you
+        //this->obj.pos.x += 20.0f;
+        Math_SmoothStepToF(&this->obj.pos.x, gPlayer[0].pos.x, 1.0f, 20.0f, 10.0f);
+        Math_SmoothStepToF(&this->obj.pos.y, gPlayer[0].pos.y, 1.0f, 15.0f, 7.0f);
+        Math_SmoothStepToF(&this->obj.pos.z, gPlayer[0].pos.z, 1.0f, 40.0f, 10.0f);
+    }
+
     if (this->obj.pos.y > 650.0f) {
         Math_SmoothStepToF(&this->obj.pos.y, 650.0f, 0.1f, 10.0f, 0.01f);
     }
@@ -2305,6 +2317,8 @@ void ItemPickup_Update(Item* this) {
                     this->unk_50 = 60.0f;
                     if (gTurretModeEnabled) {
                         gPlayer[this->playerNum].heal += 16;
+                    } else if (gPlayer[0].form == FORM_ON_FOOT) {
+                        gPlayer[0].boostMeter = 0;
                     }
 
                     gLaserStrength[this->playerNum]++;
@@ -2736,7 +2750,7 @@ void Object_Dying(s32 index, ObjectId objId) {
 void Actor_Move(Actor* this) {
     f32 var_fv0;
 
-    if ((gPlayer[0].form == FORM_ON_FOOT) && (this->obj.pos.z < gPlayer[0].pos.z - 2000)) { // Limit retreat speed of enemies in on-foot
+    if ((gPlayer[0].form == FORM_ON_FOOT) && (this->obj.pos.z < gPlayer[0].pos.z - 2000) && ((gCurrentLevel != LEVEL_SECTOR_Y) && (gCurrentLevel != LEVEL_SECTOR_X) && (gCurrentLevel != LEVEL_AREA_6))) { // Limit retreat speed of enemies in on-foot
         if (this->vel.z < -30) {
             this->vel.z = -30;
         }
@@ -3244,6 +3258,22 @@ void Object_Update(void) {
                     scenery360->obj.rot.y += 0.5f;
                 } else {
                     scenery360->obj.rot.y -= 0.5f;
+                }
+            }
+        }
+    }
+
+    if ((gPlayer[0].form == FORM_ON_FOOT) && (gCurrentLevel == LEVEL_SECTOR_Z)) { // SZ space junk moves
+        for (i = 0, scenery360 = gScenery360; i < 200; i++, scenery360++) {
+            if (scenery360->obj.status != OBJ_FREE) {
+                scenery360->obj.pos.z += 20.0f;
+                if (scenery360->obj.pos.z > 20000) {
+                    if ((scenery360->obj.pos.x < 200.0f) && (scenery360->obj.pos.x > -200.0f) && (scenery360->obj.pos.y < -200.0f)) {
+                        scenery360->obj.pos.y = -1100.0f;
+                    }
+                    scenery360->obj.pos.z = -20000.0f;
+                    scenery360->obj.pos.x *= -1.0f;
+                    scenery360->obj.rot.y += 90.0f;
                 }
             }
         }

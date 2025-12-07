@@ -137,7 +137,7 @@ void Corneria_Granga_SpawnItem(Boss* this, f32 x, f32 y, f32 z, ObjectId itemId)
 void Corneria_Granga_Init(CoGranga* this) {
     s32 i;
 
-    if (gTurretModeEnabled) {
+    if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
         sCoGrangaLimbs = 0;
     } else {
         sCoGrangaLimbs = 5;
@@ -195,7 +195,7 @@ void Corneria_CoGranga_HandleDamage(CoGranga* this) {
         if ((this->dmgPart == GRANGA_DMG_BACKPACK) && (sCoGrangaLimbs > 3)) {
             this->swork[GRANGA_BACKPACK_DMG_IND] = DMG_FLICKER_15;
             this->swork[GRANGA_BACKPACK_HP] -= this->damage;
-            if (gTurretModeEnabled) {
+            if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
                 this->swork[GRANGA_BACKPACK_HP] += (this->damage * 0.5f);
             }
 
@@ -208,7 +208,7 @@ void Corneria_CoGranga_HandleDamage(CoGranga* this) {
                 Effect_SpawnTimedSfxAtPos(&this->obj.pos, NA_SE_OB_DAMAGE_M);
             }
 
-            if (!gTurretModeEnabled) {
+            if (!gTurretModeEnabled && gPlayer[0].form != FORM_ON_FOOT) {
                 Radio_PlayMessage(gMsg_ID_2270, RCID_BOSS_CORNERIA);
             } else {
                 if ((this->swork[GRANGA_BACKPACK_HP] < 130) && (this->swork[GRANGA_BACKPACK_HP] > 120)) {
@@ -464,7 +464,7 @@ ObjectId Corneria_CoGranga_ChooseMissileTarget(CoGranga* this) {
     if (this->swork[GRANGA_MISSILE_COUNT] >= 5) {
         this->swork[GRANGA_MISSILE_COUNT] = 0;
         return OBJ_ACTOR_MISSILE_SEEK_PLAYER;
-    } else if (gTurretModeEnabled) {
+    } else if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
         return OBJ_ACTOR_MISSILE_SEEK_PLAYER;
     } else if (ActorMissileSeek_ModeCheck(0) < 4) {
         return OBJ_ACTOR_MISSILE_SEEK_TEAM;
@@ -595,7 +595,7 @@ void Corneria_80188C7C(CoGranga* this) {
         this->swork[GRANGA_SWK_22] = 12;
         this->swork[GRANGA_SWK_20] = 17;
         gCameraShake = 20;
-        if (gTurretModeEnabled) {
+        if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
             Radio_PlayMessage(gMsg_ID_2230, RCID_PEPPY);
         }
     } else {
@@ -701,7 +701,7 @@ void Corneria_CoGranga_Update(CoGranga* this) {
 
             this->drawShadow = true;
 
-            if (gTurretModeEnabled) {
+            if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
                 this->swork[GRANGA_LEFT_LEG_HP] = 150;
                 this->swork[GRANGA_RIGHT_LEG_HP] = 150;
                 this->swork[GRANGA_LEFT_ARM_HP] = 140;
@@ -773,7 +773,7 @@ void Corneria_CoGranga_Update(CoGranga* this) {
                 Radio_PlayMessage(gMsg_ID_2260, RCID_BOSS_CORNERIA);
                 break;
             case 900:
-                if (gTurretModeEnabled) {
+                if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
                     Radio_PlayMessage(gMsg_ID_4095, RCID_PEPPY);
                 } else {
                     Radio_PlayMessage(gMsg_ID_2230, RCID_PEPPY);
@@ -781,7 +781,7 @@ void Corneria_CoGranga_Update(CoGranga* this) {
                 break;
             case 3840:
                 if (this->state < GRANGA_FALL_TO_LEFT) {
-                    if (gTurretModeEnabled) {
+                    if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
                         Radio_PlayMessage(gMsg_ID_4095, RCID_PEPPY);
                     } else {
                         Radio_PlayMessage(gMsg_ID_2230, RCID_PEPPY);
@@ -1018,7 +1018,7 @@ void Corneria_CoGranga_Update(CoGranga* this) {
 
                         if ((gGameFrameCount % 512U) == 0) {
                             Radio_PlayMessage(gMsg_ID_2275, RCID_BOSS_CORNERIA);
-                            if (gTurretModeEnabled) {
+                            if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
                                 Radio_PlayMessage(gMsg_ID_2263, RCID_BOSS_CORNERIA);
                             }
                         }
@@ -1036,7 +1036,7 @@ void Corneria_CoGranga_Update(CoGranga* this) {
 
                         if ((gGameFrameCount % 512U) == 0) {
                             Radio_PlayMessage(gMsg_ID_2275, RCID_BOSS_CORNERIA);
-                            if (gTurretModeEnabled) {
+                            if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
                                 Radio_PlayMessage(gMsg_ID_2263, RCID_BOSS_CORNERIA);
                             }
                         }
@@ -1740,7 +1740,7 @@ void Corneria_CoCarrier_ChooseMissileTarget(CoCarrier* this, f32 xPos, f32 yPos,
                                             s32 eventType) {
     ObjectId objId = OBJ_ACTOR_MISSILE_SEEK_PLAYER;
 
-    if ((ActorMissileSeek_ModeCheck(0) < 4) && (!gTurretModeEnabled)) {
+    if ((ActorMissileSeek_ModeCheck(0) < 4) && (!gTurretModeEnabled && gPlayer[0].form != FORM_ON_FOOT)) {
         objId = OBJ_ACTOR_MISSILE_SEEK_TEAM;
     }
 
@@ -1757,7 +1757,7 @@ void Corneria_CoCarrier_Init(CoCarrier* this) {
 
     this->drawShadow = true;
     this->timer_050 = 354;
-    if (gTurretModeEnabled) {
+    if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
         this->health = 1000;
     } else {
         this->health = 601;
@@ -1791,7 +1791,7 @@ void Corneria_CoCarrier_Init(CoCarrier* this) {
         gBosses[i].obj.pos.x = this->obj.pos.x;
         gBosses[i].obj.pos.y = this->obj.pos.y;
         gBosses[i].obj.pos.z = this->obj.pos.z;
-        if (gTurretModeEnabled) {
+        if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
             gBosses[i].health = 500;
         } else {
             gBosses[i].health = 200;
@@ -1900,7 +1900,7 @@ void Corneria_CoCarrier_Update(CoCarrier* this) {
         Matrix_MultVec3f(gCalcMatrix, &D_i1_801998D8, &sp84[1]);
         Matrix_MultVec3f(gCalcMatrix, &D_i1_801998E4, &sp84[2]);
 
-        if ((!gTurretModeEnabled) && (this->health != 601)) {
+        if ((!gTurretModeEnabled && gPlayer[0].form != FORM_ON_FOOT) && (this->health != 601)) {
             k = this->health - 601;
 
             if (k < 0) {
@@ -1920,7 +1920,7 @@ void Corneria_CoCarrier_Update(CoCarrier* this) {
             }
         }
 
-        if ((gTurretModeEnabled) && (this->health != 1000)) {
+        if ((gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) && (this->health != 1000)) {
             k = this->health - 1000;
 
             if (k < 0) {
@@ -2968,7 +2968,7 @@ void Corneria_CsTeamSetup(ActorCutscene* this, s32 teamIdx) {
     this->obj.status = OBJ_INIT;
     this->obj.id = OBJ_ACTOR_CUTSCENE;
     
-    if (gTurretModeEnabled) {
+    if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
         this->obj.pos.x = (sTurretCoLevelStartTeamXpos[teamIdx] * 4.0f) + gPlayer[0].pos.x;
         this->obj.pos.y = (sTurretCoLevelStartTeamYpos[teamIdx] * 2.0f) + gPlayer[0].pos.y;
         this->obj.pos.z = (sTurretCoLevelStartTeamZpos[teamIdx] * 3.0f) + gPlayer[0].trueZpos;
@@ -4063,7 +4063,7 @@ void Corneria_CsLevelComplete1_TeamSetup(ActorCutscene* this, s32 index) {
 
     sp44.x = D_i1_80199B08[index];
     sp44.y = D_i1_80199B14[index];
-    if (gTurretModeEnabled) {
+    if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
         sp44.z = Turret_D_i1_80199B20[index];
     } else {
         sp44.z = D_i1_80199B20[index];       

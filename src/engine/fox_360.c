@@ -806,7 +806,7 @@ s32 ActorAllRange_CheckObjectNearbySpace(Actor* this) {
     boss = &gBosses[0];
     // Check if the actor is close to the Great Fox in Sector Z.
     if ((gCurrentLevel == LEVEL_SECTOR_Z) && (fabsf(boss->obj.pos.x - (this->obj.pos.x + temp_ft4)) < 2000.0f) &&
-        (fabsf(boss->obj.pos.z - (this->obj.pos.z + temp_ft5)) < 2000.0f)) {
+        (fabsf(boss->obj.pos.z - (this->obj.pos.z + temp_ft5)) < 2000.0f) && ((gPlayer[0].form != FORM_ON_FOOT) || (this->aiIndex != AI360_FOX))) {
         if (fabsf(boss->obj.pos.y - this->obj.pos.y) < 1500.0f) {
             if (boss->obj.pos.y < this->obj.pos.y) {
                 return 1;
@@ -938,6 +938,13 @@ void ActorAllRange_ApplyDamage(ActorAllRange* this) {
                             this->health += (this->damage * 0.8f);
                         } else if (gCurrentLevel == LEVEL_VENOM_2) {
                             this->health += (this->damage * 0.9f);
+                        }
+                    }
+                    if ((gPlayer[0].form == FORM_ON_FOOT) && (this->aiType <= AI360_ANDREW)) {
+                        if ((gCurrentLevel == LEVEL_FORTUNA) || (gCurrentLevel == LEVEL_BOLSE)) {
+                            this->health += (this->damage * 0.5f);
+                        } else if (gCurrentLevel == LEVEL_VENOM_2) {
+                            this->health += (this->damage * 0.5f);
                         }
                     }
                 }
@@ -1644,6 +1651,22 @@ void ActorAllRange_Update(ActorAllRange* this) {
                         this->fwork[5] = gPlayer[0].pos.y + spC8;
                         this->fwork[6] = gPlayer[0].trueZpos + spC4;
                         this->fwork[1] = gPlayer[0].baseSpeed + 10.0f;
+                        if (gPlayer[0].form == FORM_ON_FOOT) {              // On Foot Sector Z Enemies targetting Fox
+                            if (gCurrentLevel == LEVEL_SECTOR_Z) {
+                                if (this->obj.pos.z < -1000.0f) {
+                                    Math_SmoothStepToF(&this->obj.pos.z, -1000.0f, 1.0f, 40.0f, 1.0f);
+                                }
+                                if (this->obj.pos.x < -1000.0f) {
+                                    Math_SmoothStepToF(&this->obj.pos.x, -1000.0f, 1.0f, 20.0f, 1.0f);
+                                }
+                                if (this->obj.pos.x > 1000.0f) {
+                                    Math_SmoothStepToF(&this->obj.pos.x, 1000.0f, 1.0f, 20.0f, 1.0f);
+                                }
+                                if (this->obj.pos.y > 0.0f) {
+                                    Math_SmoothStepToF(&this->obj.pos.y, 0.0f, 1.0f, 1.5f, 1.0f);
+                                }
+                            } 
+                        }
                     }
                     if ((gActors[0].state == STATE360_6) && (this->aiType <= AI360_PEPPY)) {
                         this->fwork[3] = 3.0f;
