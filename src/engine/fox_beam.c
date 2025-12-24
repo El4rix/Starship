@@ -1410,6 +1410,23 @@ void PlayerShot_DrawShot(PlayerShot* shot) {
                                 gDPSetEnvColor(gMasterDisp++, 32, 32, 255, shot->unk_58);
                                 break;
                         }
+                    } else if (gPlayer[0].form == FORM_ON_FOOT) {
+                        RCP_SetupDL_49();
+                        gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, shot->unk_58);
+                        switch (gPilotNum) {
+                            case 0:
+                                gDPSetEnvColor(gMasterDisp++, 128, 128, 32, shot->unk_58);
+                                break;
+                            case 1:
+                                gDPSetEnvColor(gMasterDisp++, 128, 32, 32, shot->unk_58);
+                                break;
+                            case 2:
+                                gDPSetEnvColor(gMasterDisp++, 32, 128, 32, shot->unk_58);
+                                break;
+                            case 3:
+                                gDPSetEnvColor(gMasterDisp++, 32, 32, 128, shot->unk_58);
+                                break;
+                        }
                     } else {
                         RCP_SetupDL_64_2();
                         gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, shot->unk_58);
@@ -1479,8 +1496,8 @@ void PlayerShot_DrawShot(PlayerShot* shot) {
                 Matrix_SetGfxMtx(&gMasterDisp);
                 RCP_SetupDL(&gMasterDisp, SETUPDL_49);
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 255);
-                gDPSetEnvColor(gMasterDisp++, D_800C9C00[shot->sourceId], D_800C9C04[shot->sourceId],
-                               D_800C9C08[shot->sourceId], 255);
+                gDPSetEnvColor(gMasterDisp++, D_800C9C00[gPilotNum], D_800C9C04[gPilotNum],
+                               D_800C9C08[gPilotNum], 255);
                 if (gLaserStrength[shot->sourceId] != LASERS_SINGLE) {
                     Matrix_RotateZ(gGfxMatrix, gGameFrameCount * 48.0f * M_DTOR, MTXF_APPLY);
                     Matrix_Push(&gGfxMatrix);

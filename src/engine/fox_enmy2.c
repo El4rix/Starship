@@ -1508,7 +1508,7 @@ void ActorEvent_ProcessScript(ActorEvent* this) {
             break;
 
         case EV_OPC(EVOP_SET_SPEED):
-            this->fwork[0] = actorScript[this->aiIndex] & 0x7F;
+            this->fwork[0] = (actorScript[this->aiIndex] & 0x7F);
             this->fwork[1] = this->fwork[0];
             this->iwork[5] = EV_ZMODE_MASK(actorScript[this->aiIndex]);
             this->timer_0BC = actorScript[this->aiIndex + 1];
@@ -1936,7 +1936,7 @@ void ActorEvent_ProcessActions(ActorEvent* this) {
                 this->work_048 = EVACT_NONE;
                 break;
 
-            case EVACT_8:
+            case EVACT_8:   // Wide spread of lasers, like first Venom ships
                 sp6C.x = gPlayer[0].pos.x;
                 sp6C.y = gPlayer[0].pos.y;
                 gPlayer[0].pos.x += RAND_FLOAT_CENTERED(300.0f);

@@ -607,8 +607,7 @@ void Object_LoadLevelObjects(void) {
             break;
         }
 
-        if ((gPlayer[0].form == FORM_ON_FOOT) && ((gCurrentLevel != LEVEL_SECTOR_Y) && (gCurrentLevel != LEVEL_SECTOR_X) && (gCurrentLevel != LEVEL_AREA_6))) {
-            if (((gPathProgress/*  - 1000 */) <= objInit->zPos1) && (objInit->zPos1 <= (gPathProgress/*  - 1000 */) + 200.0f)) { // Spawn enemies closer to you in On-Foot
+        if ((gPathProgress <= objInit->zPos1) && (objInit->zPos1 <= gPathProgress + 200.0f)) {
                 if ((gCurrentLevel == LEVEL_VENOM_1) && (objInit->id >= ACTOR_EVENT_ID)) {
                     if (((objInit->rot.y < 180.0f) && (objInit->xPos < gPlayer[0].xPath)) ||
                         ((objInit->rot.y > 180.0f) && (gPlayer[0].xPath < objInit->xPos))) {
@@ -617,22 +616,8 @@ void Object_LoadLevelObjects(void) {
                 } else {
                     Object_Load(objInit, xMax, xMin, yMax, yMin);
                 }
-            } else {
-                break;
-            } 
         } else {
-            if ((gPathProgress <= objInit->zPos1) && (objInit->zPos1 <= gPathProgress + 200.0f)) {
-                if ((gCurrentLevel == LEVEL_VENOM_1) && (objInit->id >= ACTOR_EVENT_ID)) {
-                    if (((objInit->rot.y < 180.0f) && (objInit->xPos < gPlayer[0].xPath)) ||
-                        ((objInit->rot.y > 180.0f) && (gPlayer[0].xPath < objInit->xPos))) {
-                        Object_Load(objInit, xMax, xMin, yMax, yMin);
-                    }
-                } else {
-                    Object_Load(objInit, xMax, xMin, yMax, yMin);
-                }
-            } else {
-                break;
-            }
+            break;
         }
     }
 }
@@ -2141,11 +2126,11 @@ void Item_SpinPickup(Item* this) {
     this->obj.rot.y += this->unk_50;
     this->obj.rot.y = Math_ModF(this->obj.rot.y, 360.0f);
 
-    if (this->collected && gTurretModeEnabled && gLevelMode == LEVELMODE_ON_RAILS) {
+    if (this->collected && (gTurretModeEnabled || (gPlayer[0].form == FORM_ON_FOOT)) && gLevelMode == LEVELMODE_ON_RAILS) {
         this->obj.pos.y = gPlayer[this->playerNum].pos.y + 50.0f;
         this->obj.pos.z = gPlayer[this->playerNum].trueZpos - 250.0f;
     }
-    if (this->collected && gTurretModeEnabled && gLevelMode == LEVELMODE_ALL_RANGE) {
+    if (this->collected && (gTurretModeEnabled || (gPlayer[0].form == FORM_ON_FOOT)) && gLevelMode == LEVELMODE_ALL_RANGE) {
         this->obj.pos.y = gPlayer[this->playerNum].pos.y + 50.0f;
         this->obj.pos.x = gPlayer[this->playerNum].pos.x - (300.0f * SIN_DEG(gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180));
         this->obj.pos.z = gPlayer[this->playerNum].pos.z - (300.0f * COS_DEG(gPlayer[0].unk_180 + gPlayer[0].unk_000 + 180));
@@ -2425,6 +2410,8 @@ void ItemSupplyRing_Update(Item* this) {
                 this->obj.pos.y += (gPlayer[this->playerNum].pos.y + 50.0f - this->obj.pos.y) * 0.5f;
             } else if (gTurretModeEnabled) {
                 this->obj.pos.y = gPlayer[this->playerNum].pos.y;
+            } else if (gPlayer[0].form == FORM_ON_FOOT) {
+               this->obj.pos.y += (gPlayer[this->playerNum].pos.y + 25.0f - this->obj.pos.y) * 0.5f;
             } else {
                 this->obj.pos.y += (gPlayer[this->playerNum].pos.y - this->obj.pos.y) * 0.5f;
             }
@@ -2650,22 +2637,38 @@ void ItemPathChange_Update(Item* this) {
 
                 case OBJ_ITEM_PATH_SPLIT_Y:
                     if (this->obj.pos.y < gPlayer[0].pos.y) {
-                        gPlayer[0].pathChangePitch = 30.0f;
-                        gPlayer[0].yPathTarget = gPlayer[0].yPath + this->width;
+                        if (gPlayer[0].form == FORM_ON_FOOT) {
+                            gPlayer[0].pathChangePitch = gPlayer[0].yPathTarget + this->width;
+                        } else {
+                            gPlayer[0].pathChangePitch = 30.0f;
+                            gPlayer[0].yPathTarget = gPlayer[0].yPath + this->width;
+                        }
                     } else {
-                        gPlayer[0].pathChangePitch = -30.0f;
-                        gPlayer[0].yPathTarget = gPlayer[0].yPath - this->width;
+                        if (gPlayer[0].form == FORM_ON_FOOT) {
+                            gPlayer[0].pathChangePitch = gPlayer[0].yPathTarget - this->width;
+                        } else {
+                            gPlayer[0].pathChangePitch = -30.0f;
+                            gPlayer[0].yPathTarget = gPlayer[0].yPath - this->width;
+                        }
                     }
                     break;
 
                 case OBJ_ITEM_PATH_TURN_UP:
-                    gPlayer[0].pathChangePitch = 30.0f;
-                    gPlayer[0].yPathTarget = gPlayer[0].yPath + this->width;
+                    if (gPlayer[0].form == FORM_ON_FOOT) {
+                            gPlayer[0].pathChangePitch = gPlayer[0].yPathTarget + this->width;
+                        } else {
+                            gPlayer[0].pathChangePitch = 30.0f;
+                            gPlayer[0].yPathTarget = gPlayer[0].yPath + this->width;
+                        }
                     break;
 
                 case OBJ_ITEM_PATH_TURN_DOWN:
-                    gPlayer[0].pathChangePitch = -30.0f;
-                    gPlayer[0].yPathTarget = gPlayer[0].yPath - this->width;
+                    if (gPlayer[0].form == FORM_ON_FOOT) {
+                            gPlayer[0].pathChangePitch = gPlayer[0].yPathTarget - this->width;
+                        } else {
+                            gPlayer[0].pathChangePitch = -30.0f;
+                            gPlayer[0].yPathTarget = gPlayer[0].yPath - this->width;
+                        }
                     break;
             }
         }
@@ -2750,7 +2753,9 @@ void Object_Dying(s32 index, ObjectId objId) {
 void Actor_Move(Actor* this) {
     f32 var_fv0;
 
-    if ((gPlayer[0].form == FORM_ON_FOOT) && (this->obj.pos.z < gPlayer[0].pos.z - 2000) && ((gCurrentLevel != LEVEL_SECTOR_Y) && (gCurrentLevel != LEVEL_SECTOR_X) && (gCurrentLevel != LEVEL_AREA_6))) { // Limit retreat speed of enemies in on-foot
+    if ((gPlayer[0].form == FORM_ON_FOOT) && (this->obj.pos.z < gPlayer[0].pos.z - 2000) 
+        && ((gCurrentLevel != LEVEL_SECTOR_Y) && (gCurrentLevel != LEVEL_SECTOR_X) 
+        && (gCurrentLevel != LEVEL_AREA_6) && (gCurrentLevel != LEVEL_ZONESS))) { // Limit retreat speed of enemies in on-foot
         if (this->vel.z < -30) {
             this->vel.z = -30;
         }

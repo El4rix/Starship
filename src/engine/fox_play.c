@@ -607,7 +607,7 @@ void Play_InitEnvironment(void) {
     }
 
     if (!D_ctx_8017782C) {
-        if ((gCurrentLevel == LEVEL_SOLAR) /* && (gPlayer[0].form != FORM_ON_FOOT) */) {
+        if (gCurrentLevel == LEVEL_SOLAR) {
             Audio_SetHeatAlarmParams(255, 1);
             AUDIO_PLAY_SFX(NA_SE_OVERHEAT_ALARM, gDefaultSfxSource, 4);
             Audio_KillSfxBySourceAndId(gPlayer[0].sfxSource, NA_SE_OB_MAGMA_BUBBLE);
@@ -1353,7 +1353,6 @@ s32 Player_CheckHitboxCollision(Player* player, f32* hitboxData, s32* index, f32
                 }
                 
                 if ((player->form == FORM_ON_FOOT) && (yPos == 275)) { // Just for Cornerian highways
-                    //AUDIO_PLAY_SFX(NA_SE_MISSILE_ALARM, gDefaultSfxSource, 4);
                     player->pos.y = 275;
                 }
 
@@ -1436,11 +1435,7 @@ bool Play_CheckPolyCollision(ObjectId objId, f32 arg1, f32 arg2, f32 arg3, f32 a
     sp48.y = arg2;
     sp48.z = arg3;
 
-    if (gPlayer[0].form == FORM_ON_FOOT) {
-        useCol2 = true;
-    } else {
-        useCol2 = false;
-    }
+    useCol2 = false;
 
     switch (objId) {
         case OBJ_ACTOR_ME_MOLAR_ROCK:
@@ -1598,48 +1593,6 @@ bool Play_CheckPolyCollision(ObjectId objId, f32 arg1, f32 arg2, f32 arg3, f32 a
             break;
     }
 
-    /* if (gPlayer[0].form == FORM_ON_FOOT) {
-        switch (objId) {
-            //case OBJ_SCENERY_CO_BUMP_5:
-            //case ACTOR_EVENT_ID:
-            //case OBJ_BOSS_SZ_GREAT_FOX:
-            case OBJ_SCENERY_CO_HIGHWAY_1:
-            case OBJ_SCENERY_CO_HIGHWAY_2:
-            case OBJ_SCENERY_CO_HIGHWAY_3:
-            case OBJ_SCENERY_CO_HIGHWAY_4:
-            case OBJ_SCENERY_CO_HIGHWAY_5:
-            case OBJ_SCENERY_CO_HIGHWAY_6:
-            case OBJ_SCENERY_CO_HIGHWAY_7:
-            case OBJ_SCENERY_CO_HIGHWAY_8:
-            case OBJ_SCENERY_CO_HIGHWAY_9:
-                colId = COL2_0;
-                break;
-            
-            default:
-                break;
-        }
-    } */
-
-    /* ((scenery->obj.id == OBJ_SCENERY_CO_STONE_ARCH) && (player->form == FORM_ON_FOOT)) ||
-                        ((scenery->obj.id == OBJ_SCENERY_CO_HIGHWAY_1) && (player->form == FORM_ON_FOOT)) ||
-                        ((scenery->obj.id == OBJ_SCENERY_CO_HIGHWAY_2) && (player->form == FORM_ON_FOOT)) ||
-                        ((scenery->obj.id == OBJ_SCENERY_CO_HIGHWAY_3) && (player->form == FORM_ON_FOOT)) ||
-                        ((scenery->obj.id == OBJ_SCENERY_CO_HIGHWAY_4) && (player->form == FORM_ON_FOOT)) ||
-                        ((scenery->obj.id == OBJ_SCENERY_CO_HIGHWAY_5) && (player->form == FORM_ON_FOOT)) ||
-                        ((scenery->obj.id == OBJ_SCENERY_CO_HIGHWAY_6) && (player->form == FORM_ON_FOOT)) ||
-                        ((scenery->obj.id == OBJ_SCENERY_CO_HIGHWAY_7) && (player->form == FORM_ON_FOOT)) ||
-                        ((scenery->obj.id == OBJ_SCENERY_CO_HIGHWAY_8) && (player->form == FORM_ON_FOOT)) ||
-                        ((scenery->obj.id == OBJ_SCENERY_CO_HIGHWAY_9) && (player->form == FORM_ON_FOOT)) ||
-                        ((scenery->obj.id == OBJ_SCENERY_CO_ARCH_1) && (player->form == FORM_ON_FOOT)) ||
-                        ((scenery->obj.id == OBJ_SCENERY_CO_ARCH_2) && (player->form == FORM_ON_FOOT)) ||
-                        ((scenery->obj.id == OBJ_SCENERY_CO_ARCH_3) && (player->form == FORM_ON_FOOT)) */
-
-    /* if (gPlayer[0].form == FORM_ON_FOOT) {
-        if (func_col2_800A3690(&sp54, &sp48, colId, arg7)) {
-            return true;
-        }
-    } */
-
     if (!useCol2) {
         if (func_col1_800998FC(&sp54, &sp48, arg8, colId, &sp3C, sp34) > 0) {
             return true;
@@ -1671,27 +1624,50 @@ s32 Player_CheckPolyCollision(Player* player, ObjectId objId, f32 x, f32 y, f32 
 
     Matrix_MultVec3fNoTranslate(gCalcMatrix, &src, &sp54);
 
-    if ((player->form == FORM_LANDMASTER) || (player->form == FORM_ON_FOOT)) {
+    if (player->form == FORM_LANDMASTER) {
         src.x = player->pos.x - sp84.x;
         src.y = player->pos.y - sp84.y;
         src.z = player->trueZpos - sp84.z;
 
         Matrix_MultVec3fNoTranslate(gCalcMatrix, &src, &sp6C);
-
         if (Play_CheckPolyCollision(objId, sp84.x, sp84.y, sp84.z, sp6C.x + sp84.x, sp6C.y + sp84.y, sp6C.z + sp84.z,
                                     &sp60, &sp54)) {
             player->pos.y = sp60.y;
-            if (player->form != FORM_ON_FOOT) {
-                player->rot_104.x = Math_RadToDeg(sp60.x); // Angles camera in annoying ways when you climb geometry
-                player->rot_104.z = Math_RadToDeg(sp60.z);
-            }
+            player->rot_104.x = Math_RadToDeg(sp60.x);
+            player->rot_104.z = Math_RadToDeg(sp60.z);
             player->vel.y = 0.0f;
             player->grounded = true;
-            return 5; // 5, try 0
+            return 5;
         } else {
             return 0;
         }
-    }    
+    }
+
+    if (player->form == FORM_ON_FOOT) {
+        src.x = player->pos.x - sp84.x;
+        src.y = player->pos.y - sp84.y;
+        src.z = player->trueZpos - sp84.z;
+
+        Matrix_MultVec3fNoTranslate(gCalcMatrix, &src, &sp6C);                        
+        
+        if (Play_CheckPolyCollision(objId, sp84.x, sp84.y, sp84.z, sp6C.x + sp84.x, sp6C.y + sp84.y, sp6C.z + sp84.z,
+                                    &sp60, &sp54)) {
+
+            
+            if (((sp6C.y + sp84.y) > (sp60.y)) || (objId == OBJ_ACTOR_ME_MOLAR_ROCK)) {
+                player->pos.y = sp6C.y + sp84.y;
+            } else {
+                player->pos.y = sp60.y;
+            }
+            player->vel.y = 0.0f;
+            player->yPath = player->pos.y;
+            player->grounded = true;
+
+            return 5;
+        } else {
+            return 0;
+        }
+    } 
 
     src.x = player->hit3.x - sp84.x;
     src.y = player->hit3.y - sp84.y;
@@ -1700,12 +1676,6 @@ s32 Player_CheckPolyCollision(Player* player, ObjectId objId, f32 x, f32 y, f32 
     Matrix_MultVec3fNoTranslate(gCalcMatrix, &src, &sp6C);
     if (Play_CheckPolyCollision(objId, sp84.x, sp84.y, sp84.z, sp6C.x + sp84.x, sp6C.y + sp84.y, sp6C.z + sp84.z, &sp60,
                                 &sp54)) {
-        if (player->form == FORM_ON_FOOT) {
-            player->pos.y = sp60.y;
-            player->vel.y = 0.0f; // -5?
-            player->grounded = true;
-            return 5; // 5, try 0
-        }
         return 3;
     }
 
@@ -1717,12 +1687,6 @@ s32 Player_CheckPolyCollision(Player* player, ObjectId objId, f32 x, f32 y, f32 
 
     if (Play_CheckPolyCollision(objId, sp84.x, sp84.y, sp84.z, sp6C.x + sp84.x, sp6C.y + sp84.y, sp6C.z + sp84.z, &sp60,
                                 &sp54)) {
-        if (player->form == FORM_ON_FOOT) {
-            player->pos.y = sp60.y;
-            player->vel.y = 0.0f; // -5?
-            player->grounded = true;
-            return 5; // 5, try 0
-        }
         return 4;
     }
 
@@ -1734,12 +1698,6 @@ s32 Player_CheckPolyCollision(Player* player, ObjectId objId, f32 x, f32 y, f32 
 
     if (Play_CheckPolyCollision(objId, sp84.x, sp84.y, sp84.z, sp6C.x + sp84.x, sp6C.y + sp84.y, sp6C.z + sp84.z, &sp60,
                                 &sp54)) {
-        if (player->form == FORM_ON_FOOT) {
-            player->pos.y = sp60.y;
-            player->vel.y = 0.0f; // -5?
-            player->grounded = true;
-            return 5; // 5, try 0
-        }
         return 1;
     }
 
@@ -1751,12 +1709,6 @@ s32 Player_CheckPolyCollision(Player* player, ObjectId objId, f32 x, f32 y, f32 
 
     if (Play_CheckPolyCollision(objId, sp84.x, sp84.y, sp84.z, sp6C.x + sp84.x, sp6C.y + sp84.y, sp6C.z + sp84.z, &sp60,
                                 &sp54)) {
-        if (player->form == FORM_ON_FOOT) {
-            player->pos.y = sp60.y;
-            player->vel.y = 0.0f; // -5?
-            player->grounded = true;
-            return 5; // 5, try 0
-        }
         return 2;
     } else {
         return 0;
@@ -2071,21 +2023,6 @@ void Player_CollisionCheck(Player* player) {
                     }
                 }
             }
-
-            for (i = 0, boss = &gBosses[0]; i < 200; i++, boss++) {     // 360 Bosses collision
-                if (boss->obj.status == OBJ_ACTIVE) {
-                    spC8.x = boss->obj.pos.x - player->pos.x;
-                    spC8.z = boss->obj.pos.z - player->trueZpos;
-
-                    if (sqrtf(SQ(spC8.x) + SQ(spC8.z)) < sp8C) {
-                            temp_v0 = Player_CheckPolyCollision(player, boss->obj.id, boss->obj.pos.x,
-                                                                boss->obj.pos.y, boss->obj.pos.z,
-                                                                boss->obj.rot.x, boss->obj.rot.y,
-                                                                boss->obj.rot.z);
-                    }
-                }
-            }
-
         } else {
             for (i = 0, scenery = gScenery; i < ARRAY_COUNT(gScenery); i++, scenery++) {                  // On-Rails scenery collision
                 if ((scenery->obj.status == OBJ_ACTIVE) && (scenery->obj.id != OBJ_SCENERY_TI_BRIDGE) &&
@@ -2525,13 +2462,12 @@ void Player_FootCollisionCheck(Player* player) {        // On-Foot Collision
     if (player->mercyTimer == 0) {         // Collision
         if (gLevelMode == LEVELMODE_ALL_RANGE) {                                                    // All-Range 360 collision
             Scenery360* scenery360;
-            Boss* boss; // ???
 
             sp8C = 1100.0f;
             if ((gCurrentLevel == LEVEL_SECTOR_Y) || (gCurrentLevel == LEVEL_VENOM_ANDROSS)) {
                 sp8C = 4000.0f;
             }
-            for (i = 0, scenery360 = gScenery360; i < 200; i++, scenery360++) {     // 360 Scenery collision
+            for (i = 0, scenery360 = gScenery360; i < 200; i++, scenery360++) {                     // 360 Scenery collision
                 if (scenery360->obj.status == OBJ_ACTIVE) {
                     spC8.x = scenery360->obj.pos.x - player->pos.x;
                     spC8.z = scenery360->obj.pos.z - player->trueZpos;
@@ -2579,23 +2515,29 @@ void Player_FootCollisionCheck(Player* player) {        // On-Foot Collision
                 }
             }
 
-            /* for (i = 0, boss = &gBosses[0]; i < 200; i++, boss++) {     // 360 Bosses collision
-                if (boss->obj.status == OBJ_ACTIVE) {
-                    spC8.x = boss->obj.pos.x - player->pos.x;
-                    spC8.z = boss->obj.pos.z - player->trueZpos;
-
-                    if (sqrtf(SQ(spC8.x) + SQ(spC8.z)) < sp8C) {
-                            temp_v0 = Player_CheckPolyCollision(player, boss->obj.id, boss->obj.pos.x,
-                                                                boss->obj.pos.y, boss->obj.pos.z,
-                                                                boss->obj.rot.x, boss->obj.rot.y,
-                                                                boss->obj.rot.z);
-                    }
-                }
-            } */
-
         } else {
             for (i = 0, scenery = gScenery; i < ARRAY_COUNT(gScenery); i++, scenery++) {                  // On-Rails scenery collision
-                if ((scenery->obj.status == OBJ_ACTIVE) && (scenery->obj.id != OBJ_SCENERY_TI_BRIDGE) &&
+
+                padB0 = scenery->obj.rot.y;
+                if (scenery->info.action == (ObjectFunc) SceneryRotateTowardsCamera) {
+                    padB0 = 0.0f;
+                }
+
+                if ((scenery->obj.status == OBJ_ACTIVE) 
+                    && (Player_CheckHitboxCollision(
+                            player, scenery->info.hitbox, &sp98, scenery->obj.pos.x, scenery->obj.pos.y + 25.0f - (25.0f * (player->vel.y / 50.0f)),
+                            scenery->obj.pos.z, scenery->obj.rot.x, padB0, scenery->obj.rot.z, 0.0f, 0.0f, 0.0f) > 0)
+                    && (Player_CheckHitboxCollision(
+                            player, scenery->info.hitbox, &sp98, scenery->obj.pos.x, scenery->obj.pos.y,
+                            scenery->obj.pos.z, scenery->obj.rot.x, padB0, scenery->obj.rot.z, 0.0f, 0.0f, 0.0f) <= 0)) {
+                    if (gCurrentLevel == LEVEL_ZONESS) {
+                        player->pos.y += 2;
+                    }
+                    player->yPath = player->pos.y;
+                    player->vel.y = 0;
+                    player->grounded = true;
+
+                } else if ((scenery->obj.status == OBJ_ACTIVE) && (scenery->obj.id != OBJ_SCENERY_TI_BRIDGE) &&
                     (scenery->obj.id != OBJ_SCENERY_MA_TRAIN_TRACK_13) &&
                     (scenery->obj.id != OBJ_SCENERY_MA_BUILDING_1) && (scenery->obj.id != OBJ_SCENERY_MA_BUILDING_2) &&
                     (scenery->obj.id != OBJ_SCENERY_MA_TOWER) && (scenery->obj.id != OBJ_SCENERY_MA_WALL_2) &&
@@ -2715,17 +2657,29 @@ void Player_FootCollisionCheck(Player* player) {        // On-Foot Collision
             }
         }
 
-        for (i = 0, boss = &gBosses[0]; i < ARRAY_COUNT(gBosses); i++, boss++) {                       // All boss collision
-            if (boss->obj.status == OBJ_ACTIVE) {
+        for (i = 0, boss = &gBosses[0]; i < ARRAY_COUNT(gBosses); i++, boss++) {                        // All Boss Collision
+            if ((boss->obj.status == OBJ_ACTIVE) && (boss->obj.id != OBJ_BOSS_KA_FLBASE)) {
                 if ((boss->obj.id == OBJ_BOSS_VE2_BASE) || (boss->obj.id == OBJ_BOSS_FO_BASE) ||
                     (boss->obj.id == OBJ_BOSS_SZ_GREAT_FOX) || (boss->obj.id == OBJ_BOSS_BO_BASE)) {
-                    temp_v0 =
+
+                    for (int j = 0; j < 60; j++) {
+
+                        temp_v0 =
                         Player_CheckPolyCollision(player, boss->obj.id, boss->obj.pos.x, boss->obj.pos.y,
-                                                  boss->obj.pos.z, boss->obj.rot.x, boss->obj.rot.y, boss->obj.rot.z);
-                    /* if (temp_v0 != 0) {
+                                                boss->obj.pos.z, boss->obj.rot.x, boss->obj.rot.y, boss->obj.rot.z);
+
+                        if (temp_v0 == 5) {
+                            player->pos.y += 1.0f;
+                        } else if (temp_v0 == 0) {
+                            break;
+                        }
+
+                    }
+
+                    if (temp_v0 != 0) {
                         Player_ApplyDamage(player, temp_v0, boss->info.damage);
                         break;
-                    } */
+                    }
                 }
 
                 if (boss->obj.id == OBJ_BOSS_BO_BASE_SHIELD) {
@@ -2773,7 +2727,7 @@ void Player_FootCollisionCheck(Player* player) {        // On-Foot Collision
                             if ((boss->obj.id == OBJ_BOSS_AND_ANDROSS) && (boss->timer_056 != 0) && (sp98 == 5)) {
                                 break;
                             }
-                            //Player_ApplyDamage(player, temp_v0, boss->info.damage);
+                            Player_ApplyDamage(player, temp_v0, boss->info.damage);
                             if ((boss->obj.id == OBJ_BOSS_SX_SPYBORG) && ((boss->state == 2) || (boss->state == 3)) &&
                                 (sp98 >= 9)) {
                                 player->knockback.y = -100.0f;
@@ -2788,50 +2742,167 @@ void Player_FootCollisionCheck(Player* player) {        // On-Foot Collision
             }
         }
 
-        for (i = 0, actor = &gActors[0]; i < ARRAY_COUNT(gActors); i++, actor++) {
+        for (i = 0, actor = &gActors[0]; i < ARRAY_COUNT(gActors); i++, actor++) {                      // All actor collision
             if ((actor->obj.status == OBJ_ACTIVE) && (actor->timer_0C2 == 0)) {
-                if (actor->obj.id == OBJ_ACTOR_ME_MOLAR_ROCK) {
-                    /* temp_v0 = Player_CheckPolyCollision(player, actor->obj.id, actor->obj.pos.x, actor->obj.pos.y,
-                                                        actor->obj.pos.z, actor->obj.rot.x, actor->obj.rot.y,
-                                                        actor->obj.rot.z); */
-                        temp_v0 = 0;
-                    if (temp_v0 != 0) {
-                        //Player_ApplyDamage(player, temp_v0, actor->info.damage);
-                    }
-                } else if (actor->obj.id == OBJ_ACTOR_EVENT) {
-                    if (actor->eventType == EVID_SY_SHIP_2) {
-                        temp_v0 = Player_CheckPolyCollision(player, ACTOR_EVENT_ID, actor->obj.pos.x, actor->obj.pos.y,
+
+                if (((OBJ_ACTOR_MA_LOCOMOTIVE <= actor->obj.id) && (actor->obj.id <= OBJ_ACTOR_MA_TRAIN_CAR_7))
+                    && (Player_CheckHitboxCollision(
+                            player, actor->info.hitbox, &sp98, actor->fwork[25] + actor->obj.pos.x,
+                            actor->fwork[8] + actor->obj.pos.y + 50.0f - (25.0f * (player->vel.y / 50.0f)), actor->obj.pos.z, actor->fwork[29],
+                            actor->fwork[26], actor->obj.rot.z, 0.0f, 0.0f, 0.0f) > 0)
+                    && (Player_CheckHitboxCollision(
+                            player, actor->info.hitbox, &sp98, actor->fwork[25] + actor->obj.pos.x,
+                            actor->fwork[8] + actor->obj.pos.y + 25.0f, actor->obj.pos.z, actor->fwork[29],
+                            actor->fwork[26], actor->obj.rot.z, 0.0f, 0.0f, 0.0f) <= 0)) {
+
+                    player->yPath = player->pos.y;
+                    player->vel.y = 0;
+                    player->grounded = true;
+
+                } else if (((actor->obj.id == OBJ_ACTOR_TI_DELPHOR_HEAD)
+                    || (actor->obj.id == OBJ_ACTOR_ZO_TANKER)
+                    || (actor->obj.id == OBJ_ACTOR_ZO_CONTAINER)
+                    || (actor->obj.id == OBJ_ACTOR_AQ_STONE_COLUMN)
+                    || (actor->obj.id == OBJ_ACTOR_BO_SHIELD_REACTOR))
+                    && (Player_CheckHitboxCollision(player, actor->info.hitbox, &sp98, actor->obj.pos.x,
+                                                            actor->obj.pos.y + 25.0f - (25.0f * (player->vel.y / 50.0f)), actor->obj.pos.z, actor->obj.rot.x,
+                                                            actor->obj.rot.y, actor->obj.rot.z, 0.0f, 0.0f, 0.0f) > 0)
+                    && (Player_CheckHitboxCollision(player, actor->info.hitbox, &sp98, actor->obj.pos.x,
+                                                            actor->obj.pos.y, actor->obj.pos.z, actor->obj.rot.x,
+                                                            actor->obj.rot.y, actor->obj.rot.z, 0.0f, 0.0f, 0.0f) <= 0)) {
+
+                    player->yPath = player->pos.y;
+                    player->vel.y = 0;
+                    player->grounded = true;
+
+                } else if (((actor->eventType == EVID_ZERAM_CLASS_CRUISER)
+                    || (actor->eventType == EVID_A6_HARLOCK_FRIGATE)
+                    || (actor->eventType == EVID_A6_UMBRA_STATION)
+                    || (actor->eventType == EVID_SY_SHIP_1)
+                    || (actor->eventType == EVID_SY_SHIP_2)
+                    || (actor->eventType == EVID_SY_SHIP_3)
+                    || (actor->eventType == EVID_SY_SHIP_DESTROYED)
+                    || (actor->eventType == EVID_SY_SHIP_4)
+                    || (actor->eventType == EVID_SY_SHIP_4_DESTROYED)
+                    || (actor->eventType == EVID_VE1_PILLAR)
+                    || (actor->eventType == EVID_VE1_PILLAR_5)
+                    || (actor->eventType == EVID_VE1_ENEMY_GATE))
+                    && (Player_CheckHitboxCollision(
+                                player, actor->info.hitbox, &sp98, actor->obj.pos.x, actor->obj.pos.y + 25.0f - (25.0f * (player->vel.y / 50.0f)), actor->obj.pos.z,
+                                actor->obj.rot.x, actor->obj.rot.y, actor->obj.rot.z, actor->vwork[29].x,
+                                actor->vwork[29].y, actor->vwork[29].z + actor->rot_0F4.z) > 0)
+                    && (Player_CheckHitboxCollision(
+                                player, actor->info.hitbox, &sp98, actor->obj.pos.x, actor->obj.pos.y, actor->obj.pos.z,
+                                actor->obj.rot.x, actor->obj.rot.y, actor->obj.rot.z, actor->vwork[29].x,
+                                actor->vwork[29].y, actor->vwork[29].z + actor->rot_0F4.z) <= 0)) {
+
+                    player->yPath = player->pos.y;
+                    player->vel.y = 0;
+                    player->grounded = true;
+                
+                /* } else if (((actor->obj.id == OBJ_ACTOR_ME_MOLAR_ROCK)
+                    || (actor->eventType == EVID_SY_SHIP_1)
+                    || (actor->eventType == EVID_SY_SHIP_2)
+                    || (actor->eventType == EVID_SY_SHIP_3)
+                    || (actor->eventType == EVID_SY_SHIP_DESTROYED)
+                    || (actor->eventType == EVID_SY_SHIP_4)
+                    || (actor->eventType == EVID_SY_SHIP_4_DESTROYED))
+                    && (Player_CheckPolyCollision(player,  actor->obj.id, actor->obj.pos.x, actor->obj.pos.y + 25.0f - (25.0f * (player->vel.y / 50.0f)),
+                                                                actor->obj.pos.z, actor->obj.rot.x, actor->obj.rot.y,
+                                                                actor->obj.rot.z) > 0)
+                    && (Player_CheckPolyCollision(player,  actor->obj.id, actor->obj.pos.x, actor->obj.pos.y,
+                                                                actor->obj.pos.z, actor->obj.rot.x, actor->obj.rot.y,
+                                                                actor->obj.rot.z) <= 0)) {
+
+                    player->yPath = player->pos.y;
+                    player->vel.y = 0;
+                    player->grounded = true;
+                    AUDIO_PLAY_SFX(NA_SE_MISSILE_ALARM, gDefaultSfxSource, 4); */
+                
+                } else {
+
+                    if (actor->obj.id == OBJ_ACTOR_ME_MOLAR_ROCK) {
+                        for (int j = 0; j < 60; j++) {
+                            temp_v0 = Player_CheckPolyCollision(player, actor->obj.id, actor->obj.pos.x, actor->obj.pos.y,
                                                             actor->obj.pos.z, actor->obj.rot.x, actor->obj.rot.y,
                                                             actor->obj.rot.z);
-                        if (temp_v0 != 0) {
-                            //Player_ApplyDamage(player, temp_v0, actor->info.damage);
+                            if (temp_v0 == 5) {
+                                player->pos.y += 1.0f;
+                            }
+                            if (temp_v0 == 0) {
+                                break;
+                            }
                         }
-                    } else if (actor->eventType == EVID_ME_BIG_METEOR) {
-                        spfD4.x = fabsf(actor->obj.pos.x - player->pos.x);
-                        spfD4.y = fabsf(actor->obj.pos.y - player->pos.y);
-                        spfD4.z = fabsf(actor->obj.pos.z - player->trueZpos);
-                        if ((VEC3F_MAG(&spfD4)) < 900.0f) {
-                            Player_ApplyDamage(player, 0, actor->info.damage);
+                        if (temp_v0 != 0) {
+                            Player_ApplyDamage(player, temp_v0, actor->info.damage);
+                        }
+                    } else if (actor->obj.id == OBJ_ACTOR_EVENT) {
+                        if (actor->eventType == EVID_SY_SHIP_2) {
+                            temp_v0 = Player_CheckPolyCollision(player, ACTOR_EVENT_ID, actor->obj.pos.x, actor->obj.pos.y,
+                                                                actor->obj.pos.z, actor->obj.rot.x, actor->obj.rot.y,
+                                                                actor->obj.rot.z);
+                            if (temp_v0 != 0) {
+                                Player_ApplyDamage(player, temp_v0, actor->info.damage);
+                            }
+                        } else if (actor->eventType == EVID_ME_BIG_METEOR) {
+                            spfD4.x = fabsf(actor->obj.pos.x - player->pos.x);
+                            spfD4.y = fabsf(actor->obj.pos.y - player->pos.y);
+                            spfD4.z = fabsf(actor->obj.pos.z - player->trueZpos);
+                            if ((VEC3F_MAG(&spfD4)) < 900.0f) {
+                                Player_ApplyDamage(player, 0, actor->info.damage);
+                                actor->dmgType = DMG_COLLISION;
+                            }
+                        } else {
+                            temp_v0 = Player_CheckHitboxCollision(
+                                player, actor->info.hitbox, &sp98, actor->obj.pos.x, actor->obj.pos.y, actor->obj.pos.z,
+                                actor->obj.rot.x, actor->obj.rot.y, actor->obj.rot.z, actor->vwork[29].x,
+                                actor->vwork[29].y, actor->vwork[29].z + actor->rot_0F4.z);
+                            if (temp_v0 != 0) {
+                                if ((temp_v0 < 0) && (actor->eventType == EVID_SX_WARP_GATE)) {
+                                    actor->info.hitbox = SEGMENTED_TO_VIRTUAL(D_SX_6032328);
+                                    if (gRingPassCount >= 0) {
+                                        actor->work_046 = 2;
+                                        gRingPassCount++;
+                                        if (gRingPassCount == 3) {
+                                            Radio_PlayMessage(gMsg_ID_5504, RCID_FALCO);
+                                        }
+                                        AUDIO_PLAY_SFX(gWarpRingSfx[gRingPassCount], gPlayer[0].sfxSource, 0);
+                                        AUDIO_PLAY_SFX(NA_SE_RING_PASS, gDefaultSfxSource, 4);
+                                    }
+                                } else if (temp_v0 < 0) {
+                                    if (player->whooshTimer == 0) {
+                                        AUDIO_PLAY_SFX(NA_SE_PASS, actor->sfxSource, 0);
+                                    }
+                                    player->whooshTimer += 2;
+                                    if (player->whooshTimer >= 4) {
+                                        player->whooshTimer = 4;
+                                    }
+                                } else {
+                                    Player_ApplyDamage(player, temp_v0, actor->info.damage);
+                                    actor->dmgType = DMG_COLLISION;
+                                    actor->dmgSource = player->num + 1;
+                                }
+                            }
+                        }
+                    } else if ((OBJ_ACTOR_MA_LOCOMOTIVE <= actor->obj.id) && (actor->obj.id <= OBJ_ACTOR_MA_TRAIN_CAR_7)) {
+                        temp_v0 = Player_CheckHitboxCollision(
+                            player, actor->info.hitbox, &sp98, actor->fwork[25] + actor->obj.pos.x,
+                            actor->fwork[8] + actor->obj.pos.y + 25.0f, actor->obj.pos.z, actor->fwork[29],
+                            actor->fwork[26], actor->obj.rot.z, 0.0f, 0.0f, 0.0f);
+                        if (temp_v0 != 0) {
                             actor->dmgType = DMG_COLLISION;
+                            if (actor->info.damage) {
+                                Player_ApplyDamage(player, temp_v0, actor->info.damage);
+                            } else {
+                                actor->dmgType = -1;
+                            }
                         }
                     } else {
-                        temp_v0 = Player_CheckHitboxCollision(
-                            player, actor->info.hitbox, &sp98, actor->obj.pos.x, actor->obj.pos.y, actor->obj.pos.z,
-                            actor->obj.rot.x, actor->obj.rot.y, actor->obj.rot.z, actor->vwork[29].x,
-                            actor->vwork[29].y, actor->vwork[29].z + actor->rot_0F4.z);
+                        temp_v0 = Player_CheckHitboxCollision(player, actor->info.hitbox, &sp98, actor->obj.pos.x,
+                                                            actor->obj.pos.y, actor->obj.pos.z, actor->obj.rot.x,
+                                                            actor->obj.rot.y, actor->obj.rot.z, 0.0f, 0.0f, 0.0f);
                         if (temp_v0 != 0) {
-                            if ((temp_v0 < 0) && (actor->eventType == EVID_SX_WARP_GATE)) {
-                                actor->info.hitbox = SEGMENTED_TO_VIRTUAL(D_SX_6032328);
-                                if (gRingPassCount >= 0) {
-                                    actor->work_046 = 2;
-                                    gRingPassCount++;
-                                    if (gRingPassCount == 3) {
-                                        Radio_PlayMessage(gMsg_ID_5504, RCID_FALCO);
-                                    }
-                                    AUDIO_PLAY_SFX(gWarpRingSfx[gRingPassCount], gPlayer[0].sfxSource, 0);
-                                    AUDIO_PLAY_SFX(NA_SE_RING_PASS, gDefaultSfxSource, 4);
-                                }
-                            } else if (temp_v0 < 0) {
+                            if (temp_v0 < 0) {
                                 if (player->whooshTimer == 0) {
                                     AUDIO_PLAY_SFX(NA_SE_PASS, actor->sfxSource, 0);
                                 }
@@ -2840,50 +2911,18 @@ void Player_FootCollisionCheck(Player* player) {        // On-Foot Collision
                                     player->whooshTimer = 4;
                                 }
                             } else {
-                                Player_ApplyDamage(player, temp_v0, actor->info.damage);
                                 actor->dmgType = DMG_COLLISION;
-                                actor->dmgSource = player->num + 1;
-                            }
-                        }
-                    }
-                } else if ((OBJ_ACTOR_MA_LOCOMOTIVE <= actor->obj.id) && (actor->obj.id <= OBJ_ACTOR_MA_TRAIN_CAR_7)) {
-                    temp_v0 = Player_CheckHitboxCollision(
-                        player, actor->info.hitbox, &sp98, actor->fwork[25] + actor->obj.pos.x,
-                        actor->fwork[8] + actor->obj.pos.y + 25.0f, actor->obj.pos.z, actor->fwork[29],
-                        actor->fwork[26], actor->obj.rot.z, 0.0f, 0.0f, 0.0f);
-                    if (temp_v0 != 0) {
-                        actor->dmgType = DMG_COLLISION;
-                        if (actor->info.damage) {
-                            Player_ApplyDamage(player, temp_v0, actor->info.damage);
-                        } else {
-                            actor->dmgType = -1;
-                        }
-                    }
-                } else {
-                    temp_v0 = Player_CheckHitboxCollision(player, actor->info.hitbox, &sp98, actor->obj.pos.x,
-                                                          actor->obj.pos.y, actor->obj.pos.z, actor->obj.rot.x,
-                                                          actor->obj.rot.y, actor->obj.rot.z, 0.0f, 0.0f, 0.0f);
-                    if (temp_v0 != 0) {
-                        if (temp_v0 < 0) {
-                            if (player->whooshTimer == 0) {
-                                AUDIO_PLAY_SFX(NA_SE_PASS, actor->sfxSource, 0);
-                            }
-                            player->whooshTimer += 2;
-                            if (player->whooshTimer >= 4) {
-                                player->whooshTimer = 4;
-                            }
-                        } else {
-                            actor->dmgType = DMG_COLLISION;
-                            if (actor->obj.id == OBJ_ACTOR_MISSILE_SEEK_TEAM) {
-                                actor->dmgType = -1;
-                            }
-                            if (actor->info.damage) {
-                                Player_ApplyDamage(player, temp_v0, actor->info.damage);
-                                if (actor->obj.id == OBJ_ACTOR_TI_LANDMINE) {
-                                    player->knockback.y = 0.0f;
+                                if (actor->obj.id == OBJ_ACTOR_MISSILE_SEEK_TEAM) {
+                                    actor->dmgType = -1;
                                 }
-                            } else {
-                                actor->dmgType = -1;
+                                if (actor->info.damage) {
+                                    Player_ApplyDamage(player, temp_v0, actor->info.damage);
+                                    if (actor->obj.id == OBJ_ACTOR_TI_LANDMINE) {
+                                        player->knockback.y = 0.0f;
+                                    }
+                                } else {
+                                    actor->dmgType = -1;
+                                }
                             }
                         }
                     }
@@ -2998,24 +3037,25 @@ void Player_FloorCheck(Player* player) {
         return;
     }
 
+    if ((player->form == FORM_ON_FOOT) && (gCurrentLevel == LEVEL_METEO)) {
+        return;
+    }
+
     player->groundPos.x = player->pos.x;
     player->groundPos.z = player->trueZpos - player->pos.y;
 
-    if (player->form == FORM_ON_FOOT) {
-        player->groundPos.z = player->trueZpos;
-    }
-
-
     if (gGroundType != 4) {
         if (gCamCount == 1) {
-            player->groundPos.y = gGroundHeight + 3.0f; // resets shadow height
+            player->groundPos.y = gGroundHeight + 3.0f;
         } else {
             player->groundPos.y = gGroundHeight;
-            if (player->form == FORM_ON_FOOT) {
-                player->groundPos.z = player->trueZpos;
-            }
         }
         player->shadowRotX = player->shadowRotZ = player->groundRotY = 0.0f;
+    }
+
+    if (player->form == FORM_ON_FOOT) {
+        player->groundPos.z = player->trueZpos;
+        player->groundPos.y = player->yPath;    // resets shadow height
     }
 
     sp100 = 0.0f;
@@ -3100,10 +3140,12 @@ void Player_FloorCheck(Player* player) {
                             colId = COL2_3;
                         }
                         if (func_col2_800A3690(&spD4, &spC8, colId, &spBC)) {
-                            player->groundPos.y = spBC.y;
-                            player->shadowRotX = spBC.x;
-                            player->shadowRotZ = spBC.z;
-                            player->groundRotY = DEG_TO_RAD(sp120);
+                            if (player->form != FORM_ON_FOOT) {     // prevents tower scenery from using mountain collision for player shadow
+                                player->groundPos.y = spBC.y;
+                                player->shadowRotX = spBC.x;
+                                player->shadowRotZ = spBC.z;
+                                player->groundRotY = DEG_TO_RAD(sp120);
+                            }
                         }
                     }
                 }
@@ -4344,17 +4386,17 @@ void Player_UpdatePath(Player* player) {
     }
 
     if ((player->form == FORM_ON_FOOT) && (gLevelType == LEVELTYPE_SPACE) && (gCurrentLevel != LEVEL_METEO)) {
-        if ((gInputPress->button & R_TRIG) && (player->pos.y <= player->yPath)) {
+        if ((gInputPress->button & R_TRIG) && (player->pos.y <= player->yPath + 50.0f)) {
             Player_PlaySfx(player->sfxSource, NA_SE_ARWING_BRAKE, player->num);
         }
-        if ((gInputHold->button & R_TRIG) && (player->pos.y <= player->yPath)) {
-            Math_SmoothStepToF(&player->yPath, player->yPathTarget - 1000, 0.1f, player->pathStep * 2, 0.1f);
+        if ((gInputHold->button & R_TRIG) && (player->pos.y <= player->yPath + 50.0f)) {
+            Math_SmoothStepToF(&player->yPathTarget, player->pathChangePitch - 1000.0f, 0.1f, player->pathStep, 0.1f);
             player->baseSpeed = 30.0f;
         } else {
-            Math_SmoothStepToF(&player->yPath, player->yPathTarget, 0.1f, 1, 0.1f);
+            Math_SmoothStepToF(&player->yPathTarget, player->pathChangePitch, 0.1f, player->pathStep, 0.1f);
         }
 
-        if ((Math_FabsF(player->yPath - player->yPathTarget) > 10.0f)) {
+        if ((Math_FabsF(player->yPathTarget - player->pathChangePitch) > 10.0f)) {
             player->pos.y = player->yPath;
         }
     }
@@ -5027,9 +5069,13 @@ void Player_OnFootUpdateSpeed(Player* player) {
             gStoppedRunning = false;
         }
 
-        if ((gCurrentLevel == LEVEL_SECTOR_Y) || (gCurrentLevel == LEVEL_SECTOR_X) || (gCurrentLevel == LEVEL_AREA_6)) {
-            if (gLevelMode != LEVELMODE_ALL_RANGE) {
-                gRunning = true;
+        if (gLevelMode == LEVELMODE_ON_RAILS) {
+            if ((gCurrentLevel == LEVEL_SECTOR_X) || 
+                (gCurrentLevel == LEVEL_SECTOR_Y) ||
+                (gCurrentLevel == LEVEL_AREA_6) || 
+                (gCurrentLevel == LEVEL_ZONESS) || 
+                (gCurrentLevel == LEVEL_SOLAR)) {
+                    gRunning = true;
             }
         } else if (gCurrentLevel == LEVEL_SECTOR_Z) {
             gRunning = false;
@@ -5038,24 +5084,19 @@ void Player_OnFootUpdateSpeed(Player* player) {
         if (gRunning) {
             if ((gCurrentLevel == LEVEL_MACBETH) || (gCurrentLevel == LEVEL_TITANIA) || (gCurrentLevel == LEVEL_AQUAS)) {
                 sp2C = 20.0f;
-            } else if ((gCurrentLevel == LEVEL_SECTOR_Y) || (gCurrentLevel == LEVEL_SECTOR_X) || (gCurrentLevel == LEVEL_AREA_6)) {
+            } else if ((gCurrentLevel == LEVEL_SECTOR_Y) 
+                || (gCurrentLevel == LEVEL_SECTOR_X) 
+                || (gCurrentLevel == LEVEL_AREA_6)
+                || ((gCurrentLevel == LEVEL_METEO) && (gPathProgress < 20000))) {
                 sp2C = 40.0f;
+            } else if ((gCurrentLevel == LEVEL_ZONESS) || ((gCurrentLevel == LEVEL_CORNERIA) && (gGroundSurface == SURFACE_WATER))) {
+                sp2C = 35.0f;
             } else {
                 sp2C = 30.0f;
             }
 
             sp28 = D_800D30F4[gPlayerNum];
             sp24 = D_800D3104[gPlayerNum];
-        }
-    }
-
-    if (gLevelMode == LEVELMODE_ON_RAILS) {
-        if ((gCurrentLevel == LEVEL_SECTOR_X) || 
-            (gCurrentLevel == LEVEL_SECTOR_Y) ||
-            (gCurrentLevel == LEVEL_AREA_6) || 
-            (gCurrentLevel == LEVEL_ZONESS) || 
-            (gCurrentLevel == LEVEL_SOLAR)) {
-                gRunning = true;
         }
     }
 
@@ -5084,39 +5125,8 @@ void Player_MoveOnFoot360(Player* player) {
 
     gGroundHeight = -0.0f;
 
-    if (gCurrentLevel == LEVEL_SECTOR_Z) {
-        gGroundHeight = -1500.0f;
-        player->yPath = -525.0f;
-        if (player->pos.y <= player->yPath) {
-            player->pos.y = player->yPath;
-            player->grounded = true;
-            player->vel.y = 0.0f;
-        }
-        player->pos.x = 0.0f;
-        player->pos.z = 1000.0f;
-    }
-
-    if (gCurrentLevel == LEVEL_SECTOR_Y) {
-        player->yPath = 200.0f;
-        if (player->pos.y <= player->yPath) {
-            player->pos.y = player->yPath;
-            player->grounded = true;
-            player->vel.y = 0.0f;
-        }
-        if (player->pos.z < -1000) {
-            player->pos.z = -1000.0f;
-            player->vel.z = 0;
-        }
-        if (player->pos.z > 1000) {
-            player->pos.z = 1000.0f;
-            player->vel.z = 0;
-        }
-        player->pos.x = 2500.0f;
-        player->vel.x = 0;
-    }
-
     if (gCurrentLevel == LEVEL_FORTUNA) {
-        if ((player->pos.y > 500.0f) && (player->pos.y <= 650.0f)
+        /* if ((player->pos.y > 500.0f) && (player->pos.y <= 650.0f)
             && ((sqrtf(SQ(player->pos.x) + SQ(player->pos.z))) < 650.0f)
             && ((sqrtf(SQ(player->pos.x) + SQ(player->pos.z + 420.0f))) > 300.0f)
             && ((sqrtf(SQ(player->pos.x + 350.0f) + SQ(player->pos.z - 250.0f))) > 250.0f)
@@ -5125,12 +5135,8 @@ void Player_MoveOnFoot360(Player* player) {
             player->pos.y = 650.0f;
             player->grounded = true;
             player->vel.y = 0.0f;
-        }
-    }
-
-    if (gCurrentLevel == LEVEL_KATINA) {
-
-        player->yPath = 0.0f;
+        } */
+    } else if (gCurrentLevel == LEVEL_KATINA) {
 
         if (fabsf(player->pos.z) > fabs(player->pos.x)) {
             if ((player->pos.z < 530) && (player->pos.z > 0)) {
@@ -5163,13 +5169,23 @@ void Player_MoveOnFoot360(Player* player) {
         if (player->yPath > 565) {
             player->yPath = 565;
         }
-
-        if (player->pos.y < player->yPath) {
-            player->pos.y = player->yPath;
-            player->grounded = true;
-            player->vel.y = 0.0f;
+    } else if (gCurrentLevel == LEVEL_SECTOR_Y) {
+        player->yPath = 200.0f;
+        if (player->pos.z < -1000) {
+            player->pos.z = -1000.0f;
+            player->vel.z = 0;
         }
-        
+        if (player->pos.z > 1000) {
+            player->pos.z = 1000.0f;
+            player->vel.z = 0;
+        }
+        player->pos.x = 2500.0f;
+        player->vel.x = 0;
+    } else if (gCurrentLevel == LEVEL_SECTOR_Z) {
+        gGroundHeight = -1500.0f;
+        player->yPath = -525.0f;
+        player->pos.x = 0.0f;
+        player->pos.z = 1000.0f;
     }
 
     player->camRoll = 0.0f;
@@ -5278,6 +5294,7 @@ void Player_MoveOnFoot360(Player* player) {
         player->rollTimer = 10;
         player->rollRate = player->baseRollRate = -30;
         player->sfx.roll = 1;
+        player->barrelRollAlpha = 180.0f;
     }
     if ((gInputHold->button & Z_TRIG) && (gInputPress->stick_x < -50) && (player->rollTimer == 0)) {
         AUDIO_PLAY_SFX(NA_SE_PASS, gDefaultSfxSource, 0);
@@ -5290,9 +5307,13 @@ void Player_MoveOnFoot360(Player* player) {
         player->rollTimer = 10;
         player->rollRate = player->baseRollRate = 30;
         player->sfx.roll = 1;
+        player->barrelRollAlpha = 180.0f;
     }
-    if (player->grounded) {
+    if ((player->grounded) && !(gInputHold->button & Z_TRIG)) {
         player->rollTimer = 0;
+    }
+    if (player->barrelRollAlpha > 0.0f) {
+        player->barrelRollAlpha -= 30.0f;
     }
 
     if (player->rot.z < 0) {
@@ -5314,12 +5335,6 @@ void Player_MoveOnFoot360(Player* player) {
         player->rot_104.z = 0.0f;
         player->rot_104.x = 0.0f;
     }
-
-    /* if (player->pos.y < player->groundPos.y - 2) {      // set player height to shadow if below
-        player->pos.y = player->groundPos.y - 2;
-        player->grounded = true;
-        player->vel.y = 0.0f;
-    } */
 
     Math_SmoothStepToAngle(&player->xRot_0FC, player->rot_104.x, 0.15f, 15.0f, 0.005f);
     Math_SmoothStepToAngle(&player->zRot_0FC, player->rot_104.z, 0.15f, 15.0f, 0.005f);
@@ -5465,8 +5480,8 @@ void Player_MoveOnFoot360(Player* player) {
 
         player->boostMeter++;
     } else {
-        if (player->boostMeter > 0) {
-            player->boostMeter--;
+        if ((player->boostMeter > 0) && (player->grounded == true)) {
+            player->boostMeter -= 2;
         }
         
         player->zRotBank = 0;
@@ -5487,44 +5502,20 @@ void Player_MoveOnFoot360(Player* player) {
     player->vel.y -= player->gravity;
     player->pos.y += player->vel.y;
 
-    if (player->pos.y <= gGroundHeight) {
-        player->grounded = true;
-        player->pos.y = gGroundHeight;
-        player->vel.y = 0.0f;
-        //player->rot.x += (player->pos.y - player->rot.x) * 0.05f;
-    }
-
-    if (player->pos.y <= player->groundPos.y) {
+    if (player->pos.y < player->groundPos.y) {      // don't fall below shadow
         player->grounded = true;
         player->pos.y = player->groundPos.y;
         player->vel.y = 0.0f;
-        //player->rot.x += (player->pos.y - player->rot.x) * 0.05f;
-    }
-
-    if (player->vel.y < -50.0f) {
-        player->vel.y = -50.0f;
-    }
-    if (player->vel.y > 20.0f) {
-        player->vel.y = 20.0f;
-    }
-
-    /* player->gravity = 2.0f;
-    if ((gInputPress->button & Z_TRIG) && player->grounded) {
-        player->vel.y = 12.0f;
-    }
-    if ((gInputHold->button & Z_TRIG) && (player->vel.y > 0.0f)) {
-        player->gravity = 1.5f;
-    }
-
-    player->grounded = false;
-    player->vel.y -= player->gravity;
-    player->pos.y += player->vel.y;
-
-    if (player->pos.y <= gGroundHeight) {
+    } 
+    if (player->pos.y < player->yPath) {     // don't fall below yPath
+        player->pos.y = player->yPath;
         player->grounded = true;
-        player->pos.y = 0.0f;
         player->vel.y = 0.0f;
-        player->rot.x += (player->pos.y - player->rot.x) * 0.05f;
+    } 
+    if (player->pos.y < gGroundHeight) {   // don't fall below ground
+        player->grounded = true;
+        player->pos.y = gGroundHeight;
+        player->vel.y = 0.0f;
     }
 
     if (player->vel.y < -50.0f) {
@@ -5532,7 +5523,13 @@ void Player_MoveOnFoot360(Player* player) {
     }
     if (player->vel.y > 20.0f) {
         player->vel.y = 20.0f;
-    } */
+    }
+
+    player->yPath = 0;
+    if (player->mercyTimer != 0) {      // don't fall through collision just because someone shot you
+        player->yPath = player->pos.y;
+    }
+    
     player->pos.z += player->vel.z;
     Player_CheckBounds360(player);
     player->trueZpos = player->pos.z;
@@ -5563,30 +5560,145 @@ void Player_MoveOnFootRails(Player* player) {
         gGroundHeight = 175.0f;
         player->pathHeight = 1000;
     } else if (gCurrentLevel == LEVEL_ZONESS) {
-        player->yPath = 160;
-        if (player->pos.y <= player->yPath) {
-            player->pos.y = player->yPath;
-            player->grounded = true;
-            player->vel.y = 0.0f;
-        }
+        player->yPath = 157;
     } else if (gLevelType == LEVELTYPE_PLANET) {
         gGroundHeight = -0.0f;
-    } else if (gCurrentLevel == LEVEL_METEO) {
+    } else if ((gCurrentLevel == LEVEL_METEO) && (gLevelPhase == 0)) {
         gGroundHeight = player->yPath = -400.0f;
         player->pathHeight = 1012;
-    } else {
-        if (player->pos.y <= player->yPath) {
-            player->pos.y = player->yPath;
-            player->grounded = true;
-            player->vel.y = 0.0f;
-        }
-    }
 
-    /* if (player->pos.y < player->groundPos.y - 2) {      // set player height to shadow
-        player->pos.y = player->groundPos.y - 2;
-        player->grounded = true;
-        player->vel.y = 0.0f;
-    } */
+
+        if ((gPathProgress > 22000.0f + 0.0f) && (gPathProgress < 22000.0f + 42.0f)) {
+            MeMolarRock* rock1 = &gActors[59];
+            Actor_Initialize(rock1);
+            rock1->obj.status = OBJ_INIT;
+            rock1->obj.pos.x = 0.0f;
+            rock1->obj.pos.y = -1000.0f;
+            rock1->obj.pos.z = -gPathProgress - 10000.0f;
+            rock1->obj.rot.z = 180.0f;
+            rock1->obj.id = OBJ_ACTOR_ME_MOLAR_ROCK;
+            Object_SetInfo(&rock1->info, rock1->obj.id);
+
+            MeMolarRock* rock2 = &gActors[58];
+            Actor_Initialize(rock2);
+            rock2->obj.status = OBJ_INIT;
+            rock2->obj.pos.x = 0.0f;
+            rock2->obj.pos.y = -1000.0f;
+            rock2->obj.pos.z = -gPathProgress - 12500.0f;
+            rock2->obj.rot.z = 180.0f;
+            rock2->obj.rot.z = 180.0f;
+            rock2->obj.id = OBJ_ACTOR_ME_MOLAR_ROCK;
+            Object_SetInfo(&rock2->info, rock2->obj.id);
+
+            MeMolarRock* rock3 = &gActors[57];
+            Actor_Initialize(rock3);
+            rock3->obj.status = OBJ_INIT;
+            rock3->obj.pos.x = 0.0f;
+            rock3->obj.pos.y = -1000.0f;
+            rock3->obj.pos.z = -gPathProgress - 15000.0f;
+            rock3->obj.rot.z = 180.0f;
+            rock3->obj.id = OBJ_ACTOR_ME_MOLAR_ROCK;
+            Object_SetInfo(&rock3->info, rock3->obj.id);
+
+            MeTunnel* tunnel = &gScenery[49];
+            Scenery_Initialize(tunnel);
+            tunnel->obj.status = OBJ_INIT;
+            tunnel->obj.pos.x = 0.0f;
+            tunnel->obj.pos.y = -1250.0f;
+            tunnel->obj.pos.z = -gPathProgress - 13550.0f;
+            tunnel->obj.rot.y = 180.0f;
+            tunnel->obj.id = OBJ_SCENERY_ME_TUNNEL;
+            Object_SetInfo(&tunnel->info, tunnel->obj.id);
+        }
+
+        if ((gPathProgress > 122000.0f + 0.0f) && (gPathProgress < 122000.0f + 42.0f)) {
+            MeMolarRock* rock1 = &gActors[59];
+            Actor_Initialize(rock1);
+            rock1->obj.status = OBJ_INIT;
+            rock1->obj.pos.x = 0.0f;
+            rock1->obj.pos.y = -1000.0f;
+            rock1->obj.pos.z = -gPathProgress - 10000.0f;
+            rock1->obj.rot.z = 180.0f;
+            rock1->obj.id = OBJ_ACTOR_ME_MOLAR_ROCK;
+            Object_SetInfo(&rock1->info, rock1->obj.id);
+
+            MeMolarRock* rock2 = &gActors[58];
+            Actor_Initialize(rock2);
+            rock2->obj.status = OBJ_INIT;
+            rock2->obj.pos.x = 0.0f;
+            rock2->obj.pos.y = -1000.0f;
+            rock2->obj.pos.z = -gPathProgress - 12500.0f;
+            rock2->obj.rot.z = 180.0f;
+            rock2->obj.rot.z = 180.0f;
+            rock2->obj.id = OBJ_ACTOR_ME_MOLAR_ROCK;
+            Object_SetInfo(&rock2->info, rock2->obj.id);
+
+            MeMolarRock* rock3 = &gActors[57];
+            Actor_Initialize(rock3);
+            rock3->obj.status = OBJ_INIT;
+            rock3->obj.pos.x = 0.0f;
+            rock3->obj.pos.y = -1000.0f;
+            rock3->obj.pos.z = -gPathProgress - 15000.0f;
+            rock3->obj.rot.z = 180.0f;
+            rock3->obj.id = OBJ_ACTOR_ME_MOLAR_ROCK;
+            Object_SetInfo(&rock3->info, rock3->obj.id);
+
+            MeTunnel* tunnel = &gScenery[49];
+            Scenery_Initialize(tunnel);
+            tunnel->obj.status = OBJ_INIT;
+            tunnel->obj.pos.x = 0.0f;
+            tunnel->obj.pos.y = -1250.0f;
+            tunnel->obj.pos.z = -gPathProgress - 13550.0f;
+            tunnel->obj.rot.y = 180.0f;
+            tunnel->obj.id = OBJ_SCENERY_ME_TUNNEL;
+            Object_SetInfo(&tunnel->info, tunnel->obj.id);
+        }
+
+        if ((gPathProgress > 289000.0f + 0.0f) && (gPathProgress < 289000.0f + 42.0f)) {
+            MeMolarRock* rock1 = &gActors[59];
+            Actor_Initialize(rock1);
+            rock1->obj.status = OBJ_INIT;
+            rock1->obj.pos.x = 0.0f;
+            rock1->obj.pos.y = -1000.0f;
+            rock1->obj.pos.z = -gPathProgress - 10000.0f;
+            rock1->obj.rot.z = 180.0f;
+            rock1->obj.id = OBJ_ACTOR_ME_MOLAR_ROCK;
+            Object_SetInfo(&rock1->info, rock1->obj.id);
+
+            MeMolarRock* rock2 = &gActors[58];
+            Actor_Initialize(rock2);
+            rock2->obj.status = OBJ_INIT;
+            rock2->obj.pos.x = 0.0f;
+            rock2->obj.pos.y = -1000.0f;
+            rock2->obj.pos.z = -gPathProgress - 12500.0f;
+            rock2->obj.rot.z = 180.0f;
+            rock2->obj.rot.z = 180.0f;
+            rock2->obj.id = OBJ_ACTOR_ME_MOLAR_ROCK;
+            Object_SetInfo(&rock2->info, rock2->obj.id);
+
+            MeMolarRock* rock3 = &gActors[57];
+            Actor_Initialize(rock3);
+            rock3->obj.status = OBJ_INIT;
+            rock3->obj.pos.x = 0.0f;
+            rock3->obj.pos.y = -1000.0f;
+            rock3->obj.pos.z = -gPathProgress - 15000.0f;
+            rock3->obj.rot.z = 180.0f;
+            rock3->obj.id = OBJ_ACTOR_ME_MOLAR_ROCK;
+            Object_SetInfo(&rock3->info, rock3->obj.id);
+
+            MeTunnel* tunnel = &gScenery[49];
+            Scenery_Initialize(tunnel);
+            tunnel->obj.status = OBJ_INIT;
+            tunnel->obj.pos.x = 0.0f;
+            tunnel->obj.pos.y = -1250.0f;
+            tunnel->obj.pos.z = -gPathProgress - 13550.0f;
+            tunnel->obj.rot.y = 180.0f;
+            tunnel->obj.id = OBJ_SCENERY_ME_TUNNEL;
+            Object_SetInfo(&tunnel->info, tunnel->obj.id);
+        }
+    } else if ((gCurrentLevel == LEVEL_METEO) && (gLevelPhase == 1)) {
+        gGroundHeight = -10000.0f;
+    }
 
     player->rot.x = 0;
 
@@ -5698,7 +5810,7 @@ void Player_MoveOnFootRails(Player* player) {
         Aquas_801A99D4(player);             // Darkens Environment
         if (gBossActive) {
             if (player->trueZpos < gBosses[0].obj.pos.z + 3000) {
-                player->vel.z = 0.0f;
+                player->vel.z = 0.0f;       // Stops you at Bacoon
             }
         }
     }
@@ -5715,6 +5827,7 @@ void Player_MoveOnFootRails(Player* player) {
         player->rollTimer = 10;
         player->rollRate = player->baseRollRate = -30;
         player->sfx.roll = 1;
+        player->barrelRollAlpha = 180.0f;
     }
     if ((gInputHold->button & Z_TRIG) && (gInputPress->stick_x < -50) && (player->rollTimer == 0) && ((gLevelType == LEVELTYPE_PLANET) || (gCurrentLevel == LEVEL_METEO))) {
         AUDIO_PLAY_SFX(NA_SE_PASS, gDefaultSfxSource, 0);
@@ -5727,9 +5840,13 @@ void Player_MoveOnFootRails(Player* player) {
         player->rollTimer = 10;
         player->rollRate = player->baseRollRate = 30;
         player->sfx.roll = 1;
+        player->barrelRollAlpha = 180.0f;
     }
-    if (player->grounded) {
+    if ((player->grounded) && !(gInputHold->button & Z_TRIG)) {
         player->rollTimer = 0;
+    }
+    if (player->barrelRollAlpha > 0.0f) {
+        player->barrelRollAlpha -= 30.0f;
     }
 
     Math_SmoothStepToF(&player->rot.z, 0, 0.5f, 100, 0.0f);
@@ -5761,8 +5878,9 @@ void Player_MoveOnFootRails(Player* player) {
     Math_SmoothStepToAngle(&player->xRot_0FC, player->rot_104.x, 0.15f, 15.0f, 0.005f);
     Math_SmoothStepToAngle(&player->zRot_0FC, player->rot_104.z, 0.15f, 15.0f, 0.005f);
 
+    // Animations
     if (player->grounded) {
-        if (((player->baseSpeed > 1.0f) && (gCurrentLevel != LEVEL_ZONESS) && (gCurrentLevel != LEVEL_SOLAR) 
+        if (((player->baseSpeed > 1.0f) && ((gCurrentLevel != LEVEL_ZONESS) || (player->pos.y > 160)) && (gCurrentLevel != LEVEL_SOLAR) 
             && ((player->vel.z < -1.0f) || (player->vel.x > 5.0f) || (player->vel.x < -5.0f)) 
             && ((gLevelType == LEVELTYPE_PLANET) || (gCurrentLevel == LEVEL_METEO)))
             || ((gCurrentLevel == LEVEL_SOLAR) && ((player->vel.x > 5) || (player->vel.x < -5)))) {
@@ -5904,8 +6022,8 @@ void Player_MoveOnFootRails(Player* player) {
         }
         player->boostMeter++;
     } else {
-        if (player->boostMeter > 0) {
-            player->boostMeter--;
+        if ((player->boostMeter > 0) && (player->grounded == true)) {
+            player->boostMeter -= 2;
         }
         player->zRotBank = 0;
         Audio_KillSfxBySourceAndId(player->sfxSource, NA_SE_TANK_GO_UP);
@@ -5921,26 +6039,6 @@ void Player_MoveOnFootRails(Player* player) {
     }
     // ^ Jetpack ===============
 
-    player->grounded = false;
-    player->vel.y -= player->gravity;
-    player->pos.y += player->vel.y;
-
-    if ((gLevelType == LEVELTYPE_PLANET) || (gCurrentLevel == LEVEL_METEO)) {
-        if (player->pos.y <= gGroundHeight) {
-            player->grounded = true;
-            player->pos.y = gGroundHeight;
-            player->vel.y = 0.0f;
-            //player->rot.x += (player->pos.y - player->rot.x) * 0.05f;
-        }
-
-        if (player->pos.y <= player->groundPos.y) {
-            player->grounded = true;
-            player->pos.y = player->groundPos.y;
-            player->vel.y = 0.0f;
-            //player->rot.x += (player->pos.y - player->rot.x) * 0.05f;
-        }
-    }
-
     if (player->vel.y < -50.0f) {
         player->vel.y = -50.0f;
     }
@@ -5948,8 +6046,31 @@ void Player_MoveOnFootRails(Player* player) {
         player->vel.y = 20.0f;
     }
 
+    player->grounded = false;
+    player->vel.y -= player->gravity;
+    player->pos.y += player->vel.y;
+
+    if ((player->pos.y < player->groundPos.y) && ((gLevelType == LEVELTYPE_PLANET) || (gCurrentLevel == LEVEL_METEO))) {      // don't fall below shadow
+        player->grounded = true;
+        player->pos.y = player->groundPos.y;
+        player->vel.y = 0.0f;
+    } 
+    if (player->pos.y < player->yPath) {     // don't fall below yPath
+        player->pos.y = player->yPath;
+        player->grounded = true;
+        player->vel.y = 0.0f;
+    } 
+    if (player->pos.y < gGroundHeight) {   // don't fall below ground
+        player->grounded = true;
+        player->pos.y = gGroundHeight;
+        player->vel.y = 0.0f;
+    }
+
     player->pos.z += player->vel.z;
     player->trueZpos = player->pos.z;
+    
+    player->yPath = player->yPathTarget;      // reset player's local floor
+
 }
 
 f32 D_800D3114[4] = { 10000.0f, -10000.0f, 10000.0f, -10000.0f };
@@ -6080,6 +6201,9 @@ void Player_Setup(Player* playerx) {
     player->form = FORM_ON_FOOT; // Always turn On Foot Mode on
     gPilotNum = 0;
     gRunning = true;
+    if ((player->form == FORM_ON_FOOT) && (gCurrentLevel == LEVEL_METEO)) {
+        player->hideShadow = false;
+    }
 
     if (gCurrentLevel != LEVEL_CORNERIA) {
         gSavedGroundSurface = SURFACE_GRASS;
@@ -6425,6 +6549,30 @@ void Player_Setup(Player* playerx) {
     //core->obj.rot.x = 180.0f;
     core->obj.id = OBJ_BOSS_AQ_BACOON;
     Object_SetInfo(&core->info, core->obj.id); */
+
+    /* AqBacoon* core = &gActors[0];               // Actor test for on foot
+
+    Actor_Initialize(core);
+    core->obj.status = OBJ_INIT;
+    core->obj.pos.x = 0.0f;
+    core->obj.pos.y = 0.0f;
+    core->obj.pos.z = -5000.0f;
+    //core->obj.rot.x = 180.0f;
+    core->obj.id = OBJ_ACTOR_ME_MOLAR_ROCK;
+    Object_SetInfo(&core->info, core->obj.id); */
+
+    /* AqBacoon* core = &gBosses[0];               // Scenery test for on foot
+
+    Boss_Initialize(core);
+    core->obj.status = OBJ_INIT;
+    core->obj.pos.x = 0.0f;
+    core->obj.pos.y = 0.0f;
+    core->obj.pos.z = -5000.0f;
+    //core->obj.rot.x = 180.0f;
+    core->obj.id = OBJ_BOSS_AQ_BACOON;
+    Object_SetInfo(&core->info, core->obj.id); */
+
+
 }
 
 void Player_UpdateArwingRoll(Player* player) {
@@ -7458,17 +7606,19 @@ void Player_Update(Player* player) {
     } */
 
     // Swap Characters
-    if ((player->form == FORM_ON_FOOT) && (gControllerPress[player->num].button & L_JPAD) && !(gControllerHold[player->num].button & R_JPAD) && !(gControllerHold[player->num].button & U_JPAD) && !(gControllerHold[player->num].button & D_JPAD)) {
-        gPilotNum--;
-    }
-    if ((player->form == FORM_ON_FOOT) && (gControllerPress[player->num].button & R_JPAD) && !(gControllerHold[player->num].button & L_JPAD) && !(gControllerHold[player->num].button & U_JPAD) && !(gControllerHold[player->num].button & D_JPAD)) {
-        gPilotNum++;
-    }
-    if ((player->form == FORM_ON_FOOT) && (gPilotNum > 3)) {
-        gPilotNum = 0;
-    }
-    if ((player->form == FORM_ON_FOOT) && (gPilotNum < 0)) {
-        gPilotNum = 3;
+    if (player->form == FORM_ON_FOOT) {
+        if ((gControllerPress[player->num].button & L_JPAD) && !(gControllerHold[player->num].button & R_JPAD) && !(gControllerHold[player->num].button & U_JPAD) && !(gControllerHold[player->num].button & D_JPAD)) {
+            gPilotNum--;
+        }
+        if ((gControllerPress[player->num].button & R_JPAD) && !(gControllerHold[player->num].button & L_JPAD) && !(gControllerHold[player->num].button & U_JPAD) && !(gControllerHold[player->num].button & D_JPAD)) {
+            gPilotNum++;
+        }
+        if (gPilotNum > 3) {
+            gPilotNum = 0;
+        }
+        if (gPilotNum < 0) {
+            gPilotNum = 3;
+        }
     }
 
     switch (player->state) {
@@ -8461,7 +8611,7 @@ void Camera_UpdateOnFoot(Player* player, s32 arg1) {
     Vec3f sp58;
     Vec3f sp4C;
 
-    player->cam.eye.x = player->pos.x;
+    player->cam.eye.x = (player->pos.x/*  * 0.95f */);
     player->cam.at.x = player->pos.x + player->damageShake * 0.1f;
 
     player->cam.eye.y = player->pos.y + 50;
@@ -8470,7 +8620,7 @@ void Camera_UpdateOnFoot(Player* player, s32 arg1) {
     player->cam.eye.z = 100 - player->camDist + (player->baseSpeed * 2); // zoom out when running
 
     //if ((player->grounded == true) || (player->vel.y > -8)) { // adjust angle/zoom when looking up/down
-        Math_SmoothStepToF(&player->cam.at.y, /* -(gInputPress->stick_y * 5) */ -(player->unk_154) * 5 + player->pos.y + 50, 0.1f, 100.0f, 0.001f);
+        Math_SmoothStepToF(&player->cam.at.y, /* -(gInputPress->stick_y * 5) */ -(player->unk_154) * 7 + player->pos.y + 50, 0.1f, 100.0f, 0.001f);
         player->cam.eye.z -= (player->cam.at.y - player->pos.y) / 3;
         player->cam.eye.y -= (player->cam.at.y - player->pos.y) / 6;
     /* } else {
@@ -8496,9 +8646,7 @@ void Camera_UpdateOnFoot(Player* player, s32 arg1) {
 
     player->cam.at.y += player->damageShake * 0.1f;
 
-    return; // =============================================================
-
-    Matrix_RotateX(gCalcMatrix, player->xRot_0FC * M_DTOR, MTXF_NEW);
+    /* Matrix_RotateX(gCalcMatrix, player->xRot_0FC * M_DTOR, MTXF_NEW);
     Matrix_RotateZ(gCalcMatrix, player->zRot_0FC * M_DTOR, MTXF_APPLY);
     Matrix_RotateY(gCalcMatrix, (player->yRot_114 + (player->damageShake * 0.02f)) * M_DTOR, MTXF_APPLY);
     Matrix_RotateX(gCalcMatrix, player->damageShake * 0.02f * M_DTOR, MTXF_APPLY);
@@ -8541,7 +8689,7 @@ void Camera_UpdateOnFoot(Player* player, s32 arg1) {
         player->cam.eye.x = sp4C.x;
         player->cam.eye.y = sp4C.y;
         //player->cam.eye.z = sp4C.z;
-    }
+    } */
 }
 
 void Camera_SetStarfieldPos(f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt) {
