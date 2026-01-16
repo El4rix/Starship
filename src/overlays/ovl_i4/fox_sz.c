@@ -587,7 +587,9 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
     }
 
     if (((this->timer_0C0 == 0) && (gPlayer[0].state != PLAYERSTATE_STANDBY)) &&
-        ((gAllRangeEventTimer < 200) || ((gAllRangeEventTimer > 1500) && (gAllRangeEventTimer < 1700)) || ((gAllRangeEventTimer > 4000) && (gAllRangeEventTimer < 4200)) || ((gAllRangeEventTimer > 6000) && (gAllRangeEventTimer < 6200)))) {
+        ((gAllRangeEventTimer < 200) || ((gAllRangeEventTimer > 4000) && (gAllRangeEventTimer < 4200)) 
+        || ((gAllRangeEventTimer > 1500) && (gAllRangeEventTimer < 1700) && (gPlayer[0].form == FORM_ON_FOOT)) // spawn more waves of enemies in on-foot
+        || ((gAllRangeEventTimer > 5500) && (gAllRangeEventTimer < 5700) && (gPlayer[0].form == FORM_ON_FOOT)))) {
         this->timer_0C0 = 5;
 
         actor = &gActors[SZ_ESCORT_1];
@@ -799,6 +801,7 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
         }
     } else if (gPlayer[0].form == FORM_ON_FOOT) {
         switch (gAllRangeEventTimer) {
+            // Wave 1 ==================================================================================
             case 1850:
                 Radio_PlayMessage(gMsg_ID_16050, RCID_ROB64);
                 AUDIO_PLAY_BGM(NA_BGM_BOSS_SZ);
@@ -817,22 +820,24 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
                 this->timer_0BC = 10000; */
                 break;
 
-            case 3850:
+            // Wave 2 ==================================================================================
+            case 3400:
                 Radio_PlayMessage(gMsg_ID_16100, RCID_ROB64);
                 break;
 
-            case 4000:
+            case 3500:
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_RIGHT], 2);
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_LEFT], 1);
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_CENTER], 0);
                 gRadarMissileAlarmTimer = 200;
                 break;
 
-            case 5850:
+            // Wave 3 ==================================================================================
+            case 5350:
                 Radio_PlayMessage(gMsg_ID_16110, RCID_ROB64);
                 break;
 
-            case 6000:
+            case 5500:
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_RIGHT], 2);
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_LEFT], 1);
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_CENTER], 0);
@@ -2136,6 +2141,8 @@ void SectorZ_LevelComplete(Player* player) {
                     gFadeoutType = 4;
                     if (gTurretModeEnabled) {
                         gLeveLClearStatus[LEVEL_SECTOR_Z] = Play_CheckMedalStatus(250) + 1;
+                    } else if (player->form == FORM_ON_FOOT) {
+                        gLeveLClearStatus[LEVEL_SECTOR_Z] = Play_CheckMedalStatus(150) + 1;
                     } else {
                         gLeveLClearStatus[LEVEL_SECTOR_Z] = Play_CheckMedalStatus(100) + 1;
                     }

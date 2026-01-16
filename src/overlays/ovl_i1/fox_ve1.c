@@ -314,6 +314,9 @@ void Venom1_Ve1TempleEntrance_Update(Ve1TempleEntrance* this) {
             if (gPlayer[0].pos.z < this->obj.pos.z) {
                 gDrawBackdrop = 0;
                 gDrawGround = false;
+                if (gPlayer[0].form == FORM_ON_FOOT) {
+                    gPlayer[0].yPathTarget = 25.0f;
+                }
 
                 this->state++;
             }

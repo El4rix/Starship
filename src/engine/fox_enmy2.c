@@ -2664,7 +2664,7 @@ void ActorEvent_ProcessTriggers(ActorEvent* this) {
                     (fabsf(this->obj.pos.x - gPlayerShots[i].obj.pos.x) < 300.0f) &&
                     (fabsf(this->obj.pos.y - gPlayerShots[i].obj.pos.y) < 300.0f) &&
                     (fabsf(this->obj.pos.z - gPlayerShots[i].obj.pos.z) < 300.0f)) {
-                    if ((gTurretModeEnabled) && (gCurrentLevel == LEVEL_TITANIA)) {
+                    if (((gTurretModeEnabled) || (gPlayer[0].form == FORM_ON_FOOT)) && (gCurrentLevel == LEVEL_TITANIA)) {
                         if (Rand_ZeroOne() > 0.5f) {
                             this->itemDrop = DROP_SILVER_RING;
                         } else {

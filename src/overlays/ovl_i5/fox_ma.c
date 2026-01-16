@@ -4573,6 +4573,8 @@ void Macbeth_Actor207_Update(Actor207* this) {
                 D_i5_801BE320[29] -= this->damage;
                 if (gTurretModeEnabled) {
                     D_i5_801BE320[29] += (this->damage * 0.9f);
+                } else if (gPlayer[0].form == FORM_ON_FOOT) {
+                    D_i5_801BE320[29] += (this->damage * 0.5f);
                 }
                 if (D_i5_801BE320[29] <= 0) {
                     SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 1);
@@ -4945,6 +4947,8 @@ void Macbeth_Actor207_Update(Actor207* this) {
             Math_SmoothStepToF(&this->obj.pos.z, gPlayer[0].trueZpos - 250.0f, 0.1f, 15.0f, 0.01f);
             if (gTurretModeEnabled) {
                 Math_SmoothStepToF(&this->obj.pos.y, gPlayer[0].pos.y + 350.0f, 0.1f, 10.0f, 0.01f);
+            } else if (gPlayer[0].form == FORM_ON_FOOT) {
+                Math_SmoothStepToF(&this->obj.pos.y, 150.0f, 0.1f, 10.0f, 0.01f);
             } else {
                 Math_SmoothStepToF(&this->obj.pos.y, 250.0f, 0.1f, 10.0f, 0.01f);
             }
@@ -5163,7 +5167,7 @@ void Macbeth_Actor207_Update(Actor207* this) {
         this->dmgType = DMG_NONE;
         if ((this->dmgPart == 0) && (D_i5_801BE320[9] > 0) && ((gPlayer[0].trueZpos - this->obj.pos.z) > 200.0f)) {
             
-            if (gTurretModeEnabled) {
+            if (gTurretModeEnabled || (gPlayer[0].form == FORM_ON_FOOT)) {
                 if (this->obj.pos.z < -100000) {
                     AUDIO_PLAY_SFX(NA_SE_EN_DAMAGE_S, this->sfxSource, 4);
                     this->iwork[7] = 15;
@@ -5204,7 +5208,7 @@ void Macbeth_Actor207_Update(Actor207* this) {
         } else if ((this->dmgPart == 1) && (D_i5_801BE320[10] > 0) &&
                    ((gPlayer[0].trueZpos - this->obj.pos.z) > 200.0f)) {
             
-            if (gTurretModeEnabled) {
+            if (gTurretModeEnabled || (gPlayer[0].form == FORM_ON_FOOT)) {
                 if (this->obj.pos.z < -100000) {
                     AUDIO_PLAY_SFX(NA_SE_EN_DAMAGE_S, this->sfxSource, 4);
                     this->iwork[8] = 16;

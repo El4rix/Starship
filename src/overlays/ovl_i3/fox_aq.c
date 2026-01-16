@@ -1485,6 +1485,10 @@ void Aquas_Effect366_Update(Effect366* this) {
             this->vel.z = __sinf(gPlayer[0].camYaw) * temp_fs0;
             break;
     }
+
+    if (gPlayer[0].form == FORM_ON_FOOT) {
+        this->vel.z = -gPlayer[0].baseSpeed;
+    }
 }
 
 void Aquas_BlueMarine_Draw(Player* player) {

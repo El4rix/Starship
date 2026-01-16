@@ -3,6 +3,7 @@
 #include "assets/ast_aquas.h"
 #include "assets/ast_great_fox.h"
 #include "assets/ast_versus.h"
+#include "assets/ast_map.h"
 #include "port/interpolation/FrameInterpolation.h"
 
 Vec3f sShotViewPos;
@@ -700,6 +701,9 @@ void PlayerShot_ApplyDamageToActor(PlayerShot* shot, Actor* actor, s32 hitIndex)
     }
 
     if ((gPlayer[0].form == FORM_ON_FOOT)) {
+        if (!gBossActive) {
+            actor->damage *= 1.5f;
+        }
         if ((actor->eventType == EVID_TEAMMATE) || (actor->obj.id == OBJ_ACTOR_TEAM_BOSS) || (actor->obj.id == OBJ_ACTOR_TEAM_ARWING)
         || (actor->aiType == AI360_SLIPPY) || (actor->aiType == AI360_PEPPY) || (actor->aiType == AI360_FALCO)) {
             actor->damage = 4;
@@ -710,7 +714,6 @@ void PlayerShot_ApplyDamageToActor(PlayerShot* shot, Actor* actor, s32 hitIndex)
                 actor->damage = 31;
             } else {
                 actor->dmgType = DMG_BEAM;
-                //actor->damage = 10;
             }
         } 
     }
@@ -1498,7 +1501,11 @@ void PlayerShot_DrawShot(PlayerShot* shot) {
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 255);
                 gDPSetEnvColor(gMasterDisp++, D_800C9C00[gPilotNum], D_800C9C04[gPilotNum],
                                D_800C9C08[gPilotNum], 255);
-                if (gLaserStrength[shot->sourceId] != LASERS_SINGLE) {
+                if (gLaserStrength[shot->sourceId] == LASERS_SINGLE) {
+                    gSPDisplayList(gMasterDisp++, D_versus_301AEF0);
+                } else if (gLaserStrength[shot->sourceId] == LASERS_HYPER) {
+                    gSPDisplayList(gMasterDisp++, aMapSolarDL);
+                } else {                                    // == Lasers_twin
                     Matrix_RotateZ(gGfxMatrix, gGameFrameCount * 48.0f * M_DTOR, MTXF_APPLY);
                     Matrix_Push(&gGfxMatrix);
                     Matrix_Translate(gGfxMatrix, 0.f, 40.0f, 0.0f, MTXF_APPLY);
@@ -1507,8 +1514,6 @@ void PlayerShot_DrawShot(PlayerShot* shot) {
                     Matrix_Pop(&gGfxMatrix);
                     Matrix_Translate(gGfxMatrix, 0.f, -40.0f, 0.0f, MTXF_APPLY);
                     Matrix_SetGfxMtx(&gMasterDisp);
-                    gSPDisplayList(gMasterDisp++, D_versus_301AEF0);
-                } else {
                     gSPDisplayList(gMasterDisp++, D_versus_301AEF0);
                 }
                 break;

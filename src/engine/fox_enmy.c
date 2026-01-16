@@ -224,6 +224,9 @@ void Scenery_Load(Scenery* this, ObjectInit* objInit) {
         if (this->obj.id == OBJ_SCENERY_CO_BUMP_4 || this->obj.id == OBJ_SCENERY_CO_BUILDING_1) {
             this->obj.pos.y = 0;
         }
+        if (this->obj.id == OBJ_SCENERY_ZO_ISLAND) {
+            this->obj.pos.y = 75.0f;
+        }
     }
     Object_SetInfo(&this->info, this->obj.id);
 }
@@ -2175,9 +2178,16 @@ void ActorSupplies_Update(ActorSupplies* this) {
 
     if (gLevelMode == LEVELMODE_ALL_RANGE) {
         if (gCurrentLevel == LEVEL_SECTOR_Z) {
-            Math_SmoothStepToF(&this->obj.pos.x, -2000.0f, 0.05f, 60.0f, 0.01f);
-            Math_SmoothStepToF(&this->obj.pos.y, -200.0f, 0.05f, 3.0f, 0.01f);
-            Math_SmoothStepToF(&this->obj.pos.z, 0.0f, 0.05f, 0.f, 0.01f);
+            if (gPlayer[0].form == FORM_ON_FOOT) {
+                Math_SmoothStepToF(&this->obj.pos.x, 0.0f, 0.05f, 60.0f, 0.01f);
+                Math_SmoothStepToF(&this->obj.pos.y, -400.0f, 0.05f, 3.0f, 0.01f);
+                Math_SmoothStepToF(&this->obj.pos.z, -1000.0f, 0.05f, 0.f, 0.01f);
+            } else {
+                Math_SmoothStepToF(&this->obj.pos.x, -2000.0f, 0.05f, 60.0f, 0.01f);
+                Math_SmoothStepToF(&this->obj.pos.y, -200.0f, 0.05f, 3.0f, 0.01f);
+                Math_SmoothStepToF(&this->obj.pos.z, 0.0f, 0.05f, 0.f, 0.01f);
+            }
+            
         } else {
             Math_SmoothStepToF(&this->obj.pos.y, 300.0f, 0.05f, 50.0f, 0.01f);
         }
@@ -2638,14 +2648,14 @@ void ItemPathChange_Update(Item* this) {
                 case OBJ_ITEM_PATH_SPLIT_Y:
                     if (this->obj.pos.y < gPlayer[0].pos.y) {
                         if (gPlayer[0].form == FORM_ON_FOOT) {
-                            gPlayer[0].pathChangePitch = gPlayer[0].yPathTarget + this->width;
+                            gPlayer[0].pathChangePitch = this->width;
                         } else {
                             gPlayer[0].pathChangePitch = 30.0f;
                             gPlayer[0].yPathTarget = gPlayer[0].yPath + this->width;
                         }
                     } else {
                         if (gPlayer[0].form == FORM_ON_FOOT) {
-                            gPlayer[0].pathChangePitch = gPlayer[0].yPathTarget - this->width;
+                            gPlayer[0].pathChangePitch = -this->width;
                         } else {
                             gPlayer[0].pathChangePitch = -30.0f;
                             gPlayer[0].yPathTarget = gPlayer[0].yPath - this->width;
@@ -2655,7 +2665,7 @@ void ItemPathChange_Update(Item* this) {
 
                 case OBJ_ITEM_PATH_TURN_UP:
                     if (gPlayer[0].form == FORM_ON_FOOT) {
-                            gPlayer[0].pathChangePitch = gPlayer[0].yPathTarget + this->width;
+                            gPlayer[0].pathChangePitch = 0.0f;
                         } else {
                             gPlayer[0].pathChangePitch = 30.0f;
                             gPlayer[0].yPathTarget = gPlayer[0].yPath + this->width;
@@ -2664,7 +2674,7 @@ void ItemPathChange_Update(Item* this) {
 
                 case OBJ_ITEM_PATH_TURN_DOWN:
                     if (gPlayer[0].form == FORM_ON_FOOT) {
-                            gPlayer[0].pathChangePitch = gPlayer[0].yPathTarget - this->width;
+                            gPlayer[0].pathChangePitch = 0.0f;
                         } else {
                             gPlayer[0].pathChangePitch = -30.0f;
                             gPlayer[0].yPathTarget = gPlayer[0].yPath - this->width;

@@ -3364,6 +3364,8 @@ void HUD_Score_Update(f32 xPos, f32 yPos) {
         case LEVEL_SECTOR_Z:
         if (gTurretModeEnabled) {
             medalStatus = Play_CheckMedalStatus(250);
+        } else if (gPlayer[0].form == FORM_ON_FOOT) { 
+            medalStatus = Play_CheckMedalStatus(150);
         } else {
             medalStatus = Play_CheckMedalStatus(100);
         }
@@ -3546,7 +3548,7 @@ void HUD_BombCounter_Draw(f32 x, f32 y) {
     gSPDisplayList(gMasterDisp++, gRcpSetupDLs[SETUPDL_78_OPTIONAL]);
     gDPSetPrimColor(gMasterDisp++, 0, 0, (s32) D_80161770, (s32) D_80161774, (s32) D_80161778, D_hud_80161708);
 
-    if (gCurrentLevel == LEVEL_AQUAS) {
+    if ((gCurrentLevel == LEVEL_AQUAS) && (gPlayer[0].form != FORM_ON_FOOT)) {
         sp68 = 6;
     }
 
@@ -3745,7 +3747,13 @@ void HUD_Draw(void) {
                 medalStatus = Play_CheckMedalStatus(250);
                 break;
             case LEVEL_SECTOR_Z:
-                medalStatus = Play_CheckMedalStatus(100);
+                if (gTurretModeEnabled) {
+                    medalStatus = Play_CheckMedalStatus(250);
+                } else if (gPlayer[0].form == FORM_ON_FOOT) { 
+                    medalStatus = Play_CheckMedalStatus(150);
+                } else {
+                    medalStatus = Play_CheckMedalStatus(100);
+                }
                 break;
             case LEVEL_AREA_6:
                 medalStatus = Play_CheckMedalStatus(300);

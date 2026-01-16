@@ -208,7 +208,11 @@ void Bolse_UpdateEventHandler(ActorEvent* this) {
     s32 pad;
     Actor* actor;
 
-    gBolseDynamicGround = true;
+    if (gPlayer[0].form == FORM_ON_FOOT) {
+        gBolseDynamicGround = false;
+    } else {
+        gBolseDynamicGround = true;
+    }
     D_i4_801A0530++;
 
     switch (this->state) {
@@ -219,7 +223,11 @@ void Bolse_UpdateEventHandler(ActorEvent* this) {
             this->state = 2;
 
             if (gAllRangeCheckpoint == 0) {
-                gBosses[0].fwork[1] = 0.3f;
+                if (gPlayer[0].form == FORM_ON_FOOT) {
+                    gBosses[0].fwork[1] = 0.0f;
+                } else {
+                    gBosses[0].fwork[1] = 0.3f;
+                }
                 D_BO_801A03DC = 6;
             } else {
                 gAllRangeCheckpoint = 1;
@@ -231,7 +239,7 @@ void Bolse_UpdateEventHandler(ActorEvent* this) {
 
             for (i = 0; i < 6; i++) {
                 gStarWolfTeamAlive[i] = gSavedStarWolfTeamAlive[i];
-                if (gTurretModeEnabled) {
+                if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
                     gStarWolfTeamAlive[i] = 1;
                 }
             }

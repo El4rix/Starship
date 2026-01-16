@@ -639,7 +639,7 @@ void Titania_TiLandmine_Update(TiLandmine* this) {
 
     switch (this->dmgType) {
         case 1:
-            if (gTurretModeEnabled) {
+            if ((gTurretModeEnabled) || (gPlayer[0].form == FORM_ON_FOOT)) {
                 this->itemDrop = DROP_NONE;
                 Actor_Despawn(this);
                 this->info.bonus = 0;
@@ -1956,7 +1956,7 @@ void Titania_TiDelphorHead_Update(TiDelphorHead* this) {
             this->timer_0C6 = 10;
             if (this->health > 0) {
                 this->health -= this->damage;
-                if (gTurretModeEnabled) {
+                if ((gTurretModeEnabled) || (gPlayer[0].form == FORM_ON_FOOT)) {
                     this->health += (this->damage * 0.5f);
                 }
                 if (this->health <= 0) {
@@ -2322,7 +2322,7 @@ void Titania_TiGoras_Init(TiGoras* this) {
     this->swork[11] = 50;
     this->swork[12] = 50;
     this->swork[21] = 100;
-    if (gTurretModeEnabled) {
+    if ((gTurretModeEnabled) || (gPlayer[0].form == FORM_ON_FOOT)) {
         this->swork[9] = 200;
         this->swork[10] = 200;
         this->swork[11] = 200;
@@ -3299,6 +3299,10 @@ void Titania_80192118(TiGoras* this) {
                 this->swork[30]++;
             }
 
+            if (((gPlayer[0].trueZpos - this->obj.pos.z) <= 450.0f) && (gPlayer[0].form == FORM_ON_FOOT)) {
+                gRunning = false;
+            }
+
             if ((gPlayer[0].trueZpos - this->obj.pos.z) <= 450.0f) {
                 gPlayer[0].unk_19C = -1;
                 gPlayer[0].unk_000 = 0.0f;
@@ -3369,6 +3373,9 @@ void Titania_80192118(TiGoras* this) {
                 gPlayer[0].unk_19C = 0;
                 this->swork[1] = 3;
                 AUDIO_PLAY_BGM(NA_BGM_BOSS_TI);
+                if (gPlayer[0].form == FORM_ON_FOOT) {
+                    gRunning = true;
+                }
             }
             break;
 

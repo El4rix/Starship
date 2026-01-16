@@ -1988,6 +1988,9 @@ void Solar_801A3C4C(SoVulkain* this) {
         AUDIO_PLAY_SFX(NA_SE_EN_SOBOSS_DAMAGE, this->sfxSource, 4);
 
         this->swork[SO_SWK_2] -= this->damage;
+        if ((gTurretModeEnabled) || (gPlayer[0].form == FORM_ON_FOOT)) {
+            this->swork[SO_SWK_2] += (this->damage * 0.5f);
+        }
         if (this->swork[SO_SWK_2] < 0) {
             this->swork[SO_SWK_2] = 0;
         }
@@ -2006,6 +2009,9 @@ void Solar_801A3C4C(SoVulkain* this) {
         AUDIO_PLAY_SFX(NA_SE_EN_SOBOSS_DAMAGE, this->sfxSource, 4);
 
         this->swork[SO_SWK_3] -= this->damage;
+        if ((gTurretModeEnabled) || (gPlayer[0].form == FORM_ON_FOOT)) {
+            this->swork[SO_SWK_3] += (this->damage * 0.5f);
+        }
         if (this->swork[SO_SWK_3] < 0) {
             this->swork[SO_SWK_3] = 0;
         }

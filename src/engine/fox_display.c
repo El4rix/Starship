@@ -9,6 +9,8 @@
 #include "assets/ast_sector_z.h"
 #include "assets/ast_sector_y.h"
 #include "assets/ast_meteo.h"
+#include "assets/ast_bolse.h"
+#include "assets/ast_enmy_planet.h"
 #include "port/interpolation/FrameInterpolation.h"
 #include "port/hooks/list/EngineEvent.h"
 #include "port/mods/PortEnhancements.h"
@@ -175,13 +177,6 @@ bool Display_OnFootCharacter_OverrideLimbDraw(s32 limbIndex, Gfx** gfxPtr, Vec3f
     gSPSetGeometryMode(gMasterDisp++, G_CULL_BACK);
 
     if (gPilotNum == 1) {
-        /* if (limbIndex == 0) { // correct for Peppy being rotated 90 degrees unless he runs
-            if (rot->z < 90) {
-                rot->z = 90;
-            } else {
-                rot->z = 0;
-            }
-        } */
         if (limbIndex == 16) {
             rot->y += player->unk_154;
             rot->y -= player->unk_180;
@@ -329,13 +324,10 @@ void Display_OnFootCharacter(Player* player) {
             break;
     }
 
-    // New On-Foot
+    // New On-Foot reticle calc
     if (gPlayerNum == player->num) {
-        sp58.x = 0.0f + player->yRot_114 + player->rot.y;
-        sp58.y = 0.0f + player->unk_154 * -40;
-        /* if ((gGroundSurface == SURFACE_WATER) && (player->grounded)) {
-            sp58.y = 0.0f + player->unk_154 * 40;
-        } */
+        sp58.x = 0.0f + player->rot.y;
+        sp58.y = 0.0f + player->unk_154 * -37.5f;
         sp58.z = 2000.0f;
         Matrix_MultVec3f(gGfxMatrix, &sp58, &D_display_801613E0[0]);
         sp58.y *= 2.1f;
@@ -1560,13 +1552,18 @@ void Display_Player_Update(Player* player, s32 reflectY) {
 
     if (player->draw) {
 
+        if ((player->form == FORM_ON_FOOT) && (player->state != PLAYERSTATE_ACTIVE) && (player->state != PLAYERSTATE_ANDROSS_MOUTH)) {
+            player->rot.x = 0.0f;
+            player->rot.z = 0.0f;
+        }
+
         if ((player->form == FORM_ON_FOOT) && (gLevelType == LEVELTYPE_SPACE) && (gCurrentLevel != LEVEL_METEO) // Great Fox
             && (gLevelMode == LEVELMODE_ON_RAILS) && (player->state == PLAYERSTATE_ACTIVE)) { 
             Matrix_Push(&gGfxMatrix);
             RCP_SetupDL_30(gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
             //Matrix_Translate(gGfxMatrix, player->pos.x, player->pos.y - 550, 1300, MTXF_APPLY); // On bridge
             //Matrix_Translate(gGfxMatrix, player->pos.x + 1350, player->pos.y - 472, -390, MTXF_APPLY); // On wing
-            Matrix_Translate(gGfxMatrix, player->pos.x + 1350, -473 /* - player->pos.y */ + player->yPath, -390 + player->camDist, MTXF_APPLY); // On wing jumping
+            Matrix_Translate(gGfxMatrix, player->pos.x + 1350, -473 /* - player->pos.y */ + player->yPathTarget - gCameraShakeY, -390 + player->camDist, MTXF_APPLY); // On wing jumping
             Matrix_Scale(gGfxMatrix, 1.0f, 1.0f, 1.0f, MTXF_APPLY);
             Matrix_RotateY(gGfxMatrix, 180 * M_DTOR, MTXF_APPLY);
             Matrix_SetGfxMtx(&gMasterDisp);
@@ -1583,7 +1580,7 @@ void Display_Player_Update(Player* player, s32 reflectY) {
             //RCP_SetupDL_30(gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
             //Matrix_Translate(gGfxMatrix, player->pos.x, player->pos.y - 550, 1300, MTXF_APPLY); // On bridge
             //Matrix_Translate(gGfxMatrix, player->pos.x + 1350, player->pos.y - 472, -390, MTXF_APPLY); // On wing
-            Matrix_Translate(gGfxMatrix, player->pos.x, 225 - player->pos.y,  player->camDist, MTXF_APPLY); // On wing jumping
+            Matrix_Translate(gGfxMatrix, player->pos.x, 225 - player->pos.y - gCameraShakeY,  player->camDist, MTXF_APPLY); // On wing jumping
             Matrix_Scale(gGfxMatrix, 3.5f, 3.5f, 3.5f, MTXF_APPLY);
             Matrix_RotateY(gGfxMatrix, -1 * player->vel.x * M_DTOR, MTXF_APPLY);
             Matrix_SetGfxMtx(&gMasterDisp);
@@ -1594,7 +1591,7 @@ void Display_Player_Update(Player* player, s32 reflectY) {
         if ((player->form == FORM_ON_FOOT) && (gCurrentLevel == LEVEL_SOLAR) && (player->state == PLAYERSTATE_ACTIVE)) { // Rock
             Matrix_Push(&gGfxMatrix);
             //RCP_SetupDL_30(gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
-            Matrix_Translate(gGfxMatrix, 0 /* player->pos.x */, 215 /* + fabsf(player->pos.x) / 10 */, 400 + player->camDist, MTXF_APPLY); // On wing jumping
+            Matrix_Translate(gGfxMatrix, 0.0f /* player->pos.x */, 215.0f - gCameraShakeY /* + fabsf(player->pos.x) / 10 */, 400.0f + player->camDist, MTXF_APPLY); // On wing jumping
             Matrix_Scale(gGfxMatrix, 2.0f, 0.2f, 0.5f, MTXF_APPLY);
             //Matrix_RotateZ(gGfxMatrix, -player->pos.x / 10 * M_DTOR, MTXF_APPLY);
             //Matrix_RotateY(gGfxMatrix, player->pos.x / 10 * M_DTOR, MTXF_APPLY);
@@ -1619,6 +1616,30 @@ void Display_Player_Update(Player* player, s32 reflectY) {
             //Matrix_RotateX(gGfxMatrix, 180 * M_DTOR, MTXF_APPLY);
             Matrix_SetGfxMtx(&gMasterDisp);
             gSPDisplayList(gMasterDisp++, aSyShip2DL);
+            Matrix_Pop(&gGfxMatrix);
+        }
+
+        if ((player->form == FORM_ON_FOOT) && (gCurrentLevel == LEVEL_VENOM_2) && (player->state == PLAYERSTATE_ACTIVE)) { // Venom 2 Gate
+            Matrix_Push(&gGfxMatrix);
+            RCP_SetupDL_30(gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
+            Matrix_Translate(gGfxMatrix, 0.0f, 440.0f, 0.0f, MTXF_APPLY);
+            Matrix_Scale(gGfxMatrix, 0.3f, 0.2f, 0.3f, MTXF_APPLY);
+            Matrix_SetGfxMtx(&gMasterDisp);
+            gSPDisplayList(gMasterDisp++, aBoBuildingDL);
+            Matrix_Pop(&gGfxMatrix);
+        }
+
+        if ((player->form == FORM_ON_FOOT) && (gCurrentLevel == LEVEL_VENOM_ANDROSS) // Spy eye platform
+            && (gLevelMode == LEVELMODE_ON_RAILS) && (player->state == PLAYERSTATE_ACTIVE)) { 
+            Matrix_Push(&gGfxMatrix);
+            RCP_SetupDL_27();
+            gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 80, 80, 20, 200);
+            Matrix_Translate(gGfxMatrix, player->pos.x, -30.0f /* player->pos.y */ - gCameraShakeY, -50.0f + player->camDist, MTXF_APPLY);
+            Matrix_Scale(gGfxMatrix, 1.0f, 1.0f, 1.0f, MTXF_APPLY);
+            //Matrix_RotateY(gGfxMatrix, 180 * M_DTOR, MTXF_APPLY);
+            Matrix_RotateX(gGfxMatrix, 180 * M_DTOR, MTXF_APPLY);
+            Matrix_SetGfxMtx(&gMasterDisp);
+            gSPDisplayList(gMasterDisp++, aSpyEyeDL);
             Matrix_Pop(&gGfxMatrix);
         }
 
@@ -1819,7 +1840,7 @@ void Display_PlayerShadow_Update(Player* player) {
         if (gLevelMode == LEVELMODE_ALL_RANGE) {
             if (player->form == FORM_ON_FOOT) {
                 if (player->grounded == true) {
-                    Matrix_Translate(gGfxMatrix, player->groundPos.x, player->pos.y, player->groundPos.z,
+                    Matrix_Translate(gGfxMatrix, player->groundPos.x, player->pos.y + gCameraShakeY, player->groundPos.z,
                                  MTXF_APPLY);
                 } else if (player->groundPos.y > player->yPath) {
                     Matrix_Translate(gGfxMatrix, player->groundPos.x, player->groundPos.y, player->groundPos.z,

@@ -1990,10 +1990,6 @@ void Background_DrawGround(void) {
         case LEVEL_KATINA:
         case LEVEL_BOLSE:
         case LEVEL_VENOM_2:
-        case LEVEL_SECTOR_Z:
-            if ((gPlayer[0].form != FORM_ON_FOOT) && (gCurrentLevel == LEVEL_SECTOR_Z)) {
-                break;
-            }
 
             if ((gGroundClipMode != 0) || (gCurrentLevel == LEVEL_BOLSE)) {
                 RCP_SetupDL_29(gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);

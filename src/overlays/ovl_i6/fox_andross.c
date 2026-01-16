@@ -345,7 +345,7 @@ void Andross_AndBrainWaste_Update(AndBrainWaste* this) {
     Math_SmoothStepToF(&this->vel.y, 0.0f, 0.2f, 0.5f, 0.0f);
     Math_SmoothStepToF(&this->vel.z, 0.0f, 0.2f, 0.5f, 0.0f);
 
-    if (gTurretModeEnabled) {
+    if ((gTurretModeEnabled) || (gPlayer[0].form == FORM_ON_FOOT)) {
         this->obj.pos.x -= ((this->obj.pos.x - (gPlayer[0].pos.x)) * 0.02f);
         this->obj.pos.z -= ((this->obj.pos.z - (gPlayer[0].pos.z)) * 0.02f);
         this->obj.pos.y -= ((this->obj.pos.y - (gPlayer[0].pos.y)) * 0.02f);
@@ -457,7 +457,7 @@ void Andross_80188A4C(AndBrain* this) {
                         AUDIO_PLAY_SFX(NA_SE_EN_KNOCK_DOWN, this->sfxSource, 4);
 
                         this->health -= this->damage;
-                        if (gTurretModeEnabled) {
+                        if ((gTurretModeEnabled) || (gPlayer[0].form == FORM_ON_FOOT)) {
                             this->health += (this->damage * 0.5f);
                         }
 
@@ -637,6 +637,16 @@ void Andross_80189214(void) {
     gPathProgress = 0.0f;
     player->unk_018 = player->unk_014 = 1.0f;
     player->pos.z = player->trueZpos = -player->zPath;
+
+    if (gPlayer[0].form == FORM_ON_FOOT) {
+        player->yPathTarget = 0.0f;
+        player->pathWidth = 700.0f;
+        player->hideShadow = true;
+        player->pathHeight = 1000.0f;
+        player->trueZpos -= 50.0f;
+        gBossActive = true;
+    }
+
     Camera_UpdateArwingOnRails(player);
 }
 
@@ -1352,6 +1362,15 @@ void Andross_AndBrain_Update(AndBrain* this) {
     }
     Math_SmoothStepToF(&this->fwork[21], this->fwork[22], 1.0f, 6.0f, 0);
     Math_SmoothStepToF(&this->fwork[23], this->fwork[24], 0.3f, 0.01f, 0);
+
+    if (gPlayer[0].form == FORM_ON_FOOT) {
+        if (((this->obj.pos.x - gPlayer[0].pos.x) < 2000.0f) 
+        && ((this->obj.pos.z - gPlayer[0].pos.z) < 2000.0f)) {
+            Math_SmoothStepToF(&this->obj.pos.y, gPlayer[0].pos.y + 400.0f, 1.0f, 6.0f, 0);
+        } else {
+            Math_SmoothStepToF(&this->obj.pos.y, 1600.0f, 1.0f, 6.0f, 0);
+        }
+    }
 }
 
 bool Andross_8018B47C(s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3f* rot, void* thisx) {
@@ -1555,6 +1574,9 @@ void Andross_8018C390(Player* player) {
             }
             if (player->csTimer == 0) {
                 player->state = PLAYERSTATE_ACTIVE;
+                if (player->form == FORM_ON_FOOT) {
+                    player->rot.y = 0.0f;
+                }
                 player->unk_014 = 0.0f;
                 player->unk_018 = 0.0f;
             }

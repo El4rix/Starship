@@ -324,7 +324,9 @@ void func_tank_800444BC(Player* player) {
     }
     if ((player->pos.y - sp30) < sp38) {
         if (player->vel.y < -10.0f) {
-            AUDIO_PLAY_SFX(NA_SE_TANK_BOUND, player->sfxSource, 0);
+            if (player->form != FORM_ON_FOOT) {
+                AUDIO_PLAY_SFX(NA_SE_TANK_BOUND, player->sfxSource, 0);
+            }
         }
         player->grounded = true;
         if (player->vel.y < -20.0f) {
@@ -952,9 +954,15 @@ void func_tank_80046704(Player* player) {
                                 Player_ApplyDamage(player, temp_v0, 5);
                             }
                         }
-                        player->pos.x = player->basePos.x;
-                        player->knockback.x = 2.0f * D_800C9F4C[temp_v0];
-                        player->pos.x += (D_800C9F4C[temp_v0] * 5.0f);
+                        if (player->form == FORM_ON_FOOT) {
+                            //player->pos.x -= (D_800C9F4C[temp_v0] * 5.0f);
+                            player->pos.x -= player->vel.x;
+                            player->vel.x = 0.0f;
+                        } else {
+                            player->pos.x = player->basePos.x;
+                            player->knockback.x = 2.0f * D_800C9F4C[temp_v0];
+                            player->pos.x += (D_800C9F4C[temp_v0] * 5.0f);
+                        }
                         break;
                     case 3:
                         if ((scenery->obj.id == OBJ_SCENERY_MA_BUILDING_1) ||
@@ -1199,7 +1207,9 @@ void func_tank_80047754(Player* player) {
             ((D_MA_801BE250[2] + 30.0f) < (player->pos.y + 60.f))) {
             func_tank_80047D38(player, D_MA_801BE250[2] + 29.0f);
             player->rot.x = D_MA_801BE250[3];
-            func_tank_80047FBC(player);
+            if (player->form != FORM_ON_FOOT) { // No shaking on train tracks
+                func_tank_80047FBC(player);
+            }
             sp2F = true;
         } else {
             if (((player->pos.x - 150.0f) < D_MA_801BE250[9]) && (D_MA_801BE250[9] < (player->pos.x + 150.0f)) &&

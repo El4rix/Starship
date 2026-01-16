@@ -283,14 +283,14 @@ void Venom2_LoadLevelObjects(void) {
     boss->obj.id = OBJ_BOSS_VE2_BASE;
     Object_SetInfo(&boss->info, boss->obj.id);
 
-    if (gTurretModeEnabled) {
-        temple = gScenery360;
+    if (gTurretModeEnabled == true) {
+        temple = &gScenery360[31];
         Scenery360_Initialize(temple);
         temple->obj.status = OBJ_ACTIVE;
         temple->obj.id = OBJ_SCENERY_VE1_TEMPLE_ENTRANCE;
         temple->obj.pos.x = 0;
         temple->obj.pos.y = 0;
-        temple->obj.pos.z = -10000;
+        temple->obj.pos.z = -12000.0f;
 
         Object_SetInfo(&temple->info, temple->obj.id);
     }

@@ -1472,7 +1472,7 @@ void Item_Draw(Item* this, s32 arg1) {
     Object_SetSfxSourceToView(this->sfxSource, &dest);
 
     if (!drawn && (gLevelMode == LEVELMODE_ALL_RANGE) && (gCamCount == 1) && (this->obj.id < OBJ_ITEM_GOLD_RING) &&
-        (gCurrentLevel != LEVEL_VENOM_ANDROSS) && (!gTurretModeEnabled)) {
+        (gCurrentLevel != LEVEL_VENOM_ANDROSS) && (!gTurretModeEnabled) && (gPlayer[0].form != FORM_ON_FOOT)) {
         Object_Kill(&this->obj, this->sfxSource);
     }
 }
@@ -1651,6 +1651,13 @@ void Scenery360_Draw(Scenery360* this) {
         Matrix_Translate(gGfxMatrix, this->obj.pos.x, this->obj.pos.y + gCameraShakeY, this->obj.pos.z, MTXF_APPLY);
     } else {
         Matrix_Translate(gGfxMatrix, this->obj.pos.x, this->obj.pos.y, this->obj.pos.z, MTXF_APPLY);
+    }
+
+    if ((gPlayer[0].form == FORM_ON_FOOT) && (gCurrentLevel == LEVEL_VENOM_ANDROSS)) {
+        if ((this->obj.id == OBJ_SCENERY_VS_PYRAMID_1) && (this->obj.rot.x != 0.0f)) {
+            Matrix_RotateX(gGfxMatrix, this->obj.rot.x * M_DTOR, MTXF_APPLY);
+            this->obj.rot.y++;
+        }
     }
 
     Matrix_MultVec3f(gGfxMatrix, &src, &dest);

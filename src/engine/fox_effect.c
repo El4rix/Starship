@@ -2423,6 +2423,10 @@ void Effect_Effect367_Update(Effect367* this) {
             Object_Kill(&this->obj, this->sfxSource);
         }
     }
+    if ((gPlayer[0].form == FORM_ON_FOOT) && (gCurrentLevel == LEVEL_VENOM_ANDROSS)) {
+        this->obj.pos.x = gPlayer[0].pos.x;
+        this->obj.pos.z = gPlayer[0].pos.z;
+    }
 }
 
 void func_effect_8007E6B8(Effect* this, u32 objId, f32 xPos, f32 yPos, f32 zPos, f32 speed) {   // shoot laser at player

@@ -707,9 +707,15 @@ void ActorAllRange_SpawnSupplies(Actor* this) {
                     supplies->obj.status = OBJ_INIT;
                     supplies->obj.id = OBJ_ACTOR_SUPPLIES;
                     if (gCurrentLevel == LEVEL_SECTOR_Z) {
-                        supplies->obj.pos.x = 200.0f;
-                        supplies->obj.pos.y = -500.0f;
-                        supplies->obj.pos.z = 0.0f;
+                        if (gPlayer[0].form == FORM_ON_FOOT) {
+                            supplies->obj.pos.x = 0.0f;
+                            supplies->obj.pos.y = -400.0f;
+                            supplies->obj.pos.z = 1500.0f;
+                        } else {
+                            supplies->obj.pos.x = 200.0f;
+                            supplies->obj.pos.y = -500.0f;
+                            supplies->obj.pos.z = 0.0f;
+                        }
                         AUDIO_PLAY_SFX(NA_SE_ARWING_BOOST, supplies->sfxSource, 0);
                         supplies->timer_0C2 = 50;
                     } else {
@@ -956,8 +962,8 @@ void ActorAllRange_ApplyDamage(ActorAllRange* this) {
                 }
             }
             
-            if ((gTurretModeEnabled) && (gCurrentLevel == LEVEL_KATINA) && (this->animFrame == 1) && (this->dmgSource == AI360_FOX + 1)) {
-                this->health += (this->damage * 0.75);
+            if (((gTurretModeEnabled) || (gPlayer[0].form == FORM_ON_FOOT)) && (gCurrentLevel == LEVEL_KATINA) && (this->animFrame == 1) && (this->dmgSource == AI360_FOX + 1)) {
+                this->health += (this->damage * 0.75f);
             }
 
             if (this->health <= 0) {
