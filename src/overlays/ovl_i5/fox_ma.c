@@ -5614,7 +5614,7 @@ void Macbeth_LevelStart(Player* player) {
 
     Player_UpdatePath(player);
 
-    if (player->form == FORM_ON_FOOT) {
+    /* if (player->form == FORM_ON_FOOT) {
         player->state = PLAYERSTATE_ACTIVE;
 
         gLevelObjects = SEGMENTED_TO_VIRTUAL(D_MA_6035678);
@@ -5645,7 +5645,7 @@ void Macbeth_LevelStart(Player* player) {
         gObjectLoadIndex = 40;
 
         return;
-    }
+    } */
 
     switch (player->csState) {
         case 0:
@@ -5767,6 +5767,15 @@ void Macbeth_LevelStart(Player* player) {
             D_i5_801BA768 += 0.2f;
         }
         player->zPath += D_i5_801BA768;
+    }
+
+    if (player->form == FORM_ON_FOOT) {
+        player->pos.y = 0.0f;
+        player->grounded = true;
+        if (player->state == PLAYERSTATE_ACTIVE) {
+            player->pos.z = player->trueZpos = player->zPath = gPathProgress = 0.0f;
+            player->pathHeight = 700.0f;
+        }
     }
 }
 
@@ -8909,6 +8918,11 @@ void Macbeth_LevelComplete1(Player* player) {
             Audio_FadeOutAll(10);
             gLeveLClearStatus[LEVEL_MACBETH] = Play_CheckMedalStatus(150) + 1;
         }
+    }
+
+    if (player->form == FORM_ON_FOOT) {
+        player->grounded = true;
+        player->pos.y = 0.0f;
     }
 }
 

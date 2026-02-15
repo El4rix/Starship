@@ -3795,6 +3795,10 @@ void ActorEvent_Update(ActorEvent* this) {
                     this->fwork[16] = 0.0f;
                 }
             }
+
+            if (gPlayer[0].form == FORM_ON_FOOT) {
+                this->obj.pos.y *= 0.9f;
+            }
             break;
 
         case EVID_AQ_OYSTER:

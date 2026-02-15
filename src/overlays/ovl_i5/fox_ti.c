@@ -1956,7 +1956,7 @@ void Titania_TiDelphorHead_Update(TiDelphorHead* this) {
             this->timer_0C6 = 10;
             if (this->health > 0) {
                 this->health -= this->damage;
-                if ((gTurretModeEnabled) || (gPlayer[0].form == FORM_ON_FOOT)) {
+                if (gTurretModeEnabled || (gPlayer[0].form == FORM_ON_FOOT)) {
                     this->health += (this->damage * 0.5f);
                 }
                 if (this->health <= 0) {
@@ -2328,6 +2328,9 @@ void Titania_TiGoras_Init(TiGoras* this) {
         this->swork[11] = 200;
         this->swork[12] = 200;
         this->swork[21] = 450;
+        if (gPlayer[0].form == FORM_ON_FOOT) {
+            this->swork[21] = 100;
+        }
     }
 
     sp1C = D_i5_801BBEF4 = Memory_Allocate(76 * sizeof(f32));
@@ -3299,8 +3302,13 @@ void Titania_80192118(TiGoras* this) {
                 this->swork[30]++;
             }
 
-            if (((gPlayer[0].trueZpos - this->obj.pos.z) <= 450.0f) && (gPlayer[0].form == FORM_ON_FOOT)) {
+            if (((gPlayer[0].trueZpos - this->obj.pos.z) <= 550.0f) && (gPlayer[0].form == FORM_ON_FOOT)) {
                 gRunning = false;
+                gPlayer[0].unk_19C = -1;
+                gPlayer[0].unk_000 = 0.0f;
+                this->swork[1] = 2;
+                this->swork[31] = 0;
+                this->swork[30]++;
             }
 
             if ((gPlayer[0].trueZpos - this->obj.pos.z) <= 450.0f) {
@@ -3418,7 +3426,7 @@ void Titania_80192118(TiGoras* this) {
                         AUDIO_PLAY_SFX(NA_SE_EN_DAMAGE_S, this->sfxSource, 4);
                         break;
                 }
-                if (gTurretModeEnabled) {
+                if (gTurretModeEnabled || (gPlayer[0].form == FORM_ON_FOOT)) {
                     D_i5_801BBEF0[27] += (this->damage * 0.75f);
                 }
                 this->dmgType = DMG_NONE;
@@ -5062,6 +5070,8 @@ s16 D_i5_801B8D54[4] = { 30, 35, 60, 70 };
 
 void Titania_TiGoras_Update(Boss* boss) {
     Vec3f sp3C;
+    s32 pad;
+    s32 i;
 
     boss->swork[38]++;
 
@@ -5263,12 +5273,53 @@ void Titania_TiGoras_Update(Boss* boss) {
     }
     boss->swork[31]++;
 
-    if ((gTurretModeEnabled)) {
+    if (gTurretModeEnabled) {
         if (boss->state > 4) {
             boss->obj.pos.z = gPlayer[0].trueZpos - 1500;
         }
-
         gBossHealthBar = (s32) ((boss->swork[21] * 255.0f) / 450.0f);
+
+    } else if (gPlayer[0].form == FORM_ON_FOOT) {
+        if (boss->state > 4) {
+            if (boss->obj.pos.z > gPlayer[0].trueZpos - 900.0f) {
+                boss->obj.pos.z = gPlayer[0].trueZpos - 900.0f;
+            }
+        }
+        if ((boss->state >= 7) && (boss->state < 14)) {     // make it easier to hit weakpoint
+            if (boss->dmgType == DMG_BEAM) {
+                boss->dmgType = DMG_NONE;
+                /* D_i5_801BD668[D_i5_801B7904[boss->dmgPart]] = D_i5_801B7960[D_i5_801B7904[boss->dmgPart]][1];
+                D_i5_801BD6B0[D_i5_801B7904[boss->dmgPart]] = 0; */
+
+                /* if ((D_i5_801B7904[boss->dmgPart] == 6) && (boss->state == 11)) {
+                    D_i5_801BD668[D_i5_801B7904[boss->dmgPart]] = 0;
+                } */
+
+                if ((gBossHealthBar > 0) && (D_i5_801B7904[boss->dmgPart] == 23) /* && (boss->swork[29] != 0) */ &&
+                        (boss->swork[21] > 0)) {
+                    boss->swork[21] -= boss->damage;
+                    if (boss->swork[21] <= 0) {
+                        gTeamLowHealthMsgTimer = -1;
+                        boss->swork[21] = 0;
+                        gScreenFlashTimer = 8;
+                        AUDIO_PLAY_SFX(NA_SE_EN_DOWN_IMPACT, boss->sfxSource, 4);
+                    } else {
+                        AUDIO_PLAY_SFX(NA_SE_EN_TIBOSS_DM_CRY, boss->sfxSource, 4);
+
+                        if (boss->swork[21] <= 10) {
+                            D_i5_801BBEF0[1] = 15;
+                        } else if (boss->swork[21] <= 20) {
+                            D_i5_801BBEF0[1] = 20;
+                        }
+                    }
+                    gBossHealthBar = (s32) ((boss->swork[21] * 255.0f) / 100.0f);
+                    boss->swork[22] = 20;
+                    D_i5_801BBEF0[6] = 20;
+
+                    D_i5_801BBEF4[10] = 4.0f;
+                }
+            }
+        }
     }
 }
 

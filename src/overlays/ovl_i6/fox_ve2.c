@@ -331,6 +331,12 @@ void Venom2_LevelStart(Player* player) {
     if (gTurretModeEnabled) {
         player->cam.eye.y = 2400.0f;
         player->cam.eye.z = 12000.0f;
+    } else if (player->form == FORM_ON_FOOT) {
+        player->cam.eye.x = 800.0f;
+        player->cam.eye.y = 100.0f;
+        player->cam.eye.z = 9700.0f;
+        player->pos.y = 0.0f;
+        player->grounded = true;
     } else {
         player->cam.eye.y = 1800.0f;
         player->cam.eye.z = 9000.0f;
@@ -581,6 +587,14 @@ void Venom2_LevelComplete(Player* player) {
     Math_SmoothStepToF(&player->cam.at.x, gCsCamAtX, D_ctx_80177A48[1], 100.0f, 0);
     Math_SmoothStepToF(&player->cam.at.y, gCsCamAtY, D_ctx_80177A48[1], 100.0f, 0);
     Math_SmoothStepToF(&player->cam.at.z, gCsCamAtZ, D_ctx_80177A48[1], 100.0f, 0);
+
+    if (player->form == FORM_ON_FOOT) {
+        player->rot.z = 0.0f;
+        player->rot.x = 0.0f;
+        player->zRotBank = 0.0f;
+        player->bankAngle = 0.0f;
+        player->hideShadow = true;
+    }
 
     player->bobPhase += 10.0f;
     player->yBob = -SIN_DEG(player->bobPhase) * 0.3f;

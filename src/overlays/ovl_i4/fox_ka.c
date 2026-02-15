@@ -1744,6 +1744,11 @@ void Katina_SFTeamMissionAccomUpdate(ActorCutscene* this, s32 idx) {
  * fleeing the stage in the context of a failed mission.
  */
 void Katina_SFTeamFleeUpdate(ActorCutscene* this, s32 idx) {
+
+    if (gPlayer[0].form == FORM_ON_FOOT) {
+        return;
+    }
+
     Actor_Initialize(this);
 
     this->obj.status = OBJ_INIT;

@@ -160,9 +160,9 @@ void SectorZ_MissileExplode(ActorAllRange* this, bool shotDown) {
         } else if ((sMissileDestroyCount >= 9) && (gPlayer[0].form == FORM_ON_FOOT)) {
             gCsFrameCount = 0;
             gPlayer[0].state = PLAYERSTATE_LEVEL_COMPLETE;
-            gPlayer[0].csState = 1000;
+            gPlayer[0].csState = 0;
             gActors[SZ_GREAT_FOX].state = 6;
-            gPlayer[0].csTimer = 30;
+            gPlayer[0].csTimer = 0;
             AUDIO_PLAY_SFX(NA_SE_GREATFOX_ENGINE, gActors[SZ_GREAT_FOX].sfxSource, 0);
             AUDIO_PLAY_SFX(NA_SE_GREATFOX_BURNER, gActors[SZ_GREAT_FOX].sfxSource, 0);
             SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 1);
@@ -807,7 +807,7 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
                 AUDIO_PLAY_BGM(NA_BGM_BOSS_SZ);
                 break;
             case 2000:
-                gRadarMissileAlarmTimer = 200;
+                gRadarMissileAlarmTimer = 250;
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_CENTER], 0);
 
                 /* SectorZ_SpawnMissileEscort(&gActors[SZ_ESCORT_1], 0);
@@ -830,6 +830,10 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_LEFT], 1);
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_CENTER], 0);
                 gRadarMissileAlarmTimer = 200;
+                break;
+
+            case 4900:
+                gCallTimer = 60;
                 break;
 
             // Wave 3 ==================================================================================
@@ -1379,6 +1383,14 @@ void SectorZ_LevelStart(Player* player) {
                 player->pos.y = greatFox->obj.pos.y - 480.0f;
                 player->pos.z = greatFox->obj.pos.z;
 
+                if (player->form == FORM_ON_FOOT) {
+                    player->pos.x -= 200.0f;
+                    player->pos.y -= 60.0f;
+                    player->rot.y = 90.0f;
+                    player->grounded = true;
+                    player->draw = true;
+                }
+
                 AUDIO_PLAY_BGM(NA_BGM_SZ_START_DEMO);
             }
             break;
@@ -1417,7 +1429,9 @@ void SectorZ_LevelStart(Player* player) {
                 player->rot.x += 0.25f;
             }
 
-            if (gCsFrameCount > 765) {
+            if (player->form == FORM_ON_FOOT) {
+                gCsCamEyeZ -= 4.0f;
+            } else if (gCsFrameCount > 765) {
                 gCsCamEyeZ += 3.0f;
                 Math_SmoothStepToF(D_ctx_80177A48, 0.9f, 1.0f, 0.07f, 0.0f);
             } else {
@@ -1430,6 +1444,9 @@ void SectorZ_LevelStart(Player* player) {
                 }
                 SectorZ_LoadLevelObjects();
                 SectorZ_TeamSetup();
+                if (player->form == FORM_ON_FOOT) {
+                    gCsFrameCount = 820;
+                }
             }
 
             if (gCsFrameCount == 820) {
@@ -1477,28 +1494,41 @@ void SectorZ_LevelStart(Player* player) {
         case 700:
             if (gTeamShields[TEAM_ID_SLIPPY] > 0) {
                 SectorZ_CsTeamInit(&gActors[30], 0);
+                if (player->form == FORM_ON_FOOT) {
+                    gActors[30].obj.pos.y += 50.0f;
+                }
             }
             break;
 
         case 720:
             if (gTeamShields[TEAM_ID_FALCO] > 0) {
                 SectorZ_CsTeamInit(&gActors[31], 1);
+                if (player->form == FORM_ON_FOOT) {
+                    gActors[31].obj.pos.y += 50.0f;
+                }
             }
             break;
 
         case 740:
             if (gTeamShields[TEAM_ID_PEPPY] > 0) {
                 SectorZ_CsTeamInit(&gActors[32], 2);
+                if (player->form == FORM_ON_FOOT) {
+                    gActors[32].obj.pos.y += 50.0f;
+                }
             }
             break;
 
         case 760:
-            player->unk_194 = 5.0f;
-            player->unk_190 = 5.0f;
-            player->yRot_114 = 90.0f;
-            player->baseSpeed = gArwingSpeed;
-            player->draw = true;
-            AUDIO_PLAY_SFX(NA_SE_ARWING_BOOST, player->sfxSource, 0);
+            if (player->form == FORM_ON_FOOT) {
+                gCsFrameCount += 39;
+            } else {
+                player->unk_194 = 5.0f;
+                player->unk_190 = 5.0f;
+                player->yRot_114 = 90.0f;
+                player->baseSpeed = gArwingSpeed;
+                player->draw = true;
+                AUDIO_PLAY_SFX(NA_SE_ARWING_BOOST, player->sfxSource, 0);
+            }
             break;
     }
 
@@ -1528,6 +1558,13 @@ void SectorZ_LevelStart(Player* player) {
     Math_SmoothStepToF(&player->cam.at.x, gCsCamAtX, D_ctx_80177A48[0], 50000.0f, 0);
     Math_SmoothStepToF(&player->cam.at.y, gCsCamAtY, D_ctx_80177A48[0], 50000.0f, 0);
     Math_SmoothStepToF(&player->cam.at.z, gCsCamAtZ, D_ctx_80177A48[0], 50000.0f, 0);
+
+    if (player->form == FORM_ON_FOOT) {
+        player->grounded = true;
+        if (player->state == PLAYERSTATE_ACTIVE) {
+            player->yRot_114 = 0.0f;
+        }
+    }
 }
 
 void Turret_SectorZ_LevelStart(Player* player) {
@@ -1956,6 +1993,9 @@ void SectorZ_LevelComplete(Player* player) {
             gProjectFar = 30000.0f;
 
             player->csTimer = 550;
+            if (player->form == FORM_ON_FOOT) {
+                player->csTimer = 200;
+            }
             player->baseSpeed = 0.0f;
             player->camRoll = 0.0f;
 

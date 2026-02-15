@@ -3489,6 +3489,9 @@ void SectorY_801A0AC0(Player* player) {
     player->pos.y += player->vel.y;
     player->pos.z += player->vel.z;
     player->trueZpos = player->pos.z + player->camDist;
+    if ((player->form == FORM_ON_FOOT) && (gCsFrameCount >= 609)) {
+        player->pos.z = player->trueZpos = 0.0f;
+    }
 }
 
 void SectorY_ActorDebris_Setup(ActorDebris* this, f32 xPos, f32 yPos, f32 zPos, f32 xVel, f32 yVel, f32 zVel,

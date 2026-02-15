@@ -6502,7 +6502,16 @@ void Aquas_CsLevelComplete(Player* player) {
     player->yBob = -SIN_DEG(player->bobPhase) * 0.5f;
     player->rockAngle = SIN_DEG(player->rockPhase) * 1.5f;
 
-    if (player->draw) {
+    if (player->form == FORM_ON_FOOT) {
+        player->bankAngle = 0.0f;
+        player->hideShadow = true;
+        Aquas_Effect366_Spawn(player->pos.x + RAND_FLOAT_CENTERED(10.0f) + 12.0f,
+                              player->pos.y + RAND_FLOAT_CENTERED(1.0f),
+                              player->trueZpos + RAND_FLOAT_CENTERED(7.0f) + 10.0f, 0.4f, 1);
+        Aquas_Effect366_Spawn(player->pos.x + RAND_FLOAT_CENTERED(10.0f) - 12.0f,
+                              player->pos.y + RAND_FLOAT_CENTERED(1.0f),
+                              player->trueZpos + RAND_FLOAT_CENTERED(7.0f) + 10.0f, 0.4f, 1);
+    } else if (player->draw) {
         src.x = 0.0f;
         src.y = 0.0f;
         src.z = -70.0f;
@@ -6529,6 +6538,10 @@ void Venom1_LevelStart2(Player* player) {
     switch (player->csState) {
         case 0:
             player->pos.y += 3400.0f;
+            if (player->form == FORM_ON_FOOT) {
+                player->pos.y = 0.0f;
+                player->grounded = true;
+            }
             player->rot.x = 270.0f;
             gPlayer[0].baseSpeed = 0.0f;
 
@@ -6597,6 +6610,9 @@ void Venom1_LevelStart2(Player* player) {
                 AUDIO_PLAY_SFX(NA_SE_ARWING_DASH, player->sfxSource, 0);
                 if (gTurretModeEnabled) {
                     player->draw = true;
+                }
+                if (player->form == FORM_ON_FOOT) {
+                    player->grounded = false;
                 }
             }
             break;

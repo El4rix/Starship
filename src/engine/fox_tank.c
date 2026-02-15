@@ -157,6 +157,10 @@ void func_tank_80043B18(Player* player) {
     Vec3f sp3C;
     f32 sp38;
 
+    if (player->form == FORM_ON_FOOT) {
+        return;
+    }
+
     Matrix_Translate(gCalcMatrix, 0.0f, player->unk_18C + 30.0f, 0, MTXF_NEW);
     Matrix_RotateY(gCalcMatrix, player->yRot_114 * M_DTOR, MTXF_APPLY);
     Matrix_RotateX(gCalcMatrix, player->rot.x * M_DTOR, MTXF_APPLY);
@@ -1286,7 +1290,9 @@ void func_tank_80047D38(Player* player, f32 arg1) {
     }
     if ((player->pos.y - 5.0f) < arg1) {
         if (player->vel.y < -10.0f) {
-            AUDIO_PLAY_SFX(NA_SE_TANK_BOUND, player->sfxSource, 0);
+            if (player->form != FORM_ON_FOOT) {
+                AUDIO_PLAY_SFX(NA_SE_TANK_BOUND, player->sfxSource, 0);
+            }
             player->hitTimer = 10;
         }
         D_800C9F04 = 1;

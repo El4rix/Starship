@@ -1075,6 +1075,10 @@ void Solar_LevelStart(Player* player) {
             gFillScreenAlphaTarget = 0;
             Solar_801A0DF8(-750.0f, -2600.0f, 300.0f, 2, 1.0f);
             AUDIO_PLAY_SFX(NA_SE_OB_MAGMA_BUBBLE, player->sfxSource, 0);
+
+            if (gTurretModeEnabled || (player->form == FORM_ON_FOOT)) {
+                player->draw = false;
+            }
             break;
 
         case 1:
@@ -1121,8 +1125,12 @@ void Solar_LevelStart(Player* player) {
                 Solar_801A0DF8(400.0f, -2800.0f, 340.0f, 1, 1.0f);
             }
 
+            if ((player->form == FORM_ON_FOOT) && (gCsFrameCount < 410)) {
+                Audio_KillSfxById(NA_SE_TANK_GO_UP);
+            }
+
             if (gCsFrameCount == 410) {
-                if (gTurretModeEnabled) {
+                if (gTurretModeEnabled || (player->form == FORM_ON_FOOT)) {
                     player->draw = true;
                 }
                 player->csState++;
@@ -1282,6 +1290,10 @@ void Solar_LevelStart(Player* player) {
     player->pos.y += player->vel.y;
     player->pos.z += player->vel.z;
     player->trueZpos = player->pos.z + player->camDist;
+
+    if ((player->form == FORM_ON_FOOT) && (gLoadLevelObjects == 1)) {
+        player->pos.z = player->trueZpos = 0.0f;
+    }
 }
 
 void Solar_801A1CD8(ActorDebris* this, f32 xPos, f32 yPos, f32 zPos, f32 xRot, f32 yRot, f32 zRot, f32 xVel, f32 yVel,

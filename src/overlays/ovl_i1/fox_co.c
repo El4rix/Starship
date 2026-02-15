@@ -245,6 +245,9 @@ void Corneria_CoGranga_HandleDamage(CoGranga* this) {
                     gPlayer[0].csState = gPlayer[0].csTimer = 0;
                     gPlayer[0].rot.y += gPlayer[0].yRot_114;
 
+                    if (gPlayer[0].form == FORM_ON_FOOT) {
+                        gPlayer[0].hideShadow = true;
+                    }
                     if (gPlayer[0].rot.y > 360.0f) {
                         gPlayer[0].rot.y -= 360.0f;
                     }
@@ -2968,7 +2971,7 @@ void Corneria_CsTeamSetup(ActorCutscene* this, s32 teamIdx) {
     this->obj.status = OBJ_INIT;
     this->obj.id = OBJ_ACTOR_CUTSCENE;
     
-    if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
+    if (gTurretModeEnabled) {
         this->obj.pos.x = (sTurretCoLevelStartTeamXpos[teamIdx] * 4.0f) + gPlayer[0].pos.x;
         this->obj.pos.y = (sTurretCoLevelStartTeamYpos[teamIdx] * 2.0f) + gPlayer[0].pos.y;
         this->obj.pos.z = (sTurretCoLevelStartTeamZpos[teamIdx] * 3.0f) + gPlayer[0].trueZpos;
@@ -3203,6 +3206,12 @@ void Corneria_LevelStart(Player* player) {
             gCsCamAtY = player->pos.y + 10.0f;
             gCsCamAtZ = player->trueZpos + 10.0f;
 
+            if (player->form == FORM_ON_FOOT) {
+                gCsCamEyeY += 10.0f;
+                gCsCamAtY += 10.0f;
+                falco->obj.pos.y = player->pos.y - 800.0f;
+            }
+
             if (player->csTimer == 20) {
                 Radio_PlayMessage(gMsg_ID_2010, RCID_FOX);
             }
@@ -3238,6 +3247,10 @@ void Corneria_LevelStart(Player* player) {
 
             gCsCamEyeY = player->pos.y + 10.0f;
             gCsCamAtY = player->pos.y + 10.0f;
+            if (player->form == FORM_ON_FOOT) {
+                gCsCamEyeY += 10.0f;
+                gCsCamAtY += 10.0f;
+            }
             break;
 
         case 4:
@@ -3517,6 +3530,10 @@ void Corneria_LevelStart(Player* player) {
     peppy->obj.pos.y -= 3.0f;
     slippy->vwork[20].y -= 3.0f;
     slippy->obj.pos.y -= 3.0f;
+
+    if (player->form == FORM_ON_FOOT) {
+        //player->pos.y = 0.0f;
+    }
 }
 
 void Turret_Corneria_LevelStart(Player* player) {
@@ -4063,7 +4080,7 @@ void Corneria_CsLevelComplete1_TeamSetup(ActorCutscene* this, s32 index) {
 
     sp44.x = D_i1_80199B08[index];
     sp44.y = D_i1_80199B14[index];
-    if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
+    if (gTurretModeEnabled) {
         sp44.z = Turret_D_i1_80199B20[index];
     } else {
         sp44.z = D_i1_80199B20[index];       

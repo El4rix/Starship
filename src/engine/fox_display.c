@@ -529,7 +529,7 @@ void Display_JetpackThrusters(Player* player) {
     gDPSetEnvColor(gMasterDisp++, 255, 0, 0, 192);
     RCP_SetupDL(&gMasterDisp, SETUPDL_67);
 
-    sp2C = player->unk_16C;
+    sp2C = player->unk_16C;     // First thruster
     if (sp2C > 0.2f) {
         sp2C *= 1.1f;
 
@@ -539,7 +539,11 @@ void Display_JetpackThrusters(Player* player) {
 
         Matrix_Push(&gGfxMatrix);
         if ((gLevelMode == LEVELMODE_ALL_RANGE) && (player->state != PLAYERSTATE_START_360)) {
-            Matrix_Translate(gGfxMatrix, player->pos.x + 10.0f * cos(player->camYaw) - 10.0f * sin(player->camYaw), player->pos.y - 3.0f, player->pos.z + 10.0f * sin(player->camYaw) + 10.0f * cos(player->camYaw), MTXF_APPLY);
+            Matrix_Translate(gGfxMatrix, player->pos.x + 15.0f * COS_DEG(-player->yRot_114 - player->rot.y + 90.0f - 30.0f), 
+                                        player->pos.y - 3.0f, 
+                                        player->pos.z + 15.0f * SIN_DEG(-player->yRot_114 - player->rot.y + 90.0f - 30.0f), MTXF_APPLY);
+        } else if ((player->state == PLAYERSTATE_LEVEL_COMPLETE) && ((gCurrentLevel == LEVEL_CORNERIA) || (gCurrentLevel == LEVEL_VENOM_ANDROSS))) {
+            Matrix_Translate(gGfxMatrix, player->pos.x + 10.0f, player->pos.y - 3.0f, player->trueZpos + player->zPath - 10, MTXF_APPLY);
         } else {
             Matrix_Translate(gGfxMatrix, player->pos.x + 10.0f, player->pos.y - 3.0f, player->trueZpos + player->zPath + 10, MTXF_APPLY);
         }
@@ -551,7 +555,7 @@ void Display_JetpackThrusters(Player* player) {
         Matrix_Pop(&gGfxMatrix);
     }
 
-    sp2C = player->unk_170;
+    sp2C = player->unk_170;     // Repeat for 2nd thruster
     if (sp2C > 0.2f) {
         sp2C *= 1.1f;
 
@@ -561,7 +565,11 @@ void Display_JetpackThrusters(Player* player) {
 
         Matrix_Push(&gGfxMatrix);
         if ((gLevelMode == LEVELMODE_ALL_RANGE) && (player->state != PLAYERSTATE_START_360)) {
-            Matrix_Translate(gGfxMatrix, player->pos.x - 10.0f * cos(player->camYaw) - 10.0f * sin(player->camYaw), player->pos.y - 3.0f, player->pos.z - 10.0f * sin(player->camYaw) + 10.0f * cos(player->camYaw), MTXF_APPLY);
+            Matrix_Translate(gGfxMatrix, player->pos.x + 15.0f * COS_DEG(-player->yRot_114 - player->rot.y + 90.0f + 30.0f), 
+                                        player->pos.y - 3.0f, 
+                                        player->pos.z + 15.0f * SIN_DEG(-player->yRot_114 - player->rot.y + 90.0f + 30.0f), MTXF_APPLY);
+        } else if ((player->state == PLAYERSTATE_LEVEL_COMPLETE) && ((gCurrentLevel == LEVEL_CORNERIA) || (gCurrentLevel == LEVEL_VENOM_ANDROSS))) {
+            Matrix_Translate(gGfxMatrix, player->pos.x - 10.0f, player->pos.y - 3.0f, player->trueZpos + player->zPath - 10, MTXF_APPLY);
         } else {
             Matrix_Translate(gGfxMatrix, player->pos.x - 10.0f, player->pos.y - 3.0f, player->trueZpos + player->zPath + 10.0f, MTXF_APPLY);
         }
@@ -1562,8 +1570,7 @@ void Display_Player_Update(Player* player, s32 reflectY) {
             Matrix_Push(&gGfxMatrix);
             RCP_SetupDL_30(gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
             //Matrix_Translate(gGfxMatrix, player->pos.x, player->pos.y - 550, 1300, MTXF_APPLY); // On bridge
-            //Matrix_Translate(gGfxMatrix, player->pos.x + 1350, player->pos.y - 472, -390, MTXF_APPLY); // On wing
-            Matrix_Translate(gGfxMatrix, player->pos.x + 1350, -473 /* - player->pos.y */ + player->yPathTarget - gCameraShakeY, -390 + player->camDist, MTXF_APPLY); // On wing jumping
+            Matrix_Translate(gGfxMatrix, player->pos.x + 1350, -473 /* - player->pos.y */ + player->yPathTarget - gCameraShakeY, -390, MTXF_APPLY); // On wing jumping
             Matrix_Scale(gGfxMatrix, 1.0f, 1.0f, 1.0f, MTXF_APPLY);
             Matrix_RotateY(gGfxMatrix, 180 * M_DTOR, MTXF_APPLY);
             Matrix_SetGfxMtx(&gMasterDisp);
@@ -1580,7 +1587,7 @@ void Display_Player_Update(Player* player, s32 reflectY) {
             //RCP_SetupDL_30(gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
             //Matrix_Translate(gGfxMatrix, player->pos.x, player->pos.y - 550, 1300, MTXF_APPLY); // On bridge
             //Matrix_Translate(gGfxMatrix, player->pos.x + 1350, player->pos.y - 472, -390, MTXF_APPLY); // On wing
-            Matrix_Translate(gGfxMatrix, player->pos.x, 225 - player->pos.y - gCameraShakeY,  player->camDist, MTXF_APPLY); // On wing jumping
+            Matrix_Translate(gGfxMatrix, player->pos.x, 225 - player->pos.y - gCameraShakeY,  player->camDist, MTXF_APPLY);
             Matrix_Scale(gGfxMatrix, 3.5f, 3.5f, 3.5f, MTXF_APPLY);
             Matrix_RotateY(gGfxMatrix, -1 * player->vel.x * M_DTOR, MTXF_APPLY);
             Matrix_SetGfxMtx(&gMasterDisp);
@@ -1591,7 +1598,7 @@ void Display_Player_Update(Player* player, s32 reflectY) {
         if ((player->form == FORM_ON_FOOT) && (gCurrentLevel == LEVEL_SOLAR) && (player->state == PLAYERSTATE_ACTIVE)) { // Rock
             Matrix_Push(&gGfxMatrix);
             //RCP_SetupDL_30(gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
-            Matrix_Translate(gGfxMatrix, 0.0f /* player->pos.x */, 215.0f - gCameraShakeY /* + fabsf(player->pos.x) / 10 */, 400.0f + player->camDist, MTXF_APPLY); // On wing jumping
+            Matrix_Translate(gGfxMatrix, 0.0f /* player->pos.x */, 215.0f - gCameraShakeY /* + fabsf(player->pos.x) / 10 */, 400.0f + player->camDist, MTXF_APPLY);
             Matrix_Scale(gGfxMatrix, 2.0f, 0.2f, 0.5f, MTXF_APPLY);
             //Matrix_RotateZ(gGfxMatrix, -player->pos.x / 10 * M_DTOR, MTXF_APPLY);
             //Matrix_RotateY(gGfxMatrix, player->pos.x / 10 * M_DTOR, MTXF_APPLY);
@@ -1855,7 +1862,7 @@ void Display_PlayerShadow_Update(Player* player) {
             }
         } else if (player->form == FORM_ON_FOOT) {
             if (player->grounded == true) {
-                Matrix_Translate(gGfxMatrix, player->pos.x /* player->groundPos.x */, player->pos.y,
+                Matrix_Translate(gGfxMatrix, player->pos.x /* player->groundPos.x */, player->pos.y + gCameraShakeY + 1.0f,
                             player->camDist /* player->groundPos.z + player->zPath */, MTXF_APPLY);
             } else {
                 Matrix_Translate(gGfxMatrix, player->pos.x /* player->groundPos.x */, player->groundPos.y + 2.0f,

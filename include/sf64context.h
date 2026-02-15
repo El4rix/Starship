@@ -20,6 +20,7 @@ extern LevelMode gLevelMode;
 extern bool gTurretModeEnabled;
 extern bool gRunning;
 extern bool gStoppedRunning;
+extern f32 gJumpPos;
 extern bool gFaceZoom;
 extern DrawMode gDrawMode;
 extern s32 gPlayerNum;

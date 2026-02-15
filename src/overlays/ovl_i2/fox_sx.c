@@ -422,7 +422,7 @@ void SectorX_SxSpyborg_Update(SxSpyborg* this) {
             if ((this->dmgPart == 0) && ((this->fwork[4] < 45.0f) || (this->fwork[4] > 315.0f))) {
                 AUDIO_PLAY_SFX(NA_SE_EN_DAMAGE_S, this->sfxSource, 4);
                 this->swork[3] -= this->damage;
-                if (gTurretModeEnabled) {
+                if (gTurretModeEnabled || (gPlayer[0].form == FORM_ON_FOOT)) {
                     this->swork[3] += (this->damage * 0.5f);
                 }
                 this->timer_054 = 20;
@@ -468,7 +468,7 @@ void SectorX_SxSpyborg_Update(SxSpyborg* this) {
         if (this->swork[0] == 2) {
             if (this->dmgPart == 0) {
                 this->health -= this->damage;
-                if (gTurretModeEnabled) {
+                if (gTurretModeEnabled || (gPlayer[0].form == FORM_ON_FOOT)) {
                     this->health += (this->damage * 0.5f);
                 }
 
@@ -1568,6 +1568,9 @@ void SectorX_LevelStart(Player* player) {
                 player->unk_194 = 10.0f;
                 player->unk_190 = 10.0f;
                 player->baseSpeed = 30.0f;
+                if (player->form == FORM_ON_FOOT) {
+                    player->baseSpeed = 15.0f;
+                }
                 player->rot.z = -80.0f;
                 player->rot.x = -20.0f;
                 AUDIO_PLAY_SFX(NA_SE_ARWING_BOOST, player->sfxSource, 0);
@@ -1673,6 +1676,12 @@ void SectorX_LevelStart(Player* player) {
     player->pos.y += player->vel.y;
     player->pos.z += player->vel.z;
     player->trueZpos = player->pos.z + player->camDist;
+
+    if ((player->form == FORM_ON_FOOT) && (player->csTimer == 0) && (gCsFrameCount > 300)) {
+        player->pos.z = player->trueZpos = 0.0f;
+        player->pos.y = 200.0f;
+        //gPlayState = PLAY_INIT;
+    }
 }
 
 void SectorX_LevelComplete_SetupTeam(ActorCutscene* this, s32 teamIdx) {

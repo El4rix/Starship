@@ -778,6 +778,12 @@ void Background_DrawBackdrop(void) {
                     bgYpos = (gPlayer[gPlayerNum].camPitch * -7000.0f) - (gPlayer[gPlayerNum].cam.eye.y * 0.6f);
                     sp13C = camYawDeg * -40.44444f * 2.0f; // close to 7280.0f / 180.0f
 
+                    if (gPlayer[0].form == FORM_ON_FOOT) {
+                        camYawDeg = Math_RadToDeg(gPlayer[gPlayerNum].camYaw);
+                        sp13C = Math_ModF(camYawDeg * (-7280.0f / 360.0f) * 5.0f, 7280.0f);
+                        sp13C = -(7280.0f - sp13C);
+                    }
+
                     if ((gCurrentLevel == LEVEL_TITANIA) && (gPlayer[0].state == PLAYERSTATE_LEVEL_INTRO) &&
                         (gPlayer[0].csState < 3)) {
                         D_bg_8015F968 += __sinf(gPlayer[0].camYaw) * 20.0f;
@@ -1386,9 +1392,9 @@ void Background_DrawGround(void) {
     f32 temp_fa0;
 
     if ((gCurrentLevel != LEVEL_VENOM_2) && ((gPlayer[0].cam.eye.y > 4000.0f) || !gDrawGround)) {
-        if (gPlayer[0].form != FORM_ON_FOOT) {
+        //if (gPlayer[0].form != FORM_ON_FOOT) {
             return;
-        }
+        //}
     }
 
     if ((gCurrentLevel == LEVEL_BOLSE) && gBolseDynamicGround) {

@@ -18,6 +18,7 @@ LevelMode gLevelMode;
 bool gTurretModeEnabled;
 bool gRunning;
 bool gStoppedRunning;
+f32 gJumpPos;
 bool gFaceZoom;
 DrawMode gDrawMode;
 s32 gPlayerNum;

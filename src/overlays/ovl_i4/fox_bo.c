@@ -1384,6 +1384,10 @@ void Bolse_LevelStart(Player* player) {
     player->trueZpos = player->pos.z;
     player->bankAngle = (player->rot.z + player->zRotBank) + player->zRotBarrelRoll;
 
+    if (player->form == FORM_ON_FOOT) {
+        player->bankAngle *= 0.3f;
+    }
+
     Math_SmoothStepToF(&player->cam.eye.x, gCsCamEyeX, D_ctx_80177A48[0], 50000.0f, 0);
     Math_SmoothStepToF(&player->cam.eye.y, gCsCamEyeY, D_ctx_80177A48[0], 50000.0f, 0);
     Math_SmoothStepToF(&player->cam.eye.z, gCsCamEyeZ, D_ctx_80177A48[0], 50000.0f, 0);
@@ -1442,6 +1446,10 @@ void Bolse_LevelComplete(Player* player) {
             if (player->csTimer == 0) {
                 player->csState = 1;
                 player->csTimer = 200;
+                if (player->form == FORM_ON_FOOT) {
+                    player->csTimer = 70;
+                    player->hideShadow = true;
+                }
                 AUDIO_PLAY_SFX(NA_SE_ARWING_BOOST, player->sfxSource, 0);
                 player->unk_194 = 5.0f;
                 player->unk_190 = 5.0f;
@@ -1770,6 +1778,10 @@ void Bolse_LevelComplete(Player* player) {
 
     player->trueZpos = player->pos.z;
     player->bankAngle = player->rot.z + player->zRotBank + player->zRotBarrelRoll;
+
+    if (player->form == FORM_ON_FOOT) {
+        player->bankAngle = 0.0f;
+    }
 
     if (player->csState < 10) {
         Math_SmoothStepToF(&player->zRotBarrelRoll, 0.0f, 0.1f, 15.0f, 0.0f);

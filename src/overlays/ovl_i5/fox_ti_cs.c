@@ -146,12 +146,14 @@ void Titania_LevelStart(Player* player) {
                 gCsFrameCount = 480;
 
                 player->csState = 3;
-                player->zPath = 200.0f;
+                if (player->form != FORM_ON_FOOT) {
+                    player->zPath = 200.0f;
 
-                gPathProgress = 200.0f;
-                gPathGroundScroll = gPathProgress;
+                    gPathProgress = 200.0f;
+                    gPathGroundScroll = gPathProgress;
 
-                player->pos.z = -(gPathProgress) -200.0f;
+                    player->pos.z = -(gPathProgress) -200.0f;
+                }
                 player->gravity = 0.0f;
                 player->vel.y = 0.0f;
                 player->pos.y = 2000.0f;
@@ -251,7 +253,8 @@ void Titania_LevelStart(Player* player) {
                 D_ctx_8017782C = true;
                 Play_InitEnvironment();
                 D_ctx_8017782C = false;
-                if (gTurretModeEnabled) {
+                if (gTurretModeEnabled || (player->form == FORM_ON_FOOT)) {
+                    gTiStartLandmaster = 1;
                     Audio_KillSfxById(NA_SE_TANK_GO_UP);
                     AUDIO_PLAY_BGM(NA_BGM_STAGE_TI);
                 }
@@ -266,6 +269,10 @@ void Titania_LevelStart(Player* player) {
     player->vel.y -= player->gravity;
     player->pos.z += player->vel.z;
     player->trueZpos = player->pos.z;
+
+    if ((player->form == FORM_ON_FOOT) && (player->state == PLAYERSTATE_ACTIVE)) {
+        player->pos.z = player->trueZpos = gPathProgress = player->zPath = player->rockAngle = 0.0f;
+    }
 
     Math_SmoothStepToF(&player->cam.eye.x, gCsCamEyeX, D_ctx_80177A48[0], sp64, 0.00f);
     Math_SmoothStepToF(&player->cam.eye.y, gCsCamEyeY, D_ctx_80177A48[0], sp64, 0.00f);
@@ -388,7 +395,7 @@ void Titania_LevelComplete(Player* player) {
             Player_CollisionCheck(player);
             Player_UpdatePath(player);
 
-            if ((gGameFrameCount % 4) == 0) {
+            if (((gGameFrameCount % 4) == 0) && (player->form != FORM_ON_FOOT)) {
                 f32 x;
                 f32 y;
                 f32 z;
@@ -534,6 +541,17 @@ void Titania_LevelComplete(Player* player) {
             Audio_StopPlayerNoise(0);
             AUDIO_PLAY_SFX(NA_SE_TANK_GO_UP, player->sfxSource, 0);
             break;
+    }
+
+    if (player->form == FORM_ON_FOOT) {
+        if (player->vel.y <= 0) {
+            player->pos.y = 0.0f;
+        }
+        if (((gGameFrameCount % 8) == 0) && (player->pos.y < 10.0f)) {          // Titania dust trail
+            Effect_Effect359_Spawn(RAND_FLOAT_CENTERED(10.0f) + player->pos.x,
+                                    player->groundPos.y + 10.0f, player->trueZpos + 15.0f, RAND_FLOAT(1.0f) + 1.5f,
+                                    255, 15, 0);
+        }
     }
 
     Math_SmoothStepToF(&player->cam.eye.x, gCsCamEyeX, D_ctx_80177A48[0], 20000.0f, 0.00f);

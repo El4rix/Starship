@@ -427,6 +427,14 @@ void Cutscene_EnterWarpZone(Player* player) {
 
         player->rot_104.y = player->yRot_114 = player->rot.y = 0;
 
+        if (gCurrentLevel == LEVEL_SECTOR_X) {
+            player->unk_188 = 0.0f;                                             // Jetpack
+            Math_SmoothStepToF(&player->unk_170, 1.0f, 1.0f, 0.4f, 0.0f);
+            Math_SmoothStepToF(&player->unk_16C, 1.0f, 1.0f, 0.4f, 0.0f);
+            AUDIO_PLAY_SFX(NA_SE_TANK_GO_UP, player->sfxSource, 0);
+            player->zRotBank += ((__cosf(gGameFrameCount * M_DTOR * 8.0f) * 10.0f) - player->zRotBank) * 0.1f;
+        }
+
         if (gLevelPhase == 1) {
             gGroundHeight = -400;
         }
@@ -483,10 +491,7 @@ void Cutscene_EnterWarpZone(Player* player) {
                 func_demo_80049968(&gActors[2], 2);
             }
 
-            if ((player->form != FORM_ON_FOOT) || (gCurrentLevel != LEVEL_SECTOR_X)) {
-                func_demo_80049968(&gActors[3], 3);
-            }
-            
+            func_demo_80049968(&gActors[3], 3);
             player->csTimer = 50;
             break;
 
@@ -960,11 +965,11 @@ void Cutscene_AllRangeMode(Player* player) {
                 Math_SmoothStepToF(&D_ctx_801779A8[player->num], 30.0f, 1.0f, 10.0f, 0.0f);
             }
 
-            if (gCsFrameCount == 138) {
+            if ((gCsFrameCount == 138) && (player->form != FORM_ON_FOOT)) {
                 AUDIO_PLAY_SFX(NA_SE_WING_OPEN, player->sfxSource, 0);
             }
 
-            if (gCsFrameCount == 190) {
+            if ((gCsFrameCount == 190) && (player->form != FORM_ON_FOOT)) {
                 AUDIO_PLAY_SFX(NA_SE_WING_OPEN_END, player->sfxSource, 0);
             }
 
@@ -994,7 +999,6 @@ void Cutscene_AllRangeMode(Player* player) {
                 }
 
                 if (player->form = FORM_ON_FOOT) {
-                    gRunning = false;
                     player->baseSpeed = 0;
                     player->pos.x = 0;
                     if (gCurrentLevel == LEVEL_SECTOR_Y) {
@@ -1046,8 +1050,8 @@ void Cutscene_AllRangeMode(Player* player) {
     player->cam.eye.z += player->vel.z;
 
     if (player->form = FORM_ON_FOOT) {
-        if (player->cam.eye.y < gGroundHeight) {
-            player->cam.eye.y = gGroundHeight;
+        if (player->cam.eye.y < 5.0f) {
+            player->cam.eye.y = 5.0f;
         }
         player->unk_154 = 
         player->unk_158 = 
@@ -1061,7 +1065,17 @@ void Cutscene_AllRangeMode(Player* player) {
         player->unk_178 = 
         player->rot_104.y = 
         player->yRot_114 = 0;
-        
+
+        if (gCurrentLevel == LEVEL_CORNERIA) {
+            if (player->pos.y > 5.0f) {
+                player->gravity += 1.0f;
+                player->vel.y -= player->gravity;
+                player->pos.y += player->vel.y;
+            }
+            if (player->pos.y <= 5.0f) {
+                player->grounded = true;
+            }
+        }
         gRunning = true;
     }
 
@@ -1203,6 +1217,10 @@ void Cutscene_CoComplete2(Player* player) {
             break;
 
         case 1:
+            if (player->form == FORM_ON_FOOT) {
+                gDrawGround = false;
+                player->grounded = false;
+            }
             Math_SmoothStepToF(&D_ctx_80177A48[0], 1.0f, 0.1f, 0.05f, 0.0f);
             player->contrailScale += 0.04f;
             if (player->contrailScale > 0.6f) {
@@ -1979,8 +1997,8 @@ void OnFoot_Cutscene_LevelComplete(Player* player) {
 
     gCsFrameCount++;
 
-    player->baseSpeed = 0;
-    gRunning = false;
+    /* player->baseSpeed = 0;
+    gRunning = false; */
 
     if ((gCurrentLevel != LEVEL_TITANIA) && (gCurrentLevel != LEVEL_MACBETH)) {
         if ((gCurrentLevel == LEVEL_VENOM_ANDROSS) || ((gCurrentLevel == LEVEL_VENOM_2) && (gLevelPhase == 1))) {
@@ -1996,6 +2014,10 @@ void OnFoot_Cutscene_LevelComplete(Player* player) {
         } else if (gCurrentLevel == LEVEL_FORTUNA) {
             Cutscene_FortunaComplete(player);
             Player_FloorCheck(player);
+            player->hideShadow = true;
+            if (gStarCount > 1) {
+                gDrawGround = false;
+            }
         } else if (gCurrentLevel == LEVEL_BOLSE) {
             Bolse_LevelComplete(player);
             Player_FloorCheck(player);

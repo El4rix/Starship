@@ -761,6 +761,9 @@ void Fortuna_LevelComplete(Player* player) {
                 } else {
                     player->csTimer = 280;
                     player->csState = 1;
+                    if (player->form == FORM_ON_FOOT) {
+                        player->csTimer = 70;
+                    }
                 }
                 player->unk_194 = 5.0f;
                 player->unk_190 = 5.0f;

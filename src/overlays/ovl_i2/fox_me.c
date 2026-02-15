@@ -2623,6 +2623,9 @@ void Meteo_LevelComplete(Player* player) {
             }
             if (!gTurretModeEnabled) {
                 Meteo_LevelComplete_SetupTeam(&gActors[3], 3);
+                if (player->form == FORM_ON_FOOT) {
+                    gActors[3].obj.pos.x *= -1.0f;
+                }
             }
             break;
 

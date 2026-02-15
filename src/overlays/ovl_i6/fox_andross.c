@@ -1097,7 +1097,21 @@ void Andross_AndBrain_Update(AndBrain* this) {
         case 21:
             Andross_801876FC();
             gCsFrameCount++;
-            gCameraShake = 10;
+            if (gPlayer[0].form == FORM_ON_FOOT) {
+                if ((gPlayer[0].grounded) && (gPlayer[0].state == PLAYERSTATE_ACTIVE)) {
+                    if ((gCsFrameCount % 90) >= 40) {
+                        gCameraShake = 4;
+                    } else if ((gCsFrameCount % 90) >= 20) {
+                        gCameraShake = 8;
+                    } else if ((gCsFrameCount % 90) >= 0) {
+                        gCameraShake = 0;
+                    } 
+                } else {
+                    gCameraShake = 0;
+                }
+            } else {
+                gCameraShake = 10;
+            }
             if (gCsFrameCount < 200) {
                 gPlayerGlareAlphas[0] += 4;
                 if (gPlayerGlareAlphas[0] >= 255) {
@@ -1109,6 +1123,12 @@ void Andross_AndBrain_Update(AndBrain* this) {
             }
 
             switch (gCsFrameCount) {
+                case 1:
+                    if (gPlayer[0].form == FORM_ON_FOOT) {
+                        gRunning = true;
+                    }
+                    break;
+
                 case 30:
                     gRadioState = 0;
                     Radio_PlayMessage(gMsg_ID_20318, RCID_FOX);
@@ -4044,7 +4064,11 @@ void Andross_80193C4C(Player* player) {
         case 1:
             Math_SmoothStepToF(&player->zRotBank, 0.0f, 0.1f, 15.0f, 0.0f);
             Math_SmoothStepToF(&boss->vel.z, -40.0f, 1.0f, 1.0f, 0.0f);
-            Math_SmoothStepToF(&player->rot.y, 0.0f, 0.1f, 10.0f, 0.0f);
+            if (player->form == FORM_ON_FOOT) {
+                Math_SmoothStepToF(&player->rot.y, 180.0f, 0.1f, 10.0f, 0.0f);
+            } else {
+                Math_SmoothStepToF(&player->rot.y, 0.0f, 0.1f, 10.0f, 0.0f);
+            }
             Math_SmoothStepToF(&player->vel.x, 0.0f, 1.0f, 3.0f, 0.0f);
             Math_SmoothStepToF(&player->vel.y, 0.0f, 1.0f, 3.0f, 0.0f);
             Math_SmoothStepToF(&player->cam.eye.x, player->pos.x, 0.1f, 15.0f, 0.0f);
