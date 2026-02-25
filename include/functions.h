@@ -513,5 +513,6 @@ void gSPDisplayList(Gfx* pkt, Gfx* dl);
 void gSPDisplayListOffset(Gfx* pkt, Gfx* dl, int offset);
 void gSPVertex(Gfx* pkt, uintptr_t v, int n, int v0);
 void gSPInvalidateTexCache(Gfx* pkt, uintptr_t texAddr);
+bool should_interpolate_perspective(Vec3f* eye, Vec3f* at);
 
 #endif

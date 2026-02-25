@@ -17,5 +17,6 @@ typedef struct Record {
 extern Record gCarrierCutsceneRecord[13];
 
 void UpdateVisPerFrameFromRecording(Record* record, s32 maxFrames);
+void UpdateVisPerFrameFromRecording_Ending(Record* record, s32 maxFrames);
 
 #endif

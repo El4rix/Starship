@@ -23,6 +23,13 @@
 #include "fox_co.h"
 #include "fox_record.h"
 
+int gWarpzoneCsFrameCount = 0;
+
+Record gWarpzoneCsRecord[] = {
+    { 2, 1 },  { 3, 3 },  { 4, 4 },   { 3, 8 },   { 2, 9 },   { 3, 52 },  { 2, 54 },  { 3, 69 },  { 2, 70 },  { 3, 75 },
+    { 2, 76 }, { 3, 79 }, { 2, 117 }, { 3, 118 }, { 2, 120 }, { 3, 145 }, { 2, 215 }, { 3, 216 }, { 2, 230 },
+};
+
 void UpdateVisPerFrameFromRecording(Record* record, s32 maxFrames) {
     int i;
 
@@ -32,6 +39,34 @@ void UpdateVisPerFrameFromRecording(Record* record, s32 maxFrames) {
 
     for (i = 0; i < maxFrames; i++) {
         if (gCsFrameCount == record[i].frame) {
+            gVIsPerFrame = record[i].vis;
+        }
+    }
+}
+
+void UpdateVisPerFrameFromRecording_Warpzone(Record* record, s32 maxFrames) {
+    int i;
+
+    if (gWarpzoneCsFrameCount > record[maxFrames - 1].frame) {
+        return;
+    }
+
+    for (i = 0; i < maxFrames; i++) {
+        if (gWarpzoneCsFrameCount == record[i].frame) {
+            gVIsPerFrame = record[i].vis;
+        }
+    }
+}
+
+void UpdateVisPerFrameFromRecording_Ending(Record* record, s32 maxFrames) {
+    int i;
+
+    if (gGameFrameCount > record[maxFrames - 1].frame) {
+        return;
+    }
+
+    for (i = 0; i < maxFrames; i++) {
+        if (gGameFrameCount == record[i].frame) {
             gVIsPerFrame = record[i].vis;
         }
     }
@@ -422,6 +457,9 @@ void Cutscene_EnterWarpZone(Player* player) {
     s32 var_v0;
     s32 pad[4];
 
+    gWarpzoneCsFrameCount++;
+    UpdateVisPerFrameFromRecording_Warpzone(gWarpzoneCsRecord, ARRAY_COUNT(gWarpzoneCsRecord));
+
     if (player->form == FORM_ON_FOOT) {
 
         Math_SmoothStepToF(&player->rot.y, 0.0f, 0.1f, 5.0f, 0.0f);
@@ -442,7 +480,7 @@ void Cutscene_EnterWarpZone(Player* player) {
     } else {
         player->pos.x += player->vel.x;
     }
-    
+
     player->flags_228 = 0;
     player->alternateView = false;
     player->pos.y += player->vel.y;
@@ -472,6 +510,9 @@ void Cutscene_EnterWarpZone(Player* player) {
             if (gTurretModeEnabled) {
                 player->draw = false;
             }
+            // @port: Initialize warpzone frame counter for recording.
+            gWarpzoneCsFrameCount = 0;
+
             player->somersault = false;
             gStarWarpDistortion = 100.0f;
             player->csState = 1;
@@ -3148,7 +3189,7 @@ void ActorCutscene_Update(ActorCutscene* this) {
                     break;
 
                 case LEVEL_FORTUNA:
-                    if (this->animFrame == 11) {
+                    if (this->animFrame == ACTOR_CS_FO_EXPLOSION) {
                         switch (this->state) {
                             case 0:
                                 if (gCsFrameCount == 100) {
@@ -3156,6 +3197,8 @@ void ActorCutscene_Update(ActorCutscene* this) {
                                     this->timer_0BC = 50;
                                     this->iwork[0] = 255;
                                     AUDIO_PLAY_SFX(NA_SE_EN_BOSS_EXPLOSION, this->sfxSource, 0);
+                                    // @port: Add rumble to this explosion
+                                    gControllerRumbleTimers[0] = 4;
                                 }
                                 break;
 

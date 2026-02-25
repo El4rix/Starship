@@ -360,8 +360,8 @@ void Background_DrawStarfield(void) {
 void Background_DrawPartialStarfield(s32 yMin, s32 yMax) { // Stars that are in the Epilogue
     f32 by;
     f32 bx;
-    s16 vy;
-    s16 vx;
+    f32 vy;
+    f32 vx;
     s32 i;
     s32 var_s2;
     f32 cos;
@@ -372,29 +372,31 @@ void Background_DrawPartialStarfield(s32 yMin, s32 yMax) { // Stars that are in 
     f32* sp5C;
     u32* sp58;
 
+    yMin += 245;
+    yMax += 245;
+
     // Get current screen dimensions
     float currentScreenWidth = gCurrentScreenWidth;
     float currentScreenHeight = gCurrentScreenHeight;
     float starfieldWidth = 1.0f * currentScreenWidth;
     float starfieldHeight = 1.0f * currentScreenHeight;
 
-    // Graphics pipeline setup
-    gDPPipeSync(gMasterDisp++);
-    gDPSetCycleType(gMasterDisp++, G_CYC_FILL);
-    gDPSetCombineMode(gMasterDisp++, G_CC_SHADE, G_CC_SHADE);
-    gDPSetRenderMode(gMasterDisp++, G_RM_OPA_SURF, G_RM_OPA_SURF2);
+    // Set projection to orthographic before drawing stars
+    Lib_InitOrtho(&gMasterDisp);
 
-    if (gStarfieldX >= 1.5f * currentScreenWidth) {
-        gStarfieldX -= 1.5f * currentScreenWidth;
+    gSPDisplayList(gMasterDisp++, starSetupDL);
+
+    if (gStarfieldX >= starfieldWidth) {
+        gStarfieldX -= starfieldWidth;
     }
-    if (gStarfieldY >= 1.5f * currentScreenHeight) {
-        gStarfieldY -= 1.5f * currentScreenHeight;
+    if (gStarfieldY >= starfieldHeight) {
+        gStarfieldY -= starfieldHeight;
     }
     if (gStarfieldX < 0.0f) {
-        gStarfieldX += 1.5f * currentScreenWidth;
+        gStarfieldX += starfieldWidth;
     }
     if (gStarfieldY < 0.0f) {
-        gStarfieldY += 1.5f * currentScreenHeight;
+        gStarfieldY += starfieldHeight;
     }
 
     spf68 = gStarfieldX;
@@ -405,19 +407,33 @@ void Background_DrawPartialStarfield(s32 yMin, s32 yMax) { // Stars that are in 
     sp58 = gStarFillColors;
     var_s2 = 500;
 
+    var_s2 = var_s2 * 3; // Adjust multiplier as needed
+
     cos = __cosf(gStarfieldRoll);
     sin = __sinf(gStarfieldRoll);
 
     for (i = 0; i < var_s2; i++, sp5C++, sp60++, sp58++) {
         bx = *sp60 + spf68;
         by = *sp5C + spf64;
-        if (bx >= starfieldWidth * 1.25f) {
-            bx -= 1.5f * starfieldWidth;
+
+        // Wrapping logic for individual stars along X-axis
+        if (bx >= starfieldWidth) {
+            bx -= starfieldWidth;
         }
+        if (bx < 0.0f) {
+            bx += starfieldWidth;
+        }
+
+        // Wrapping logic for individual stars along Y-axis
+        if (by >= starfieldHeight) {
+            by -= starfieldHeight;
+        }
+        if (by < 0.0f) {
+            by += starfieldHeight;
+        }
+
+        // Center the positions
         bx -= starfieldWidth / 2.0f;
-        if (by >= starfieldHeight * 1.25f) {
-            by -= 1.5f * starfieldHeight;
-        }
         by -= starfieldHeight / 2.0f;
 
         // Apply rotation
@@ -454,6 +470,10 @@ void Background_DrawPartialStarfield(s32 yMin, s32 yMax) { // Stars that are in 
             FrameInterpolation_RecordCloseChild();
         }
     }
+    // Restore original perspective after drawing stars
+    Lib_InitPerspective(&gMasterDisp);
+
+    // Finalize rendering state
     gDPPipeSync(gMasterDisp++);
     gDPSetColorDither(gMasterDisp++, G_CD_MAGICSQ);
 }
@@ -556,7 +576,7 @@ void Background_DrawBackdrop(void) {
                         }
 
                         // Translate to the next position (move right by 7280.0f each time)
-                        Matrix_Translate(gGfxMatrix, 7280.0f, 0.0f, 0.0f, MTXF_APPLY);
+                        Matrix_Translate(gGfxMatrix, 7279.0f, 0.0f, 0.0f, MTXF_APPLY);
                         Matrix_SetGfxMtx(&gMasterDisp);
 
                         if (skipInterpolation) {
@@ -620,7 +640,7 @@ void Background_DrawBackdrop(void) {
                         }
 
                         // Translate to the next position (move right by 7280.0f each time)
-                        Matrix_Translate(gGfxMatrix, 7280.0f, 0.0f, 0.0f, MTXF_APPLY);
+                        Matrix_Translate(gGfxMatrix, 7279.0f, 0.0f, 0.0f, MTXF_APPLY);
                         Matrix_SetGfxMtx(&gMasterDisp);
 
                         if (skipInterpolation) {
@@ -761,7 +781,7 @@ void Background_DrawBackdrop(void) {
                             }
 
                             // Translate to the next position (move right by 7280.0f each time)
-                            Matrix_Translate(gGfxMatrix, 7280.0f, 0.0f, 0.0f, MTXF_APPLY);
+                            Matrix_Translate(gGfxMatrix, 7279.0f, 0.0f, 0.0f, MTXF_APPLY);
                             Matrix_SetGfxMtx(&gMasterDisp);
 
                             FrameInterpolation_RecordCloseChild();
@@ -841,7 +861,7 @@ void Background_DrawBackdrop(void) {
                         }
 
                         // Move the matrix to the right by 7280.0f each time to draw the next texture
-                        Matrix_Translate(gGfxMatrix, 7280.0f, 0.0f, 0.0f, MTXF_APPLY);
+                        Matrix_Translate(gGfxMatrix, 7279.0f, 0.0f, 0.0f, MTXF_APPLY);
 
                         Matrix_SetGfxMtx(&gMasterDisp);
 

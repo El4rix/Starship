@@ -2118,11 +2118,11 @@ void Display_Update(void) {
     // @port: Display player's face at all times.
     gPlayer[0].arwing.drawFace = true;
 
-    // @port remove 511 hit count cap, hated by generations
-#if 0
-    // 511 hit count cap
-    if (gHitCount > 511) {
-        gHitCount = 511;
+    // @port: set hit count cap to 999 to restore US/JP 1.0 behaviour
+#if 1
+    // 999 hit count cap (511 in 1.1 US)
+    if (gHitCount > 999) {
+        gHitCount = 999;
     }
 #endif
 
@@ -2181,6 +2181,31 @@ void Display_Update(void) {
         gPlayCamAt.y = camPlayer->cam.at.y;
         gPlayCamAt.z = camPlayer->cam.at.z;
     }
+
+    static PlayState prevPlayState = 0;
+    static int camSkipTimes = 0;
+
+    bool bigJump = !should_interpolate_perspective(&gPlayCamEye, &gPlayCamAt);
+
+    // @port: Force interpolation camera skip if we're transitioning to or from a pause state.
+    if (((prevPlayState == PLAY_PAUSE) && (gPlayState == PLAY_UPDATE)) ||
+        ((prevPlayState == PLAY_UPDATE) && (gPlayState == PLAY_PAUSE))) {
+        bigJump = true;
+    }
+
+    if (bigJump) {
+        // @port Skip interpolation
+        FrameInterpolation_ShouldInterpolateFrame(false);
+        printf("CAMERA 1 SKIPED: %d\n", camSkipTimes++);
+        gCamera1Skipped = true;
+    } else {
+        FrameInterpolation_RecordOpenChild("GamePlayCam", 0);
+        FrameInterpolation_RecordMarker(__FILE__, __LINE__);
+        gCamera1Skipped = false;
+    }
+
+    prevPlayState = gPlayState;
+
     camPlayer->camYaw = -Math_Atan2F(gPlayCamEye.x - gPlayCamAt.x, gPlayCamEye.z - gPlayCamAt.z);
     camPlayer->camPitch = -Math_Atan2F(gPlayCamEye.y - gPlayCamAt.y,
                                        sqrtf(SQ(gPlayCamEye.z - gPlayCamAt.z) + SQ(gPlayCamEye.x - gPlayCamAt.x)));
@@ -2357,6 +2382,14 @@ void Display_Update(void) {
         HUD_Draw();
         HUD_EdgeArrows_Update();
     }
+
+    if (bigJump) {
+        // @port Re-enable Interpolation if it was skipped
+        FrameInterpolation_ShouldInterpolateFrame(true);
+    } else {
+        FrameInterpolation_RecordCloseChild();
+    }
+
     Matrix_Pop(&gGfxMatrix);
     Display_DrawHelpAlert();
     sPlayersVisible[gPlayerNum] = false;
@@ -2377,10 +2410,14 @@ void Display_Update(void) {
 #if 0
     RCP_SetupDL(&gMasterDisp, SETUPDL_83);
     gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 0, 255);
+    Graphics_DisplaySmallText(10 + 210, 180, 1.0f, 1.0f, "VIS:");
+    Graphics_DisplaySmallNumber(60 + 210, 180, (int) gVIsPerFrame);
     Graphics_DisplaySmallText(10 + 210, 190, 1.0f, 1.0f, "CSFMS:");
     Graphics_DisplaySmallNumber(60 + 210, 190, (int) gCsFrameCount);
     Graphics_DisplaySmallText(10 + 210, 200, 1.0f, 1.0f, "PLTIM:");
-    Graphics_DisplaySmallNumber(60 + 210, 200, (int) gPlayer->csTimer);
+    Graphics_DisplaySmallNumber(60 + 220, 200, (int) gPlayer->csTimer);
+    Graphics_DisplaySmallText(10 + 210, 210, 1.0f, 1.0f, "CSSTATE:");
+    Graphics_DisplaySmallNumber(60 + 220, 210, (int) gPlayer->csState);
 #endif
 
     // @port: @event: Call DisplayPostUpdateEvent

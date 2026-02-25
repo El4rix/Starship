@@ -605,6 +605,31 @@ void Object_LoadLevelObjects(void) {
 
     gLastPathChange = 0;
 
+// Level Boss Tester
+#if 0
+    switch (gCurrentLevel) {
+    case LEVEL_AQUAS:
+        static ObjectInit bossaqInit[] = { { 100.6f, -4035, 0, 0, { 0, 0, 0 }, OBJ_BOSS_AQ_BACOON } };
+        gLevelObjects = bossaqInit;
+        break;
+
+    case LEVEL_TITANIA:
+        static ObjectInit aTiLevelObjects_Boss[] = { { 300.0f, -1000, 0, 0, { 0, 0, 0 }, OBJ_BOSS_TI_GORAS } };
+        gLevelObjects = aTiLevelObjects_Boss;
+        break;
+
+    case LEVEL_SECTOR_X:
+        static ObjectInit aSxLevelObjects_Boss[] = { { 100.0f, 4000, 0, 1103, { 0, 0, 0 }, OBJ_BOSS_SX_SPYBORG } };
+        gLevelObjects = aSxLevelObjects_Boss;
+        break;
+
+    case LEVEL_SOLAR:
+        static ObjectInit aSoLevelObjects_Boss[] = { { 100.0f, 0, 0, 0, { 0, 0, 0 }, OBJ_BOSS_SO_VULKAIN } };
+        gLevelObjects = aSoLevelObjects_Boss;
+        break;
+    }
+#endif
+
     for (i = 0, objInit = &gLevelObjects[gObjectLoadIndex]; i < 10000; i++, gObjectLoadIndex++, objInit++) {
         if (objInit->id <= OBJ_INVALID) {
             break;

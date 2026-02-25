@@ -2202,6 +2202,10 @@ s32 HUD_RadarMarks_Update(void) {
         }
 
         Matrix_Push(&gGfxMatrix);
+
+        // @port: Tag the transform.
+        FrameInterpolation_RecordOpenChild(&gRadarMarks[i], i);
+
         Matrix_Translate(gGfxMatrix, gRadarMarks[i].pos.x * 0.008f, -gRadarMarks[i].pos.z * 0.008f, 0.0f, MTXF_APPLY);
 
         if (gRadarMarks[i].type == 103) {
@@ -2213,6 +2217,10 @@ s32 HUD_RadarMarks_Update(void) {
         Matrix_SetGfxMtx(&gMasterDisp);
 
         HUD_RadarMark_Draw(gRadarMarks[i].type);
+
+        // @port Pop the transform id.
+        FrameInterpolation_RecordCloseChild();
+
         Matrix_Pop(&gGfxMatrix);
 
         gRadarMarks[i].enabled = false;
@@ -2227,7 +2235,7 @@ s32 ActorMissileSeek_ModeCheck(ActorMissileSeekMode mode) {
     s32 i;
     s32 ret = 0;
 
-    for (i = 0, actor = &gActors[0]; i < 60; i++, actor++) {
+    for (i = 0, actor = &gActors[0]; i < ARRAY_COUNT(gActors); i++, actor++) {
         switch (mode) {
             case MISSILE_SEEK_TEAMMATES:
                 if ((actor->obj.status == OBJ_ACTIVE) && (actor->obj.id == OBJ_ACTOR_MISSILE_SEEK_TEAM)) {
@@ -2723,6 +2731,7 @@ void HUD_Texture_Scroll(u8* texturePtr, s32 xPos, s32 yPos, u8 type) {
         default:
             break;
     }
+    gSPInvalidateTexCache(gMasterDisp++, texture);
 }
 
 void HUD_Texture_Wave(u16* srcTexture, u16* dstTexture) {
@@ -3892,6 +3901,8 @@ s32 FoBase_ExplodeCs(FoBase* this) {
                 Math_SmoothStepToF(&this->fwork[4], this->obj.pos.x + 0.0f, 0.02f, 10000.0f, 0.0f);
                 Math_SmoothStepToF(&this->fwork[5], this->obj.pos.y + 500.0f, 0.02f, 10000.0f, 0.0f);
                 Math_SmoothStepToF(&this->fwork[6], this->obj.pos.z + 1500.0f, 0.02f, 10000.0f, 0.0f);
+                // @port: Add rumble to this cutscene
+                gControllerRumbleTimers[0] = 60;
                 break;
 
             case 2:
@@ -3907,6 +3918,8 @@ s32 FoBase_ExplodeCs(FoBase* this) {
                 Math_SmoothStepToF(&this->fwork[4], this->obj.pos.x + 0.0f, 0.02f, 10000.0f, 0.0f);
                 Math_SmoothStepToF(&this->fwork[5], this->obj.pos.y + 1500.0f, 0.02f, 10000.0f, 0.0f);
                 Math_SmoothStepToF(&this->fwork[6], this->obj.pos.z + 1500.0f, 0.02f, 10000.0f, 0.0f);
+                // @port: Add rumble to this cutscene
+                gControllerRumbleTimers[0] = 60;
                 break;
 
             case 3:

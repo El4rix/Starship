@@ -7,6 +7,15 @@
 #include "assets/ast_ending.h"
 #include "prevent_bss_reordering.h"
 #include "port/mods/PortEnhancements.h"
+#include "fox_record.h"
+
+Record gEndingCsRecord[] = {
+    { 2, 0 },    { 5, 1 },    { 2, 2 },    { 3, 277 },  { 2, 278 },  { 3, 340 },  { 2, 397 },  { 3, 537 },
+    { 2, 538 },  { 3, 548 },  { 2, 549 },  { 3, 568 },  { 2, 569 },  { 3, 620 },  { 2, 623 },  { 3, 803 },
+    { 2, 806 },  { 3, 814 },  { 2, 823 },  { 3, 1282 }, { 2, 1284 }, { 5, 3703 }, { 2, 3704 }, { 4, 3904 },
+    { 2, 3905 }, { 3, 4782 }, { 2, 4783 }, { 3, 4785 }, { 2, 4820 }, { 3, 4986 }, { 2, 6779 }, { 5, 6780 },
+    { 2, 6781 }, { 3, 6785 }, { 4, 6786 }, { 3, 6793 }, { 2, 6799 },
+};
 
 void Ending_8018CE20(s32);
 void Ending_801926D4(void);
@@ -1120,6 +1129,8 @@ void Ending_Main(void) {
     Ending_8018A8FC();
     Ending_8018B3D8();
     Ending_8018ABE8();
+
+    UpdateVisPerFrameFromRecording_Ending(gEndingCsRecord, ARRAY_COUNT(gEndingCsRecord));
 }
 
 void DrawBorders(void) {
@@ -1195,6 +1206,18 @@ void Ending_Draw(void) {
         Graphics_DisplaySmallText(10, 220, 1.0f, 1.0f, "CSFRM");
         Graphics_DisplaySmallNumber(80, 220, gCsFrameCount);
     }
+#endif
+
+// Recording debug
+#if 0
+    RCP_SetupDL(&gMasterDisp, SETUPDL_83);
+    gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 0, 255);
+    Graphics_DisplaySmallText(10 + 210, 180, 1.0f, 1.0f, "VIS:");
+    Graphics_DisplaySmallNumber(60 + 210, 180, (int) gVIsPerFrame);
+    Graphics_DisplaySmallText(10 + 210, 190, 1.0f, 1.0f, "GMFMS:");
+    Graphics_DisplaySmallNumber(60 + 210, 190, (int) gGameFrameCount);
+    Graphics_DisplaySmallText(10 + 210, 200, 1.0f, 1.0f, "ENDSTATE:");
+    Graphics_DisplaySmallNumber(60 + 220, 210, (int) D_ending_80196D00);
 #endif
 
     Matrix_Pop(&gGfxMatrix);
