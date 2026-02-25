@@ -1680,7 +1680,6 @@ void SectorX_LevelStart(Player* player) {
     if ((player->form == FORM_ON_FOOT) && (player->csTimer == 0) && (gCsFrameCount > 300)) {
         player->pos.z = player->trueZpos = 0.0f;
         player->pos.y = 200.0f;
-        //gPlayState = PLAY_INIT;
     }
 }
 

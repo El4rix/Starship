@@ -305,23 +305,54 @@ void Display_OnFootCharacter(Player* player) {
     Matrix_Push(&gGfxMatrix);
     Matrix_Scale(gCalcMatrix, 0.5f, 0.5f, 0.5f, MTXF_APPLY);
     Matrix_Translate(gCalcMatrix, 0.0f, 35.0f, 0.0f, MTXF_APPLY);
-    switch (gPilotNum) {
-        case 0:
-            Animation_DrawSkeleton(5, aVsOnFootFoxSkel, player->jointTable, Display_OnFootCharacter_OverrideLimbDraw,
-                                   Display_OnFootFox_PostLimbDraw, player, gCalcMatrix);
-            break;
-        case 1:
-            Animation_DrawSkeleton(5, aVsOnFootPeppySkel, player->jointTable, Display_OnFootCharacter_OverrideLimbDraw,
-                                   Display_OnFootPeppy_PostLimbDraw, player, gCalcMatrix);
-            break;
-        case 2:
-            Animation_DrawSkeleton(5, aVsOnFootSlippySkel, player->jointTable, Display_OnFootCharacter_OverrideLimbDraw,
-                                   Display_OnFootSlippy_PostLimbDraw, player, gCalcMatrix);
-            break;
-        case 3:
-            Animation_DrawSkeleton(5, aVsOnFootFalcoSkel, player->jointTable, Display_OnFootCharacter_OverrideLimbDraw,
-                                   Display_OnFootFalco_PostLimbDraw, player, gCalcMatrix);
-            break;
+
+    if (gGameState == GSTATE_MAP) {
+        Matrix_Scale(gCalcMatrix, 1.5f, 1.5f, 1.5f, MTXF_APPLY);
+        Matrix_Translate(gCalcMatrix, 0.0f, -35.0f, 0.0f, MTXF_APPLY);
+        Animation_DrawSkeleton(5, aVsOnFootFoxSkel, LOAD_ASSET(D_versus_302E95C), Display_OnFootCharacter_OverrideLimbDraw,
+                                    Display_OnFootFox_PostLimbDraw, player, gCalcMatrix);
+    } else if (player->state == PLAYERSTATE_NEXT) {
+        switch (gPilotNum) {
+            case 0:
+                Matrix_RotateX(gCalcMatrix, 60.0f * M_DTOR, MTXF_APPLY);
+                Animation_DrawSkeleton(5, aVsOnFootFoxSkel, LOAD_ASSET(D_versus_302E74C), Display_OnFootCharacter_OverrideLimbDraw,
+                                    Display_OnFootSlippy_PostLimbDraw, player, gCalcMatrix);
+                break;
+            case 1:
+                Matrix_RotateZ(gCalcMatrix, -15.0f * M_DTOR, MTXF_APPLY);
+                Animation_DrawSkeleton(5, aVsOnFootPeppySkel, LOAD_ASSET(D_versus_302E74C), Display_OnFootCharacter_OverrideLimbDraw,
+                                    Display_OnFootSlippy_PostLimbDraw, player, gCalcMatrix);
+                break;
+            case 2:
+                Matrix_RotateX(gCalcMatrix, 60.0f * M_DTOR, MTXF_APPLY);
+                Animation_DrawSkeleton(5, aVsOnFootSlippySkel, LOAD_ASSET(D_versus_302E56C), Display_OnFootCharacter_OverrideLimbDraw,
+                                    Display_OnFootFox_PostLimbDraw, player, gCalcMatrix);
+                break;
+            case 3:
+                Matrix_RotateX(gCalcMatrix, 60.0f * M_DTOR, MTXF_APPLY);
+                Animation_DrawSkeleton(5, aVsOnFootFalcoSkel, LOAD_ASSET(D_versus_302E830), Display_OnFootCharacter_OverrideLimbDraw,
+                                    Display_OnFootSlippy_PostLimbDraw, player, gCalcMatrix);
+                break;
+        }
+    } else {
+        switch (gPilotNum) {
+            case 0:
+                Animation_DrawSkeleton(5, aVsOnFootFoxSkel, player->jointTable, Display_OnFootCharacter_OverrideLimbDraw,
+                                    Display_OnFootFox_PostLimbDraw, player, gCalcMatrix);
+                break;
+            case 1:
+                Animation_DrawSkeleton(5, aVsOnFootPeppySkel, player->jointTable, Display_OnFootCharacter_OverrideLimbDraw,
+                                    Display_OnFootPeppy_PostLimbDraw, player, gCalcMatrix);
+                break;
+            case 2:
+                Animation_DrawSkeleton(5, aVsOnFootSlippySkel, player->jointTable, Display_OnFootCharacter_OverrideLimbDraw,
+                                    Display_OnFootSlippy_PostLimbDraw, player, gCalcMatrix);
+                break;
+            case 3:
+                Animation_DrawSkeleton(5, aVsOnFootFalcoSkel, player->jointTable, Display_OnFootCharacter_OverrideLimbDraw,
+                                    Display_OnFootFalco_PostLimbDraw, player, gCalcMatrix);
+                break;
+        }
     }
 
     // New On-Foot reticle calc
@@ -739,7 +770,13 @@ void Display_ArwingWings(ArwingInfo* arwing) {
         }
     } else {
         if (gGameState == GSTATE_MENU) {
-            Animation_GetFrameData(&D_arwing_3015AF4, 0, frameTable);
+            if (gFootModeEnabled) {
+                Animation_GetFrameData(&D_arwing_3015AF4, 0, frameTable);
+                Animation_DrawSkeleton(1, D_arwing_3016610, frameTable, Display_ArwingWingsOverrideLimbDraw, NULL,
+                                        arwing, &gIdentityMatrix);
+            } else {
+                Animation_GetFrameData(&D_arwing_3015AF4, 0, frameTable);
+            }
         } else {
             Animation_GetFrameData(&D_arwing_3015C28, 0, frameTable);
         }
@@ -1566,11 +1603,11 @@ void Display_Player_Update(Player* player, s32 reflectY) {
         }
 
         if ((player->form == FORM_ON_FOOT) && (gLevelType == LEVELTYPE_SPACE) && (gCurrentLevel != LEVEL_METEO) // Great Fox
-            && (gLevelMode == LEVELMODE_ON_RAILS) && (player->state == PLAYERSTATE_ACTIVE)) { 
+            && (gLevelMode == LEVELMODE_ON_RAILS) && ((player->state == PLAYERSTATE_ACTIVE) || (player->state == PLAYERSTATE_DOWN) || (player->state == PLAYERSTATE_NEXT))) { 
             Matrix_Push(&gGfxMatrix);
             RCP_SetupDL_30(gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
             //Matrix_Translate(gGfxMatrix, player->pos.x, player->pos.y - 550, 1300, MTXF_APPLY); // On bridge
-            Matrix_Translate(gGfxMatrix, player->pos.x + 1350, -473 /* - player->pos.y */ + player->yPathTarget - gCameraShakeY, -390, MTXF_APPLY); // On wing jumping
+            Matrix_Translate(gGfxMatrix, player->pos.x + 1350, -473 + player->yPathTarget - gCameraShakeY, player->camDist - 390.0f, MTXF_APPLY); // On wing jumping
             Matrix_Scale(gGfxMatrix, 1.0f, 1.0f, 1.0f, MTXF_APPLY);
             Matrix_RotateY(gGfxMatrix, 180 * M_DTOR, MTXF_APPLY);
             Matrix_SetGfxMtx(&gMasterDisp);
@@ -1584,10 +1621,7 @@ void Display_Player_Update(Player* player, s32 reflectY) {
 
         if ((player->form == FORM_ON_FOOT) && (gCurrentLevel == LEVEL_ZONESS)) { // Blue Marine
             Matrix_Push(&gGfxMatrix);
-            //RCP_SetupDL_30(gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
-            //Matrix_Translate(gGfxMatrix, player->pos.x, player->pos.y - 550, 1300, MTXF_APPLY); // On bridge
-            //Matrix_Translate(gGfxMatrix, player->pos.x + 1350, player->pos.y - 472, -390, MTXF_APPLY); // On wing
-            Matrix_Translate(gGfxMatrix, player->pos.x, 225 - player->pos.y - gCameraShakeY,  player->camDist, MTXF_APPLY);
+            Matrix_Translate(gGfxMatrix, player->pos.x, 225 - player->pos.y - gCameraShakeY, player->camDist, MTXF_APPLY);
             Matrix_Scale(gGfxMatrix, 3.5f, 3.5f, 3.5f, MTXF_APPLY);
             Matrix_RotateY(gGfxMatrix, -1 * player->vel.x * M_DTOR, MTXF_APPLY);
             Matrix_SetGfxMtx(&gMasterDisp);
@@ -1595,13 +1629,11 @@ void Display_Player_Update(Player* player, s32 reflectY) {
             Matrix_Pop(&gGfxMatrix);
         }
 
-        if ((player->form == FORM_ON_FOOT) && (gCurrentLevel == LEVEL_SOLAR) && (player->state == PLAYERSTATE_ACTIVE)) { // Rock
+        if ((player->form == FORM_ON_FOOT) && (gCurrentLevel == LEVEL_SOLAR) 
+            && ((player->state == PLAYERSTATE_ACTIVE) || (player->state == PLAYERSTATE_DOWN) || (player->state == PLAYERSTATE_NEXT))) { // Rock
             Matrix_Push(&gGfxMatrix);
-            //RCP_SetupDL_30(gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
-            Matrix_Translate(gGfxMatrix, 0.0f /* player->pos.x */, 215.0f - gCameraShakeY /* + fabsf(player->pos.x) / 10 */, 400.0f + player->camDist, MTXF_APPLY);
+            Matrix_Translate(gGfxMatrix, 0.0f, 215.0f - gCameraShakeY, 400.0f + player->camDist, MTXF_APPLY);
             Matrix_Scale(gGfxMatrix, 2.0f, 0.2f, 0.5f, MTXF_APPLY);
-            //Matrix_RotateZ(gGfxMatrix, -player->pos.x / 10 * M_DTOR, MTXF_APPLY);
-            //Matrix_RotateY(gGfxMatrix, player->pos.x / 10 * M_DTOR, MTXF_APPLY);
             Matrix_RotateY(gGfxMatrix, 180 * M_DTOR, MTXF_APPLY);
             Matrix_SetGfxMtx(&gMasterDisp);
             gSPDisplayList(gMasterDisp++, aMeMolarRockDL);
@@ -1612,15 +1644,12 @@ void Display_Player_Update(Player* player, s32 reflectY) {
             Matrix_Push(&gGfxMatrix);
             RCP_SetupDL_30(gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
             Matrix_Translate(gGfxMatrix, 2500, 165, 700, MTXF_APPLY);
-            if (player->state == PLAYERSTATE_ACTIVE) {
+            if ((player->state == PLAYERSTATE_ACTIVE) || (player->state == PLAYERSTATE_DOWN) || (player->state == PLAYERSTATE_NEXT)) {
                 Matrix_Scale(gGfxMatrix, 0.2f, 0.2f, 0.6f, MTXF_APPLY);
             } else {
                 Matrix_Scale(gGfxMatrix, 0.4f, 0.4f, 0.4f, MTXF_APPLY);
             }
-            //Matrix_RotateZ(gGfxMatrix, -player->pos.x / 10 * M_DTOR, MTXF_APPLY);
-            //Matrix_RotateY(gGfxMatrix, player->pos.x / 10 * M_DTOR, MTXF_APPLY);
             Matrix_RotateY(gGfxMatrix, 180 * M_DTOR, MTXF_APPLY);
-            //Matrix_RotateX(gGfxMatrix, 180 * M_DTOR, MTXF_APPLY);
             Matrix_SetGfxMtx(&gMasterDisp);
             gSPDisplayList(gMasterDisp++, aSyShip2DL);
             Matrix_Pop(&gGfxMatrix);
@@ -1637,13 +1666,12 @@ void Display_Player_Update(Player* player, s32 reflectY) {
         }
 
         if ((player->form == FORM_ON_FOOT) && (gCurrentLevel == LEVEL_VENOM_ANDROSS) // Spy eye platform
-            && (gLevelMode == LEVELMODE_ON_RAILS) && (player->state == PLAYERSTATE_ACTIVE)) { 
+            && (gLevelMode == LEVELMODE_ON_RAILS) && ((player->state == PLAYERSTATE_ACTIVE) || (player->state == PLAYERSTATE_DOWN) || (player->state == PLAYERSTATE_NEXT))) { 
             Matrix_Push(&gGfxMatrix);
             RCP_SetupDL_27();
             gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 80, 80, 20, 200);
-            Matrix_Translate(gGfxMatrix, player->pos.x, -30.0f /* player->pos.y */ - gCameraShakeY, -50.0f + player->camDist, MTXF_APPLY);
+            Matrix_Translate(gGfxMatrix, player->pos.x, -30.0f - gCameraShakeY, -50.0f + player->camDist, MTXF_APPLY);
             Matrix_Scale(gGfxMatrix, 1.0f, 1.0f, 1.0f, MTXF_APPLY);
-            //Matrix_RotateY(gGfxMatrix, 180 * M_DTOR, MTXF_APPLY);
             Matrix_RotateX(gGfxMatrix, 180 * M_DTOR, MTXF_APPLY);
             Matrix_SetGfxMtx(&gMasterDisp);
             gSPDisplayList(gMasterDisp++, aSpyEyeDL);
@@ -1862,11 +1890,11 @@ void Display_PlayerShadow_Update(Player* player) {
             }
         } else if (player->form == FORM_ON_FOOT) {
             if (player->grounded == true) {
-                Matrix_Translate(gGfxMatrix, player->pos.x /* player->groundPos.x */, player->pos.y + gCameraShakeY + 1.0f,
-                            player->camDist /* player->groundPos.z + player->zPath */, MTXF_APPLY);
+                Matrix_Translate(gGfxMatrix, player->pos.x, player->pos.y + gCameraShakeY + 1.0f,
+                            player->camDist, MTXF_APPLY);
             } else {
-                Matrix_Translate(gGfxMatrix, player->pos.x /* player->groundPos.x */, player->groundPos.y + 2.0f,
-                            player->camDist /* player->groundPos.z + player->zPath */, MTXF_APPLY);
+                Matrix_Translate(gGfxMatrix, player->pos.x, player->groundPos.y + 2.0f,
+                            player->camDist, MTXF_APPLY);
             }
         } else {
             Matrix_Translate(gGfxMatrix, player->groundPos.x, player->groundPos.y + 2.0f,

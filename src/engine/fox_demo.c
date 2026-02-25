@@ -18,6 +18,7 @@
 #include "assets/ast_title.h"
 #include "assets/ast_katina.h"
 #include "assets/ast_allies.h"
+#include "assets/ast_versus.h"
 #include "port/hooks/Events.h"
 #include "fox_co.h"
 #include "fox_record.h"
@@ -134,7 +135,7 @@ void Cutscene_WarpZoneComplete(Player* player) {
     f32 temp_ret;
     s32 temp_v1;
 
-    if ((player->form = FORM_ON_FOOT)) {
+    if ((player->form == FORM_ON_FOOT)) {
         player->baseSpeed = 0;
         gRunning = false;
     }
@@ -723,89 +724,6 @@ void Cutscene_LevelStart(Player* player) {
     }
 }
 
-void OnFoot_Cutscene_LevelStart(Player* player) {
-    gCsFrameCount++;
-    if (gLevelMode == LEVELMODE_ON_RAILS) {
-        switch (gCurrentLevel) {
-            case LEVEL_CORNERIA:
-                Corneria_LevelStart(player);
-                Player_FloorCheck(player);
-                break;
-
-            case LEVEL_METEO:
-                Meteo_LevelStart(player);
-                break;
-
-            case LEVEL_SECTOR_X:
-                SectorX_LevelStart(player);
-                break;
-
-            case LEVEL_TITANIA:
-                Titania_LevelStart(player);
-                Player_FloorCheck(player);
-                break;
-
-            case LEVEL_ZONESS:
-                Zoness_LevelStart(player);
-                break;
-
-            case LEVEL_MACBETH:
-                Macbeth_LevelStart(player);
-                break;
-
-            case LEVEL_SECTOR_Y:
-                SectorY_801A0AC0(player);
-                break;
-
-            case LEVEL_SOLAR:
-                Solar_LevelStart(player);
-                break;
-
-            case LEVEL_VENOM_1:
-                Venom1_LevelStart(player);
-                Player_FloorCheck(player);
-                break;
-
-            case LEVEL_AQUAS:
-                Aquas_CsLevelStart(player);
-                break;
-
-            case LEVEL_AREA_6:
-                Area6_LevelStart(player);
-                break;
-        }
-        func_demo_8004990C(player);
-    } else {
-        switch (gCurrentLevel) {
-            case LEVEL_FORTUNA:
-                AllRange_FortunaIntro(player);
-                Player_FloorCheck(player);
-                break;
-
-            case LEVEL_VENOM_2:
-                Venom2_LevelStart(player);
-                Player_FloorCheck(player);
-                break;
-
-            case LEVEL_BOLSE:
-                Bolse_LevelStart(player);
-                Player_FloorCheck(player);
-                break;
-
-            case LEVEL_KATINA:
-                Katina_LevelStart(player);
-                Player_FloorCheck(player);
-                break;
-
-            case LEVEL_SECTOR_Z:
-                SectorZ_LevelStart(player);
-
-            default:
-                break;
-        }
-    }
-}
-
 f32 D_demo_800CA050[] = { 210.0f, -210.0f, 0.0f };
 f32 D_demo_800CA05C[] = { -60.0f, -60.0f, -120.0f };
 f32 D_demo_800CA068[] = { -150.0f, -150.0f, -300.0f };
@@ -998,7 +916,7 @@ void Cutscene_AllRangeMode(Player* player) {
                     }
                 }
 
-                if (player->form = FORM_ON_FOOT) {
+                if (player->form == FORM_ON_FOOT) {
                     player->baseSpeed = 0;
                     player->pos.x = 0;
                     if (gCurrentLevel == LEVEL_SECTOR_Y) {
@@ -1049,14 +967,13 @@ void Cutscene_AllRangeMode(Player* player) {
     player->cam.at.z += player->vel.z;
     player->cam.eye.z += player->vel.z;
 
-    if (player->form = FORM_ON_FOOT) {
+    if (player->form == FORM_ON_FOOT) {
         if (player->cam.eye.y < 5.0f) {
             player->cam.eye.y = 5.0f;
         }
         player->unk_154 = 
         player->unk_158 = 
         player->unk_180 = 
-        //player->rot.y = 
         player->unk_15C = 
         player->unk_164 = 
         player->unk_168 = 
@@ -1820,7 +1737,6 @@ void Turret_Cutscene_CoComplete2(Player* player) {
                 D_ctx_80177A48[8] = player->vel.y;
                 D_ctx_80177A48[9] = player->vel.z;
                 player->csState = 5;
-                //player->baseSpeed = 0.0f;
                 player->csTimer = 10;
                 Effect_Effect393_Spawn(player->pos.x, player->pos.y, player->trueZpos, 30.0f);
             }
@@ -1833,7 +1749,6 @@ void Turret_Cutscene_CoComplete2(Player* player) {
             gCsCamAtX += D_ctx_80177A48[7];
             gCsCamAtY += D_ctx_80177A48[8];
             gCsCamAtZ += D_ctx_80177A48[9];
-            //player->draw = false;
             if (player->csTimer == 0) {
                 player->state = PLAYERSTATE_NEXT;
                 player->csTimer = 0;
@@ -1996,9 +1911,6 @@ void OnFoot_Cutscene_LevelComplete(Player* player) {
     s32 btn;
 
     gCsFrameCount++;
-
-    /* player->baseSpeed = 0;
-    gRunning = false; */
 
     if ((gCurrentLevel != LEVEL_TITANIA) && (gCurrentLevel != LEVEL_MACBETH)) {
         if ((gCurrentLevel == LEVEL_VENOM_ANDROSS) || ((gCurrentLevel == LEVEL_VENOM_2) && (gLevelPhase == 1))) {
@@ -2327,6 +2239,194 @@ void Cutscene_LandmasterDown(Player* player) {
     Cutscene_KillPlayer(player);
 }
 
+void Cutscene_FootDown(Player* player) { // On Foot death
+    Vec3f* sp48;
+    s32 rand;
+    s32 i;
+
+    player->draw = true;
+    player->hideShadow = true;
+
+    Player_FootCollisionCheck(player);
+    if (player->pos.y < gGroundHeight) {   // don't fall below ground
+        player->grounded = true;
+        player->pos.y = gGroundHeight;
+        player->vel.y = 0.0f;
+    }
+
+    if ((gCurrentLevel == LEVEL_SECTOR_Y) || (gCurrentLevel == LEVEL_SECTOR_X) || (gCurrentLevel == LEVEL_AREA_6)) {
+        if (player->pos.y < 0.0f) {
+            player->pos.y = 0.0f;
+            player->grounded = true;
+        }
+    }
+
+    if (gCurrentLevel == LEVEL_SOLAR) {
+        if (player->pos.y < 175.0f) {
+            player->pos.y = 175.0f;
+            player->grounded = true;
+        }
+    }
+
+    if (gCurrentLevel == LEVEL_ZONESS) {
+        if (player->pos.y < 167.0f) {
+            player->pos.y = 167.0f;
+            player->grounded = true;
+        }
+    }
+
+    if (gCurrentLevel == LEVEL_SECTOR_Z) {
+        if (player->pos.y < -525.0f) {
+            player->pos.y = -525.0f;
+            player->grounded = true;
+        }
+    }
+
+    if (gCurrentLevel == LEVEL_VENOM_ANDROSS) {
+        if (player->pos.y < 35.0f) {
+            player->pos.y = 35.0f;
+            player->grounded = true;
+        }
+    }
+
+    if (gLevelType == LEVELTYPE_SPACE) {
+        if (player->grounded == false) {
+            player->vel.y -= 0.5f;
+        }
+    }
+
+    switch (player->csState) {
+        case 0:
+            player->csTimer = 10;
+            player->csState = 1;
+            player->vel.y = 10.0f;
+            player->grounded = false;
+            break;
+        case 1:
+            break;
+    }
+
+    player->damageShake = 0.0f;
+    player->rot.y = 0.0f;
+    player->rot.z = player->zRotBank = player->zRotBarrelRoll = 0.0f;
+
+    if (player->grounded == false) {
+        player->bankAngle += 10.0f;
+    }
+
+    player->vel.x = 0.0f;
+    player->vel.z = 0.0f;
+
+    player->pos.x += player->vel.x;
+    player->pos.y += player->vel.y;
+
+    if (!((gCurrentLevel == LEVEL_VENOM_ANDROSS) && gBossActive) && (gLevelType == LEVELTYPE_PLANET)) {
+        player->vel.y = player->vel.y - 0.5f;
+    }
+
+    player->pos.z += player->vel.z;
+    player->trueZpos = player->pos.z;
+
+    if (((gGameFrameCount % 30) == 0) || ((gGameFrameCount % 30) == 10)) {    // Black smoke
+        func_effect_8007D24C(RAND_FLOAT_CENTERED(20.0) + player->pos.x, RAND_FLOAT_CENTERED(20.0) + player->pos.y,
+                             player->trueZpos, 2.2f);
+    }
+
+    if ((player->csTimer == 0) && (player->grounded)) {
+        Player_PlaySfx(player->sfxSource, NA_SE_ARWING_EXPLOSION, player->num);
+        player->state = PLAYERSTATE_NEXT;
+        player->csTimer = 100;
+        player->dmgEffectTimer = 20;
+        gFadeoutType = 7;
+        player->bankAngle = 0.0f;
+
+        if (player->grounded) {
+            player->unk_284 = 0;
+        }
+        
+        rand = RAND_INT(5.9f) + 1;
+
+        switch (gPilotNum) {
+            case 0:
+                if (rand == 1) {
+                    Radio_PlayMessage(gMsg_ID_19440, RCID_FOX); // Nothing... Nothing's wrong.
+                } else if (rand == 2) {
+                    Radio_PlayMessage(gMsg_ID_4080, RCID_PEPPY); // You okay? Hold together just a biiiiit further.
+                } else if (rand == 3) {
+                    Radio_PlayMessage(gMsg_ID_2310, RCID_PEPPY); // You're becoming more like your father.
+                } else if (rand == 4) {
+                    Radio_PlayMessage(gMsg_ID_14080, RCID_FALCO); // Is that the best you can do?
+                } else if (rand == 5) {
+                    Radio_PlayMessage(gMsg_ID_18080, RCID_FOX); // Dang...
+                } else if (rand == 6) {
+                    Radio_PlayMessage(gMsg_ID_20318, RCID_FOX); // AAAAAAH!
+                }
+                break;
+            case 1:
+                if (rand == 1) {
+                    Radio_PlayMessage(gMsg_ID_14120, RCID_PEPPY); // I'll take care of everything below!
+                } else if (rand == 2) {
+                    Radio_PlayMessage(gMsg_ID_9153, RCID_PEPPY); // Shoot they got me!
+                } else if (rand == 3) {
+                    Radio_PlayMessage(gMsg_ID_5220, RCID_PEPPY); // I got tagged, my ears are still ringing.
+                } else if (rand == 4) {
+                    Radio_PlayMessage(gMsg_ID_20012, RCID_PEPPY); // Everything's A-OK.
+                } else if (rand == 5) {
+                    Radio_PlayMessage(gMsg_ID_20221, RCID_PEPPY); // Sorry guys, I gotta sit this one out.
+                } else if (rand == 6) {
+                    Radio_PlayMessage(gMsg_ID_20321, RCID_PEPPY); // AAAAAAH!
+                }
+                break;
+            case 2:
+                if (rand == 1) {
+                    Radio_PlayMessage(gMsg_ID_4097, RCID_FALCO); // Slippy what are you doing, hurry up!
+                } else if (rand == 2) {
+                    Radio_PlayMessage(gMsg_ID_20013, RCID_SLIPPY); // I'm having some trouble here.
+                } else if (rand == 3) {
+                    Radio_PlayMessage(gMsg_ID_3010, RCID_PEPPY); // Quit dinkin' around, Slip!
+                } else if (rand == 4) {
+                    Radio_PlayMessage(gMsg_ID_9140, RCID_SLIPPY); // This is really starting to tick me off!
+                } else if (rand == 5) {
+                    Radio_PlayMessage(gMsg_ID_16240, RCID_SLIPPY); // Doggone it!
+                } else if (rand == 6) {
+                    Radio_PlayMessage(gMsg_ID_20320, RCID_SLIPPY); // AAAAAAH!
+                }
+                break;
+            case 3:
+                if (rand == 1) {
+                    Radio_PlayMessage(gMsg_ID_2058, RCID_FALCO); // This is horrible
+                } else if (rand == 2) {
+                    Radio_PlayMessage(gMsg_ID_6051, RCID_FALCO); // Shoot!
+                } else if (rand == 3) {
+                    Radio_PlayMessage(gMsg_ID_15230, RCID_FALCO); // I'll take the sky any day.
+                } else if (rand == 4) {
+                    Radio_PlayMessage(gMsg_ID_20310, RCID_FALCO); // Crud!
+                } else if (rand == 5) {
+                    Radio_PlayMessage(gMsg_ID_4102, RCID_PEPPY); // I'm sure he's learned his lesson.
+                } else if (rand == 6) {
+                    Radio_PlayMessage(gMsg_ID_20319, RCID_FALCO); // AAAAAAH!
+                }
+                break;
+        }
+
+        if (gCurrentLevel != LEVEL_TRAINING) {
+            gLifeCount[gPlayerNum]--;
+        }
+    }
+    
+    if ((gGroundSurface == SURFACE_WATER) && (player->pos.y <= player->pathFloor)) {
+        Effect_Effect367_Spawn(player->pos.x, gGroundHeight + 2.0f, player->trueZpos, 3.0f, 20.0f, 0);
+        Effect_Effect372_Spawn2(player->pos.x, gGroundHeight, player->trueZpos, 0.1f, 2.0f);
+    }
+
+    player->cam.at.y = player->pos.y;
+    player->cam.at.x = player->pos.x;
+    player->cam.at.z = player->trueZpos + gPathProgress;
+
+    player->unk_170 = 0.0f; // No jetpacks
+    player->unk_16C = 0.0f;
+}
+
 void Cutscene_ArwingDown360(Player* player) {
     s32 i;
     Vec3f src;
@@ -2563,7 +2663,7 @@ void Cutscene_PlayerDown(Player* player) {
             break;
 
         case FORM_ON_FOOT:
-            Cutscene_LandmasterDown(player);
+            Cutscene_FootDown(player);
             break;
     }
 }
@@ -3599,13 +3699,15 @@ void Cutscene_DrawGreatFox(void) {
     f32 sp9C[4];
     Gfx* dList;
 
-    if ((gPlayer[0].form == FORM_ON_FOOT) && gPlayer[0].state == PLAYERSTATE_ACTIVE) {
+    if (gFootModeEnabled) {
         if (gCurrentLevel == LEVEL_SECTOR_Z) {
-            Matrix_Push(&gGfxMatrix);
-            Matrix_Translate(gGfxMatrix, 0, 275, 260, MTXF_APPLY);
-            Matrix_Scale(gGfxMatrix, 1.5f, 1.5f, 1.0f, MTXF_APPLY);
-            Matrix_SetGfxMtx(&gMasterDisp);
-            Matrix_Pop(&gGfxMatrix);
+            if ((gPlayer[0].state == PLAYERSTATE_ACTIVE) || (gPlayer[0].state == PLAYERSTATE_DOWN) || (gPlayer[0].state == PLAYERSTATE_NEXT)) {
+                Matrix_Push(&gGfxMatrix);
+                Matrix_Translate(gGfxMatrix, 0, 275, 260, MTXF_APPLY);
+                Matrix_Scale(gGfxMatrix, 1.5f, 1.5f, 1.0f, MTXF_APPLY);
+                Matrix_SetGfxMtx(&gMasterDisp);
+                Matrix_Pop(&gGfxMatrix);
+            }
         }
     }
 

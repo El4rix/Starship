@@ -950,7 +950,7 @@ void ActorAllRange_ApplyDamage(ActorAllRange* this) {
                         if ((gCurrentLevel == LEVEL_FORTUNA) || (gCurrentLevel == LEVEL_BOLSE)) {
                             this->health += (this->damage * 0.5f);
                         } else if (gCurrentLevel == LEVEL_VENOM_2) {
-                            this->health += (this->damage * 0.5f);
+                            this->health += (this->damage * 0.33f);
                         }
                     }
                 }
@@ -1156,6 +1156,9 @@ void ActorAllRange_ApplyDamage(ActorAllRange* this) {
 
                 if (this->aiType == AI360_MISSILE) {
                     AUDIO_PLAY_SFX(NA_SE_OB_DAMAGE_M, this->sfxSource, 4);
+                    if ((gPlayer[0].form == FORM_ON_FOOT) && (this->dmgSource != AI360_FOX + 1)) {
+                        this->health += (this->damage * 0.75f);
+                    }
                 } else if (this->iwork[7] == 0) {
                     AUDIO_PLAY_SFX(NA_SE_EN_DAMAGE_S, this->sfxSource, 4);
                 }

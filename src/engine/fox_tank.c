@@ -959,7 +959,6 @@ void func_tank_80046704(Player* player) {
                             }
                         }
                         if (player->form == FORM_ON_FOOT) {
-                            //player->pos.x -= (D_800C9F4C[temp_v0] * 5.0f);
                             player->pos.x -= player->vel.x;
                             player->vel.x = 0.0f;
                         } else {

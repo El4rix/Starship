@@ -3530,10 +3530,6 @@ void Corneria_LevelStart(Player* player) {
     peppy->obj.pos.y -= 3.0f;
     slippy->vwork[20].y -= 3.0f;
     slippy->obj.pos.y -= 3.0f;
-
-    if (player->form == FORM_ON_FOOT) {
-        //player->pos.y = 0.0f;
-    }
 }
 
 void Turret_Corneria_LevelStart(Player* player) {

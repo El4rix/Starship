@@ -95,6 +95,11 @@ u8 Load_SceneSetup(u8 sceneId, u8 sceneSetup) {
         gTurretModeEnabled = true;
     } */
 
+    // Always turn On Foot Mode on
+    if (gGameFrameCount == 0) {
+        gFootModeEnabled = true;
+    }
+
     switch (sceneId) {
         case SCENE_TITLE:
             changeScene = Load_SceneFiles(&sOvlmenu_Title[sceneSetup]);

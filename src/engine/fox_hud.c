@@ -5717,7 +5717,6 @@ void Turret_Aquas_CsLevelStart(Player* player) {
             player->cam.eye.z = gCsCamEyeZ;
 
             if (player->csTimer < 736) {
-                //player->csState = 4;
                 gAqDrawMode = 1;
                 gFillScreenRed = gFillScreenGreen = gFillScreenBlue = 255;
                 gFillScreenAlphaTarget = 255;

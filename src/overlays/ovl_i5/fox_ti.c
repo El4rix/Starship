@@ -5288,15 +5288,8 @@ void Titania_TiGoras_Update(Boss* boss) {
         if ((boss->state >= 7) && (boss->state < 14)) {     // make it easier to hit weakpoint
             if (boss->dmgType == DMG_BEAM) {
                 boss->dmgType = DMG_NONE;
-                /* D_i5_801BD668[D_i5_801B7904[boss->dmgPart]] = D_i5_801B7960[D_i5_801B7904[boss->dmgPart]][1];
-                D_i5_801BD6B0[D_i5_801B7904[boss->dmgPart]] = 0; */
 
-                /* if ((D_i5_801B7904[boss->dmgPart] == 6) && (boss->state == 11)) {
-                    D_i5_801BD668[D_i5_801B7904[boss->dmgPart]] = 0;
-                } */
-
-                if ((gBossHealthBar > 0) && (D_i5_801B7904[boss->dmgPart] == 23) /* && (boss->swork[29] != 0) */ &&
-                        (boss->swork[21] > 0)) {
+                if ((gBossHealthBar > 0) && (D_i5_801B7904[boss->dmgPart] == 23) && (boss->swork[21] > 0)) {
                     boss->swork[21] -= boss->damage;
                     if (boss->swork[21] <= 0) {
                         gTeamLowHealthMsgTimer = -1;

@@ -35,9 +35,9 @@ s32 D_menu_801CD810;
 f32 D_menu_801CD818[9];
 s32 D_menu_801CD83C;
 s32 sUnusedPathIdx[24]; // Path index, set but not used
-s32 D_menu_801CD8A0[16];
+s32 D_menu_801CD8A0[15];
 s32 D_menu_801CD8E0[7];
-s32 D_menu_801CD900[16]; // planet alpha used for something?
+s32 D_menu_801CD900[15]; // planet alpha used for something?
 MissionStatus sPrevMissionStatus;
 s32 D_menu_801CD940;
 s32 sMapState;
@@ -104,12 +104,12 @@ f32 sPathFollowCamEyeX;
 f32 sPathFollowCamEyeY;
 Vec3f sZoomPlanetCamAt;
 Vec3f sZoomPlanetCamEye;
-Matrix D_menu_801CDA60[16];
-Matrix D_menu_801CDE20[16]; // planet related
-Matrix D_menu_801CE1E0[16];
-Matrix D_menu_801CE5A0[16];
-Vec3f sPlanetPositions[16];
-f32 D_menu_801CEA18[16];
+Matrix D_menu_801CDA60[15];
+Matrix D_menu_801CDE20[15]; // planet related
+Matrix D_menu_801CE1E0[15];
+Matrix D_menu_801CE5A0[15];
+Vec3f sPlanetPositions[15];
+f32 D_menu_801CEA18[15];
 f32 sCurrentPlanetCamZDist;
 f32 D_menu_801CEA58;
 f32 D_menu_801CEA5C;
@@ -135,8 +135,8 @@ f32 sCursorYpos;
 f32 D_menu_801CEAAC;
 f32 D_menu_801CEAB0;
 s32 D_menu_801CEAB4;
-f32 D_menu_801CEAB8[16];
-f32 D_menu_801CEAF8[16];
+f32 D_menu_801CEAB8[15];
+f32 D_menu_801CEAF8[15];
 s32 D_menu_801CEB34;
 s32 D_menu_801CEB38;
 f32 sMapCorneriaExplosionScale;
@@ -200,15 +200,15 @@ f32 D_menu_801CF124;
 
 s32 D_menu_801AF420[2] = { 10, 20 };
 
-u16* sBriefingMsg[16][2] = {
+u16* sBriefingMsg[15][2] = {
     { gMsg_ID_1220, gMsg_ID_1230 }, { gMsg_ID_1320, gMsg_ID_1330 },
     { gMsg_ID_1300, gMsg_ID_1310 }, { gMsg_ID_1420, gMsg_ID_1430 },
     { gMsg_ID_1260, gMsg_ID_1270 }, { gMsg_ID_1440, gMsg_ID_1450 },
     { gMsg_ID_1360, gMsg_ID_1370 }, { gMsg_ID_1340, gMsg_ID_1350 },
     { gMsg_ID_1400, gMsg_ID_1410 }, { gMsg_ID_1200, gMsg_ID_1210 },
     { gMsg_ID_1240, gMsg_ID_1250 }, { gMsg_ID_1380, gMsg_ID_1390 },
-    { gMsg_ID_1280, gMsg_ID_1290 }, { gMsg_ID_1320, gMsg_ID_1330 }, //{ NULL, NULL },
-    { gMsg_ID_1460, gMsg_ID_1470 }, { gMsg_ID_1240, gMsg_ID_1470 }, // Colony messages
+    { gMsg_ID_1280, gMsg_ID_1290 }, { NULL, NULL },
+    { gMsg_ID_1460, gMsg_ID_1470 },
 };
 
 Planet sPlanets[PLANET_MAX] = {
@@ -226,9 +226,9 @@ Planet sPlanets[PLANET_MAX] = {
     },
     {
         PLANET_AREA_6,
-        { 1150.0f, 0.0f, 0.0f },
+        { 1400.0f, 0.0f, 0.0f },
         { 0.0f, 0.0f, 0.0f },
-        -330.0f, // -315
+        -315.0f,
         0.15f,
         0,
         PL_ANIM_ROTATE_Y,
@@ -240,7 +240,7 @@ Planet sPlanets[PLANET_MAX] = {
         PLANET_BOLSE,
         { 1400.0f, 0.0f, 0.0f },
         { 0.0f, 0.0f, 0.0f },
-        -350.0f, //  -345
+        -345.0f,
         0.15f,
         0,
         PL_ANIM_ROTATE_Y,
@@ -256,8 +256,8 @@ Planet sPlanets[PLANET_MAX] = {
         2.5f * 2.0f,
         0,
         PL_ANIM_BILLBOARD,
+        PLANET_BOLSE,
         PLANET_AREA_6,
-        PLANET_COLONY,
         PLANET_NONE,
     },
     {
@@ -392,18 +392,6 @@ Planet sPlanets[PLANET_MAX] = {
         PLANET_NONE,
         PLANET_NONE,
     },
-    {
-        PLANET_COLONY,
-        { 1400.0f, 0.0f, 0.0f },
-        { 0.0f, 0.0f, 0.0f }, // keep zero
-        -310.0f,
-        0.15f,
-        0,
-        PL_ANIM_ROTATE_Y,
-        PLANET_NONE,
-        PLANET_NONE,
-        PLANET_NONE,
-    },
 };
 
 // unused
@@ -428,11 +416,11 @@ TitleCard sPlanetTitleCards[] = {
     { D_MAP_600AD30, 168, 19, 77.0f }, { D_MAP_600CC10, 128, 19, 95.0f }, { D_MAP_6002160, 208, 19, 57.0f },
     { D_MAP_6011EA0, 256, 19, 40.0f }, { D_MAP_60105C0, 224, 19, 49.0f }, { D_MAP_6018280, 184, 19, 70.0f },
     { D_MAP_6016760, 200, 18, 61.0f }, { D_MAP_600F390, 168, 19, 75.0f }, { D_MAP_6014BA0, 232, 19, 43.0f },
-    { D_MAP_6005740, 160, 19, 81.0f }, { D_MAP_6006E80, 176, 19, 70.0f }, 
+    { D_MAP_6005740, 160, 19, 81.0f }, { D_MAP_6006E80, 176, 19, 70.0f },
 };
 
 char* sPlanetNames[] = {
-    "ME", "A6", "BO", "SZ", "SX", "SY", "KA", "MA", "ZO", "CO", "TI", "AQ", "FO", "VE", "SO", "CL",
+    "ME", "A6", "BO", "SZ", "SX", "SY", "KA", "MA", "ZO", "CO", "TI", "AQ", "FO", "VE", "SO",
 };
 
 Gfx* sMapGralPepperFaceDLs[2] = {
@@ -458,16 +446,10 @@ ObjPosition sMapMeteors[] = {
 };
 
 ObjPosition sMapArea6Ships[4] = {
-    { 30.0f, 1160.0f, 40.0f, 0.15f }, 
-    { 27.0f, 1085.0f, 40.0f, 0.06f },
-    { 34.0f, 1120.0f, 60.0f, 0.06f },
-    { 27.0f, 1130.0f, 20.0f, 0.06f },
-/* 
-    { 50.0f, 1410.0f, 40.0f, 0.10f }, // Orbit radius, orbit angle counter clockwise, height, scale
+    { 50.0f, 1410.0f, 40.0f, 0.10f },
     { 35.0f, 1235.0f, 40.0f, 0.03f },
     { 42.0f, 1270.0f, 60.0f, 0.05f },
     { 35.0f, 1280.0f, 20.0f, 0.05f },
-     */
 };
 
 PlanetPath sPaths[24] = {
@@ -1130,9 +1112,9 @@ u8* gAssetMapPlanetTextures[9] = {
 };
 
 Gfx* sMapPlanets[PLANET_MAX] = {
-    aMapMeteorDL,  NULL,  aMapBolseDL,   aMapSectorZDL, aMapSectorXDL, // NULL = aMapArea6DL
+    aMapMeteorDL,  aMapArea6DL,  aMapBolseDL,   aMapSectorZDL, aMapSectorXDL,
     aMapSectorYDL, gMapKatinaDL, gMapMacbethDL, gMapZonessDL,  gMapCorneriaDL,
-    gMapTitaniaDL, gMapAquasDL,  gMapFortunaDL, gMapVenomDL,   aMapSolarDL, aMapArea6DL, //Colony
+    gMapTitaniaDL, gMapAquasDL,  gMapFortunaDL, gMapVenomDL,   aMapSolarDL,
 };
 
 void Map_8019E800(void);
@@ -1357,7 +1339,7 @@ void Map_Setup(void) {
     Map_SetCamRot(sMapCamAtX, sMapCamAtY, sMapCamAtZ, &sMapCamEyeX, &sMapCamEyeY, &sMapCamEyeZ, D_menu_801CDA14,
                   D_menu_801CDA0C + D_menu_801CDA18, D_menu_801CDA10 + D_menu_801CDA1C);
 
-    for (i = 0; i < 16; i++) {
+    for (i = 0; i < 15; i++) {
         D_menu_801CD8A0[i] = i;
     }
 
@@ -1811,10 +1793,6 @@ bool Map_PlanetSaveSlot_Setup(LevelId levelId, PlanetSaveSlotTypes type) {
                 planetSaveSlot = SAVE_SLOT_VENOM_2;
             }
             break;
-
-        case LEVEL_UNK_4:
-            planetSaveSlot = PLANET_COLONY;
-            break;
     }
 
     ret = false;
@@ -1952,7 +1930,7 @@ void Map_Draw(void) {
 
     Map_Area6Ships_Draw();
 
-    for (ptr = D_menu_801CD8A0, i = 0; i < 16; i++, ptr++) {
+    for (ptr = D_menu_801CD8A0, i = 0; i < 15; i++, ptr++) {
         Map_Planet_Draw(*ptr);
     }
 
@@ -2295,9 +2273,23 @@ void Map_PrologueArwing_Draw(void) {
         Matrix_Translate(gGfxMatrix, -60.0f, 293.0f, -360.0f, MTXF_APPLY);
         Matrix_Scale(gGfxMatrix, 3.0f, 3.0f, 3.0f, MTXF_APPLY);
 
-        Matrix_RotateZ(gGfxMatrix, M_DTOR * -15.0f, MTXF_APPLY);
-        Matrix_RotateX(gGfxMatrix, M_DTOR * sMapArwingXrot, MTXF_APPLY);
-        Matrix_RotateY(gGfxMatrix, M_DTOR * -90.0f, MTXF_APPLY);
+        if (gFootModeEnabled) {
+            if (sMapArwingXrot < 700.0f) {
+                Matrix_Translate(gGfxMatrix, -400.0f, 0.0f, 0.0f, MTXF_APPLY);
+                Matrix_Translate(gGfxMatrix, sMapArwingXrot, 0.0f, 0.0f, MTXF_APPLY);
+            } else {
+                Matrix_Translate(gGfxMatrix, 1100.0f, 0.0f, 0.0f, MTXF_APPLY);
+                Matrix_Translate(gGfxMatrix, -sMapArwingXrot, 0.0f, 0.0f, MTXF_APPLY);
+                Matrix_Scale(gGfxMatrix, 5.0f, 5.0f, 5.0f, MTXF_APPLY);
+            }
+            
+            Matrix_RotateZ(gGfxMatrix, M_DTOR * -sMapArwingXrot, MTXF_APPLY);
+            Matrix_RotateX(gGfxMatrix, M_DTOR * sMapArwingXrot, MTXF_APPLY);
+        } else {
+            Matrix_RotateZ(gGfxMatrix, M_DTOR * -15.0f, MTXF_APPLY);
+            Matrix_RotateX(gGfxMatrix, M_DTOR * sMapArwingXrot, MTXF_APPLY);
+            Matrix_RotateY(gGfxMatrix, M_DTOR * -90.0f, MTXF_APPLY);
+        }
 
         Matrix_SetGfxMtx(&gMasterDisp);
 
@@ -2313,7 +2305,11 @@ void Map_PrologueArwing_Draw(void) {
         arwing.teamFaceYrot = 0.0f;
         arwing.cockpitGlassXrot = 0.0f;
 
-        Display_ArwingWings(&arwing);
+        if (gFootModeEnabled) {
+            Display_OnFootCharacter(&arwing);
+        } else {
+            Display_ArwingWings(&arwing);
+        }
 
         Matrix_Pop(&gGfxMatrix);
         Matrix_Pop(&gGfxMatrix);
@@ -2662,7 +2658,6 @@ f32 Map_GetPlanetCamZDist(PlanetId planetId) {
 
     switch (planetId) {
         case PLANET_AREA_6:
-        case PLANET_COLONY:
             camZdist = 900.0f;
             break;
 
@@ -2751,7 +2746,7 @@ void Map_801A2674(void) {
         Math_SmoothStepToF(&D_menu_801AFFF8, 20.0f, 0.05f, 100.0f, 0.1f);
     }
 
-    if (sCurrentPlanetId == PLANET_AREA_6 || sCurrentPlanetId == PLANET_COLONY) {
+    if (sCurrentPlanetId == PLANET_AREA_6) {
         Math_SmoothStepToF(&D_menu_801B0000, 15.0f, 0.05f, 100.0f, 0.1f);
     }
 
@@ -4071,7 +4066,6 @@ void Map_LevelStart_AudioSpecSetup(LevelId level) {
             break;
 
         case LEVEL_AREA_6:
-        case LEVEL_UNK_4:
             AUDIO_SET_SPEC(SFXCHAN_0, AUDIOSPEC_A6);
             break;
 
@@ -4177,10 +4171,6 @@ void Map_CurrentLevel_Setup(void) {
         case PLANET_AREA_6:
             gCurrentLevel = LEVEL_AREA_6;
             break;
-        
-        case PLANET_COLONY:
-            gCurrentLevel = LEVEL_UNK_4;
-            break;
 
         case PLANET_SECTOR_Z:
             gCurrentLevel = LEVEL_SECTOR_Z;
@@ -4248,10 +4238,6 @@ PlanetId Map_GetPlanetId(LevelId level) {
 
         case LEVEL_AREA_6:
             planet = PLANET_AREA_6;
-            break;
-        
-        case LEVEL_UNK_4:
-            planet = PLANET_COLONY;
             break;
 
         case LEVEL_SECTOR_Z:
@@ -4343,7 +4329,7 @@ void Map_PositionPlanets(void) {
         Matrix_Push(&gGfxMatrix);
 
         Matrix_RotateY(gGfxMatrix, M_DTOR * sPlanets[planetId].longitude, MTXF_APPLY);
-        Matrix_Translate(gGfxMatrix, sPlanets[planetId].orbit.radius, sPlanets[planetId].orbit.incl, 0.0f, MTXF_APPLY); // Sets planet position, except Meteo and Area 6 ships
+        Matrix_Translate(gGfxMatrix, sPlanets[planetId].orbit.radius, sPlanets[planetId].orbit.incl, 0.0f, MTXF_APPLY);
 
         Matrix_RotateY(gGfxMatrix, M_DTOR * -sPlanets[planetId].longitude, MTXF_APPLY);
 
@@ -4381,8 +4367,8 @@ void Map_PlanetOrderZpos(void) {
     s32 j;
     s32 var_a0;
 
-    for (i = 0; i < 15; i++) {
-        for (j = i; j < 16; j++) {
+    for (i = 0; i < 14; i++) {
+        for (j = i; j < 15; j++) {
             if (sPlanetPositions[D_menu_801CD8A0[i]].z > sPlanetPositions[D_menu_801CD8A0[j]].z) {
                 var_a0 = D_menu_801CD8A0[i];
                 D_menu_801CD8A0[i] = D_menu_801CD8A0[j];
@@ -4438,7 +4424,7 @@ void Map_Planet_Draw(PlanetId planetId) {
         }
 
         if ((planetStatus == PLANET_CLEARED) && (sPlanetPositions[planetId].z > D_menu_801CEA18[planetId]) &&
-            (planetId != PLANET_AREA_6) && (planetId != PLANET_BOLSE) && (planetId != PLANET_COLONY)) {
+            (planetId != PLANET_AREA_6) && (planetId != PLANET_BOLSE)) {
             Map_PlanetCleared_Draw(planetId);
         }
 
@@ -4478,11 +4464,11 @@ void Map_Planet_Draw(PlanetId planetId) {
         }
 
         if ((planetStatus == PLANET_CLEARED) && (sPlanetPositions[planetId].z <= D_menu_801CEA18[planetId]) &&
-            (planetId != PLANET_AREA_6) && (planetId != PLANET_BOLSE) && (planetId != PLANET_COLONY)) {
+            (planetId != PLANET_AREA_6) && (planetId != PLANET_BOLSE)) {
             Map_PlanetCleared_Draw(planetId);
         }
 
-        if ((planetStatus == PLANET_CLEARED) && ((planetId == PLANET_AREA_6) || (planetId == PLANET_BOLSE) || (planetId == PLANET_COLONY))) {
+        if ((planetStatus == PLANET_CLEARED) && ((planetId == PLANET_AREA_6) || (planetId == PLANET_BOLSE))) {
             Map_PlanetCleared_Draw(planetId);
         }
 
@@ -4609,7 +4595,6 @@ void Map_PlanetAnim2(PlanetId planetId) {
 }
 
 void Map_PlanetAnim(PlanetId planetId) {
-
     switch (sPlanets[planetId].anim) {
         case PL_ANIM_STATIC:
             if (((sMapState == MAP_IDLE) || (planetId == sCurrentPlanetId) || (planetId == sNextPlanetId)) &&
@@ -4654,6 +4639,7 @@ void Map_PlanetAnim(PlanetId planetId) {
 
     Matrix_Copy(gGfxMatrix, &D_menu_801CDE20[planetId]);
     Matrix_SetGfxMtx(&gMasterDisp);
+
     gSPDisplayList(gMasterDisp++, sMapPlanets[sPlanets[planetId].id]);
 
     Matrix_Pop(&gGfxMatrix);
@@ -5294,10 +5280,6 @@ void Map_PositionCursor(void) {
         sCursorYpos = 210.0f;
     }
 
-    if (sCurrentPlanetId == PLANET_COLONY) {
-        sCursorYpos = 210.0f;
-    }
-
     if (sCurrentPlanetId == PLANET_SOLAR) {
         sCursorYpos = 250.0f;
     }
@@ -5555,11 +5537,6 @@ void Map_801A9A8C(void) {
         case LEVEL_AREA_6:
             missionNoTex = aLargeText_6;
             planetIdx = 13;
-            break;
-
-        case LEVEL_UNK_4:
-            missionNoTex = aLargeText_6;
-            planetIdx = 14;
             break;
     }
 
@@ -5884,34 +5861,6 @@ void Map_PathPlanet_Draw(s32 missionIdx, f32 x, f32 y, PlanetId planetId) {
             break;
 
         case PLANET_AREA_6:
-            if ((gGameFrameCount & mask) != 0) {
-                RCP_SetupDL(&gMasterDisp, SETUPDL_23);
-
-                Lights_SetOneLight(&gMasterDisp, 0, 0, 100, 50, 50, 40, 100, 100, 100);
-
-                Matrix_Push(&gGfxMatrix);
-
-                // @port: Tag the transform.
-                FrameInterpolation_RecordOpenChild("Map_PathPlanet_Draw", planetId);
-
-                Matrix_Translate(gGfxMatrix, x, y, 0.0f, MTXF_APPLY);
-                Matrix_RotateX(gGfxMatrix, M_DTOR * 20.0f, MTXF_APPLY);
-                Matrix_RotateY(gGfxMatrix, M_DTOR * D_menu_801AFFFC, MTXF_APPLY);
-                Matrix_RotateZ(gGfxMatrix, M_DTOR * sPlanets[planetId].orbit.tilt, MTXF_APPLY);
-                Matrix_Scale(gGfxMatrix, 0.003f, 0.003f, 0.003f, MTXF_APPLY);
-
-                Matrix_SetGfxMtx(&gMasterDisp);
-
-                gSPDisplayList(gMasterDisp++, sMapPlanets[sPlanets[planetId].id]);
-
-                Matrix_Pop(&gGfxMatrix);
-
-                // @port Pop the transform id.
-                FrameInterpolation_RecordCloseChild();
-            }
-            break;
-
-        case PLANET_COLONY:
             if ((gGameFrameCount & mask) != 0) {
                 RCP_SetupDL(&gMasterDisp, SETUPDL_23);
 
@@ -6734,9 +6683,6 @@ void Map_PathLinePos(s32 index, Vec3f* src, Vec3f* dest) {
     if (sPaths[index].start == PLANET_AREA_6) {
         temp1 = 1200.0f;
     }
-    if (sPaths[index].start == PLANET_COLONY) {
-        temp1 = 1200.0f;
-    }
     if (sPaths[index].start == PLANET_BOLSE) {
         temp1 = 1200.0f;
     }
@@ -6765,9 +6711,6 @@ void Map_PathLinePos(s32 index, Vec3f* src, Vec3f* dest) {
         temp2 = 20.0f;
     }
     if (sPaths[index].end == PLANET_AREA_6) {
-        temp2 = 1200.0f;
-    }
-    if (sPaths[index].end == PLANET_COLONY) {
         temp2 = 1200.0f;
     }
     if (sPaths[index].end == PLANET_BOLSE) {

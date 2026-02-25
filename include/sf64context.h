@@ -18,6 +18,7 @@ extern s32 gPlayState;
 extern s32 D_ctx_80177868;
 extern LevelMode gLevelMode;
 extern bool gTurretModeEnabled;
+extern bool gFootModeEnabled;
 extern bool gRunning;
 extern bool gStoppedRunning;
 extern f32 gJumpPos;

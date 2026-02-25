@@ -2067,7 +2067,6 @@ void Item_CheckBounds(Item* this) {
     }
 
     if ((gPlayer[0].form == FORM_ON_FOOT) && (gCurrentLevel == LEVEL_SECTOR_Z)) { // Items move toward to you
-        //this->obj.pos.x += 20.0f;
         Math_SmoothStepToF(&this->obj.pos.x, gPlayer[0].pos.x, 1.0f, 20.0f, 10.0f);
         Math_SmoothStepToF(&this->obj.pos.y, gPlayer[0].pos.y, 1.0f, 15.0f, 7.0f);
         Math_SmoothStepToF(&this->obj.pos.z, gPlayer[0].pos.z, 1.0f, 40.0f, 10.0f);

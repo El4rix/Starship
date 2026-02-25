@@ -57,11 +57,11 @@ Vec3f sMissileWaveInitPos[] = {
 };
 
 Vec3f sFootMissileWaveInitPos[] = {
-    {  0.0f, 0.0f, -30000.0f },
-    {  -12000.0f, 0.0f, -30000.0f },
-    {  12000.0f, 0.0f, -30000.0f },
-    {  -8000.0f, 5000.0f, -33000.0f },
-    {  8000.0f, 5000.0f, -33000.0f },
+    {  0.0f, 0.0f, -25000.0f }, // -30000
+    {  -12000.0f, 0.0f, -25000.0f },
+    {  12000.0f, 0.0f, -25000.0f },
+    {  -8000.0f, 5000.0f, -28000.0f },
+    {  8000.0f, 5000.0f, -28000.0f },
 
 };
 
@@ -170,9 +170,9 @@ void SectorZ_MissileExplode(ActorAllRange* this, bool shotDown) {
         }
 
         // Check for Katt's appearance
-        if ((sMissileDestroyCount == 3) && (gLeveLClearStatus[LEVEL_ZONESS] != 0)) {
+        if ((sMissileDestroyCount == 3) && (gLeveLClearStatus[LEVEL_ZONESS] != 0) && (gPlayer[0].form != FORM_ON_FOOT)) {
             gAllRangeSpawnEvent = gAllRangeEventTimer + 110;
-        }
+        }        
     }
 
     if (gTurretModeEnabled) {
@@ -337,7 +337,7 @@ void SectorZ_Missile_Update(ActorAllRange* this) {
         }
 
     } else if (gPlayer[0].form == FORM_ON_FOOT) {
-        this->fwork[MISSILE_TARGET_X] = gBosses[SZ_GREAT_FOX].obj.pos.x + xPitch + 400.0f;
+        this->fwork[MISSILE_TARGET_X] = gBosses[SZ_GREAT_FOX].obj.pos.x + xPitch - 400.0f;
         this->fwork[MISSILE_TARGET_Y] = -525.0f;
         this->fwork[MISSILE_TARGET_Z] = gBosses[SZ_GREAT_FOX].obj.pos.z;
         // Missile hit check
@@ -426,6 +426,9 @@ void SectorZ_SpawnMissile(ActorAllRange* this, s32 missileWaveIdx) {
 
     this->state = 5;
     this->rot_0F4.y = 180.0f;
+    if (gPlayer[0].form == FORM_ON_FOOT) {
+        this->rot_0F4.y = 0.0f;
+    }
 
     Object_SetInfo(&this->info, this->obj.id);
 
@@ -809,15 +812,6 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
             case 2000:
                 gRadarMissileAlarmTimer = 250;
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_CENTER], 0);
-
-                /* SectorZ_SpawnMissileEscort(&gActors[SZ_ESCORT_1], 0);
-                SectorZ_SpawnMissileEscort(&gActors[SZ_ESCORT_2], 1);
-                SectorZ_SpawnMissileEscort(&gActors[SZ_ESCORT_3], 2);
-                SectorZ_SpawnMissileEscort(&gActors[SZ_ESCORT_4], 3); */
-
-                /* this->state = 10;
-                this->fwork[10] = 0.0f;
-                this->timer_0BC = 10000; */
                 break;
 
             // Wave 2 ==================================================================================
@@ -825,23 +819,30 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
                 Radio_PlayMessage(gMsg_ID_16100, RCID_ROB64);
                 break;
 
-            case 3500:
+            case 3450:
+                // Katt appears
+                if (gLeveLClearStatus[LEVEL_ZONESS] != 0) {
+                    gAllRangeSpawnEvent = gAllRangeEventTimer + 110;
+                }
+                break;
+
+            case 4000:
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_RIGHT], 2);
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_LEFT], 1);
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_CENTER], 0);
                 gRadarMissileAlarmTimer = 200;
                 break;
 
-            case 4900:
+            case 5400:
                 gCallTimer = 60;
                 break;
 
             // Wave 3 ==================================================================================
-            case 5350:
+            case 5850:
                 Radio_PlayMessage(gMsg_ID_16110, RCID_ROB64);
                 break;
 
-            case 5500:
+            case 6000:
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_RIGHT], 2);
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_LEFT], 1);
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_CENTER], 0);
@@ -940,6 +941,13 @@ void SectorZ_UpdateEvents(ActorAllRange* this) {
     f32 D_i4_8019F514[5] = { -200.0f, -100.0f, -0.0f, 100.0f, 200.0f }; // unused
 
     player = &gPlayer[0];
+
+    if (gPlayer[0].form == FORM_ON_FOOT) {
+        for (i = 0; i < ARRAY_COUNT(gItems); i++) {
+            if (gItems[i].obj.id == OBJ_ITEM_SILVER_RING)
+            Object_Kill(&gItems[i].obj, gItems[i].sfxSource);
+        }
+    }
 
     switch ((s32) this->state) {
         case 0:
@@ -1886,6 +1894,18 @@ void SectorZ_CsLevelCompleteKattInit(void) {
     katt->state = 10;
     katt->timer_0BC = 130;
 
+    if (gPlayer[0].form == FORM_ON_FOOT) {
+        katt->rot_0F4.y = 0.0f;
+        katt->obj.rot.y = 180.0f;
+
+        katt->obj.pos.z = gPlayer[0].pos.z + 10000.0f;
+        if (gGreatFoxIntact) {
+            katt->obj.pos.x -= 1400.0f;
+        } else {
+            katt->obj.pos.x -= 700.0f;
+        }
+    }
+
     Object_SetInfo(&katt->info, katt->obj.id);
     AUDIO_PLAY_SFX(NA_SE_ARWING_ENGINE_FG, katt->sfxSource, 4);
 }
@@ -2098,6 +2118,9 @@ void SectorZ_LevelComplete(Player* player) {
                 if (gTeamShields[TEAM_ID_PEPPY] > 0) {
                     SectorZ_CsLevelCompleteTeamInit(peppy, 2);
                 }
+                if ((gPlayer[0].form == FORM_ON_FOOT) && (sKattEnabled)) {
+                    SectorZ_CsLevelCompleteKattInit();
+                }
                 SectorZ_CsLevelCompleteTeamInit(greatFoxCs, 3);
                 gFillScreenAlpha = gFillScreenAlphaTarget = 255;
             }
@@ -2108,6 +2131,24 @@ void SectorZ_LevelComplete(Player* player) {
             gCsCamAtX = player->pos.x;
             gCsCamAtY = player->pos.y;
             gCsCamAtZ = player->pos.z;
+
+            if (player->form == FORM_ON_FOOT) {
+                switch (gCsFrameCount) {
+                    case 1290:
+                        if (gTeamShields[TEAM_ID_FALCO] > 0) {
+                            Radio_PlayMessage(gMsg_ID_16150, RCID_KATT);
+                        }
+                        break;
+
+                    case 1400:
+                        if (gGreatFoxIntact) {
+                            Radio_PlayMessage(gMsg_ID_16160, RCID_KATT);
+                        } else {
+                            Radio_PlayMessage(gMsg_ID_16165, RCID_KATT);
+                        }
+                        break;
+                }
+            }
 
             if (gCsFrameCount == 1620) {
                 player->csState++;

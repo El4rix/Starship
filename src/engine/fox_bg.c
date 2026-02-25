@@ -1328,9 +1328,6 @@ void AllRangeGround_Draw(void) {
         FrameInterpolation_RecordOpenChild("360Ground", i);
 
         Matrix_Translate(gGfxMatrix, sGroundPositions360x_FIX[i], 0.0f, sGroundPositions360z_FIX[i], MTXF_APPLY);
-        if ((gPlayer[0].form == FORM_ON_FOOT) && (gCurrentLevel == LEVEL_SECTOR_Z)) {
-            Matrix_Translate(gGfxMatrix, 0, -1000.0f, 0, MTXF_APPLY);
-        } 
 
         if (gCurrentLevel == LEVEL_TRAINING) {
             Matrix_Scale(gGfxMatrix, 1.5f, 1.0f, 1.0f, MTXF_APPLY);
@@ -1340,16 +1337,6 @@ void AllRangeGround_Draw(void) {
         switch (gCurrentLevel) {
             case LEVEL_FORTUNA:
                 gSPDisplayList(gMasterDisp++, D_FO_6001360);
-                break;
-            case LEVEL_SECTOR_Z:
-                /* if (gPlayer[0].form == FORM_ON_FOOT) {
-                    gSPDisplayList(gMasterDisp++, D_BO_600A810);
-                } else {
-                    gSPDisplayList(gMasterDisp++, D_Sector_Z_Ground);
-                } */
-                break;
-            case LEVEL_SECTOR_Y:
-                gSPDisplayList(gMasterDisp++, D_Sector_Y_Ground);
                 break;
             case LEVEL_KATINA:
                 gSPDisplayList(gMasterDisp++, D_KA_6009250);
@@ -1392,9 +1379,7 @@ void Background_DrawGround(void) {
     f32 temp_fa0;
 
     if ((gCurrentLevel != LEVEL_VENOM_2) && ((gPlayer[0].cam.eye.y > 4000.0f) || !gDrawGround)) {
-        //if (gPlayer[0].form != FORM_ON_FOOT) {
-            return;
-        //}
+        return;
     }
 
     if ((gCurrentLevel == LEVEL_BOLSE) && gBolseDynamicGround) {
@@ -2320,9 +2305,6 @@ void Background_DrawGround(void) {
             break;
 
         case LEVEL_METEO:
-        //case LEVEL_SECTOR_Y:
-        //case LEVEL_SECTOR_X:
-        //case LEVEL_AREA_6:
             if (gPlayer[0].form != FORM_ON_FOOT) {
                 break;
             }
@@ -2336,7 +2318,6 @@ void Background_DrawGround(void) {
                 RCP_SetupDL_45(gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 128);
                 gDPLoadTileTexture(gMasterDisp++, D_CO_6028A60, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32);
-                //gBgColor = 0x190F; // 24, 32, 56
                 
                 // Drawing the original water in the middle
                 Matrix_Push(&gGfxMatrix);
@@ -2443,30 +2424,11 @@ void Background_DrawGround(void) {
 
             } else if (gPlayer[0].state != PLAYERSTATE_LEVEL_COMPLETE) {
                 RCP_SetupDL_29(gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
-                switch (gCurrentLevel) {
-                    case LEVEL_METEO:
-                        sp1C4 = D_ME_6025350;
-                        sp1C0 = D_VE1_60066D0;
-                        gDPLoadTextureBlock(gMasterDisp++, sp1C4, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32, 0,
-                                            G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, 5, 5, G_TX_NOLOD,
-                                            G_TX_NOLOD);
-                        break;
-                    case LEVEL_SECTOR_Y:
-                        sp1C4 = D_SY_60119D8;
-                        sp1C0 = D_MA_60306D0;
-                        gDPLoadTextureBlock(gMasterDisp++, sp1C4, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32, 0,
-                                            G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, 5, 5, G_TX_NOLOD,
-                                            G_TX_NOLOD);
-                        break;
-                    case LEVEL_SECTOR_X:
-                        sp1C4 = D_MA_602DCB8; // Macbeth ground
-                        //sp1C4 = D_CO_6028260; // Corneria rocks
-                        sp1C0 = D_MA_60306D0;
-                        gDPLoadTextureBlock(gMasterDisp++, sp1C4, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32, 0,
-                                            G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, 5, 5, G_TX_NOLOD,
-                                            G_TX_NOLOD);
-                        break;
-                }
+                sp1C4 = D_ME_6025350;
+                sp1C0 = D_VE1_60066D0;
+                gDPLoadTextureBlock(gMasterDisp++, sp1C4, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32, 0,
+                                    G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, 5, 5, G_TX_NOLOD,
+                                    G_TX_NOLOD);
                 gDPSetTextureImage(gMasterDisp++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, sp1C4);
                 temp_s0 = fabsf(Math_ModF(2.0f * (gPathTexScroll * 0.2133333f), 128.0f));
                 temp_fv0 = Math_ModF((10000.0f - gPlayer[gPlayerNum].xPath) * 0.32f, 128.0f);
@@ -2477,63 +2439,54 @@ void Background_DrawGround(void) {
                 Matrix_Push(&gGfxMatrix);
                 Matrix_Translate(gGfxMatrix, 0.0f, gGroundHeight, -3000.0f, MTXF_APPLY);
                 Matrix_Scale(gGfxMatrix, 1.0f, 1.0f, 0.5f, MTXF_APPLY);
-                if ((gCurrentLevel == LEVEL_SECTOR_Y)/*  || (gCurrentLevel == LEVEL_SECTOR_X) */) {
-                    Matrix_Scale(gGfxMatrix, 0.1f, 1.0f, 1.0f, MTXF_APPLY);
-                }
                 Matrix_SetGfxMtx(&gMasterDisp);
                 gSPDisplayList(gMasterDisp++, sp1C0);
                 Matrix_Pop(&gGfxMatrix);
 
-                if ((gCurrentLevel != LEVEL_SECTOR_Y) /* && (gCurrentLevel != LEVEL_SECTOR_X) */) {
-                    // LEFT FAR (Mirrored)
-                    gSPClearGeometryMode(gMasterDisp++, G_CULL_BACK); // Disable backface culling for mirrored object
-                    Matrix_Push(&gGfxMatrix);
-                    Matrix_Translate(gGfxMatrix, -8000.0f, gGroundHeight, -3000.0f, MTXF_APPLY);
-                    Matrix_Scale(gGfxMatrix, -1.0f, 1.0f, 0.5f, MTXF_APPLY); // Apply negative X scaling to mirror
-                    Matrix_SetGfxMtx(&gMasterDisp);
-                    gSPDisplayList(gMasterDisp++, sp1C0);
-                    Matrix_Pop(&gGfxMatrix);
-                    gSPSetGeometryMode(gMasterDisp++, G_CULL_BACK); // Re-enable backface culling
+                
+                // LEFT FAR (Mirrored)
+                gSPClearGeometryMode(gMasterDisp++, G_CULL_BACK); // Disable backface culling for mirrored object
+                Matrix_Push(&gGfxMatrix);
+                Matrix_Translate(gGfxMatrix, -8000.0f, gGroundHeight, -3000.0f, MTXF_APPLY);
+                Matrix_Scale(gGfxMatrix, -1.0f, 1.0f, 0.5f, MTXF_APPLY); // Apply negative X scaling to mirror
+                Matrix_SetGfxMtx(&gMasterDisp);
+                gSPDisplayList(gMasterDisp++, sp1C0);
+                Matrix_Pop(&gGfxMatrix);
+                gSPSetGeometryMode(gMasterDisp++, G_CULL_BACK); // Re-enable backface culling
 
-                    // RIGHT FAR
-                    Matrix_Push(&gGfxMatrix);
-                    Matrix_Translate(gGfxMatrix, 8000.0f, gGroundHeight, -3000.0f, MTXF_APPLY);
-                    Matrix_Scale(gGfxMatrix, 1.0f, 1.0f, 0.5f, MTXF_APPLY);
-                    Matrix_SetGfxMtx(&gMasterDisp);
-                    gSPDisplayList(gMasterDisp++, sp1C0);
-                    Matrix_Pop(&gGfxMatrix);
-                }
+                // RIGHT FAR
+                Matrix_Push(&gGfxMatrix);
+                Matrix_Translate(gGfxMatrix, 8000.0f, gGroundHeight, -3000.0f, MTXF_APPLY);
+                Matrix_Scale(gGfxMatrix, 1.0f, 1.0f, 0.5f, MTXF_APPLY);
+                Matrix_SetGfxMtx(&gMasterDisp);
+                gSPDisplayList(gMasterDisp++, sp1C0);
+                Matrix_Pop(&gGfxMatrix);
 
                 // CENTER
                 Matrix_Push(&gGfxMatrix);
                 Matrix_Translate(gGfxMatrix, 0.0f, gGroundHeight, 3000.0f, MTXF_APPLY);
                 Matrix_Scale(gGfxMatrix, 1.0f, 1.0f, 0.5f, MTXF_APPLY);
-                if ((gCurrentLevel == LEVEL_SECTOR_Y)/*  || (gCurrentLevel == LEVEL_SECTOR_X) */) {
-                    Matrix_Scale(gGfxMatrix, 0.1f, 1.0f, 1.0f, MTXF_APPLY);
-                }
                 Matrix_SetGfxMtx(&gMasterDisp);
                 gSPDisplayList(gMasterDisp++, sp1C0);
                 Matrix_Pop(&gGfxMatrix);
+                
+                // LEFT (Mirrored)
+                gSPClearGeometryMode(gMasterDisp++, G_CULL_BACK); // Disable backface culling for mirrored object
+                Matrix_Push(&gGfxMatrix);
+                Matrix_Translate(gGfxMatrix, -8000.0f, gGroundHeight, 3000.0f, MTXF_APPLY);
+                Matrix_Scale(gGfxMatrix, -1.0f, 1.0f, 0.5f, MTXF_APPLY); // Apply negative X scaling to mirror
+                Matrix_SetGfxMtx(&gMasterDisp);
+                gSPDisplayList(gMasterDisp++, sp1C0);
+                Matrix_Pop(&gGfxMatrix);
+                gSPSetGeometryMode(gMasterDisp++, G_CULL_BACK); // Re-enable backface culling
 
-                if ((gCurrentLevel != LEVEL_SECTOR_Y) /* && (gCurrentLevel != LEVEL_SECTOR_X) */) {
-                    // LEFT (Mirrored)
-                    gSPClearGeometryMode(gMasterDisp++, G_CULL_BACK); // Disable backface culling for mirrored object
-                    Matrix_Push(&gGfxMatrix);
-                    Matrix_Translate(gGfxMatrix, -8000.0f, gGroundHeight, 3000.0f, MTXF_APPLY);
-                    Matrix_Scale(gGfxMatrix, -1.0f, 1.0f, 0.5f, MTXF_APPLY); // Apply negative X scaling to mirror
-                    Matrix_SetGfxMtx(&gMasterDisp);
-                    gSPDisplayList(gMasterDisp++, sp1C0);
-                    Matrix_Pop(&gGfxMatrix);
-                    gSPSetGeometryMode(gMasterDisp++, G_CULL_BACK); // Re-enable backface culling
-
-                    // RIGHT
-                    Matrix_Push(&gGfxMatrix);
-                    Matrix_Translate(gGfxMatrix, 8000.0f, gGroundHeight, 3000.0f, MTXF_APPLY);
-                    Matrix_Scale(gGfxMatrix, 1.0f, 1.0f, 0.5f, MTXF_APPLY);
-                    Matrix_SetGfxMtx(&gMasterDisp);
-                    gSPDisplayList(gMasterDisp++, sp1C0);
-                    Matrix_Pop(&gGfxMatrix);
-                }
+                // RIGHT
+                Matrix_Push(&gGfxMatrix);
+                Matrix_Translate(gGfxMatrix, 8000.0f, gGroundHeight, 3000.0f, MTXF_APPLY);
+                Matrix_Scale(gGfxMatrix, 1.0f, 1.0f, 0.5f, MTXF_APPLY);
+                Matrix_SetGfxMtx(&gMasterDisp);
+                gSPDisplayList(gMasterDisp++, sp1C0);
+                Matrix_Pop(&gGfxMatrix);
                 break;
         }
     }
