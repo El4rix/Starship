@@ -2109,7 +2109,9 @@ void Item_CheckBounds(Item* this) {
             this->obj.pos.z += 20.0f;
         }
     } else if (gPlayer[0].form == FORM_ON_FOOT) {
-        if (this->obj.pos.y < gPlayer[0].yPath + 30.0f) {
+        if ((gCurrentLevel == LEVEL_METEO) && (gLevelPhase == 0) && (this->obj.pos.y > gPlayer[0].yPath + 300.0f)) {
+            Math_SmoothStepToF(&this->obj.pos.y, gPlayer[0].yPath + 300.0f, 0.1f, 5.0f, 0.01f);
+        } else if (this->obj.pos.y < gPlayer[0].yPath + 30.0f) {
             Math_SmoothStepToF(&this->obj.pos.y, gPlayer[0].yPath + 30.0f, 0.1f, 5.0f, 0.01f);
         }
     } else if (this->obj.pos.y < -500.0f) {

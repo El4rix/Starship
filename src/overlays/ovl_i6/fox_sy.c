@@ -3878,8 +3878,10 @@ void SectorY_SyRobot_Update(SyRobot* this) {
             Effect_Effect390_Spawn(this->hitPos.x, this->hitPos.y, this->hitPos.z, this->vel.x, this->vel.y,
                                    this->vel.z, 0.1f, 10);
             this->health -= this->damage;
-            if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
+            if (gTurretModeEnabled) {
                 this->health += (this->damage * 0.75f);
+            } else if (gPlayer[0].form == FORM_ON_FOOT) {
+                this->health += (this->damage * 0.5f);
             }
 
             if (this->health <= 0) {

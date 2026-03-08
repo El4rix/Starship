@@ -1134,6 +1134,9 @@ void Titania_TiDesertCrawler_Init(TiDesertCrawler* this) {
     index = this->iwork[0];
     this->info.hitbox = D_i5_801BDB20[index];
     this->health = 80;
+    if (gPlayer[0].form == FORM_ON_FOOT) {
+        this->health = 320;
+    }
     this->iwork[8] = 1;
     temp_a1 = D_i5_801BD738[index];
 
@@ -5281,15 +5284,15 @@ void Titania_TiGoras_Update(Boss* boss) {
 
     } else if (gPlayer[0].form == FORM_ON_FOOT) {
         if (boss->state > 4) {
-            if (boss->obj.pos.z > gPlayer[0].trueZpos - 900.0f) {
-                boss->obj.pos.z = gPlayer[0].trueZpos - 900.0f;
+            if (boss->obj.pos.z > gPlayer[0].trueZpos - 1000.0f) {
+                boss->obj.pos.z = gPlayer[0].trueZpos - 1000.0f;
             }
         }
         if ((boss->state >= 7) && (boss->state < 14)) {     // make it easier to hit weakpoint
             if (boss->dmgType == DMG_BEAM) {
                 boss->dmgType = DMG_NONE;
 
-                if ((gBossHealthBar > 0) && (D_i5_801B7904[boss->dmgPart] == 23) && (boss->swork[21] > 0)) {
+                if ((gBossHealthBar > 0)/*  && (D_i5_801B7904[boss->dmgPart] == 23) */ && (boss->swork[21] > 0)) {
                     boss->swork[21] -= boss->damage;
                     if (boss->swork[21] <= 0) {
                         gTeamLowHealthMsgTimer = -1;

@@ -1891,7 +1891,7 @@ void Display_PlayerShadow_Update(Player* player) {
         } else if (player->form == FORM_ON_FOOT) {
             if (player->grounded == true) {
                 Matrix_Translate(gGfxMatrix, player->pos.x, player->pos.y + gCameraShakeY + 1.0f,
-                            player->camDist, MTXF_APPLY);
+                            player->trueZpos + player->zPath, MTXF_APPLY); // player->camDist
             } else {
                 Matrix_Translate(gGfxMatrix, player->pos.x, player->groundPos.y + 2.0f,
                             player->camDist, MTXF_APPLY);

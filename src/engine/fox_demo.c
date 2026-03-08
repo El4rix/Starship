@@ -2296,8 +2296,8 @@ void Cutscene_FootDown(Player* player) { // On Foot death
     }
 
     if ((gCurrentLevel == LEVEL_SECTOR_Y) || (gCurrentLevel == LEVEL_SECTOR_X) || (gCurrentLevel == LEVEL_AREA_6)) {
-        if (player->pos.y < 0.0f) {
-            player->pos.y = 0.0f;
+        if (player->pos.y < player->yPath) {
+            player->pos.y = player->yPath;
             player->grounded = true;
         }
     }

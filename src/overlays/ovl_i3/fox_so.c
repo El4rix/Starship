@@ -1983,8 +1983,10 @@ void Solar_801A3C4C(SoVulkain* this) {
     if ((this->swork[SO_SWK_2] == 0) && (this->swork[SO_SWK_3] == 0) &&
         ((this->dmgPart == 8) || (this->dmgPart == -1))) {
         this->health -= this->damage;
-        if ((gTurretModeEnabled) || (gPlayer[0].form == FORM_ON_FOOT)) {
+        if (gTurretModeEnabled) {
             this->health += (this->damage * 0.5f);
+        } else if (gPlayer[0].form == FORM_ON_FOOT) {
+            this->health += (this->damage * 0.4f);
         }
         if (this->health < 0) {
             this->health = 0;
@@ -1999,12 +2001,14 @@ void Solar_801A3C4C(SoVulkain* this) {
 
     this->timer_058 = 20;
 
-    if ((this->dmgPart >= 1) && (this->dmgPart <= 3) && (this->swork[SO_SWK_2] != 0)) {
+    if ((this->dmgPart >= 1) && (this->dmgPart <= 3) && (this->swork[SO_SWK_2] != 0)) { // Left arm
         AUDIO_PLAY_SFX(NA_SE_EN_SOBOSS_DAMAGE, this->sfxSource, 4);
 
         this->swork[SO_SWK_2] -= this->damage;
-        if ((gTurretModeEnabled) || (gPlayer[0].form == FORM_ON_FOOT)) {
+        if (gTurretModeEnabled) {
             this->swork[SO_SWK_2] += (this->damage * 0.5f);
+        } else if (gPlayer[0].form == FORM_ON_FOOT) {
+            this->swork[SO_SWK_2] += (this->damage * 0.7f);
         }
         if (this->swork[SO_SWK_2] < 0) {
             this->swork[SO_SWK_2] = 0;
@@ -2024,8 +2028,10 @@ void Solar_801A3C4C(SoVulkain* this) {
         AUDIO_PLAY_SFX(NA_SE_EN_SOBOSS_DAMAGE, this->sfxSource, 4);
 
         this->swork[SO_SWK_3] -= this->damage;
-        if ((gTurretModeEnabled) || (gPlayer[0].form == FORM_ON_FOOT)) {
+        if (gTurretModeEnabled) {
             this->swork[SO_SWK_3] += (this->damage * 0.5f);
+        } else if (gPlayer[0].form == FORM_ON_FOOT) {
+            this->swork[SO_SWK_3] += (this->damage * 0.7f);
         }
         if (this->swork[SO_SWK_3] < 0) {
             this->swork[SO_SWK_3] = 0;

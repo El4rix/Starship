@@ -158,6 +158,15 @@ void SectorZ_MissileExplode(ActorAllRange* this, bool shotDown) {
             SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM, 1);
             SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_FANFARE, 1);
         } else if ((sMissileDestroyCount >= 9) && (gPlayer[0].form == FORM_ON_FOOT)) {
+            if (gActors[AI360_KATT].obj.status == OBJ_ACTIVE) {
+                Radio_PlayMessage(gMsg_ID_16140, RCID_KATT);
+            } else if (gTeamShields[AI360_SLIPPY] > 0) {
+                Radio_PlayMessage(gMsg_ID_15252, RCID_SLIPPY);
+            } else if (gTeamShields[AI360_FALCO] > 0) {
+                Radio_PlayMessage(gMsg_ID_7100, RCID_FALCO);
+            } else if (gTeamShields[AI360_PEPPY] > 0) {
+                Radio_PlayMessage(gMsg_ID_17160, RCID_PEPPY);
+            }
             gCsFrameCount = 0;
             gPlayer[0].state = PLAYERSTATE_LEVEL_COMPLETE;
             gPlayer[0].csState = 0;
@@ -815,34 +824,36 @@ void SectorZ_EnemyUpdate(ActorAllRange* this) {
                 break;
 
             // Wave 2 ==================================================================================
-            case 3400:
+            case 3300:
                 Radio_PlayMessage(gMsg_ID_16100, RCID_ROB64);
                 break;
 
-            case 3450:
+            case 3350:
                 // Katt appears
                 if (gLeveLClearStatus[LEVEL_ZONESS] != 0) {
                     gAllRangeSpawnEvent = gAllRangeEventTimer + 110;
+                } else {
+                    gAllRangeEventTimer += 500;
                 }
                 break;
 
-            case 4000:
+            case 3900:
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_RIGHT], 2);
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_LEFT], 1);
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_CENTER], 0);
                 gRadarMissileAlarmTimer = 200;
                 break;
 
-            case 5400:
+            case 5300:
                 gCallTimer = 60;
                 break;
 
             // Wave 3 ==================================================================================
-            case 5850:
+            case 5750:
                 Radio_PlayMessage(gMsg_ID_16110, RCID_ROB64);
                 break;
 
-            case 6000:
+            case 5900:
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_RIGHT], 2);
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_LEFT], 1);
                 SectorZ_SpawnMissile(&gActors[SZ_MISSILE_CENTER], 0);
@@ -2132,7 +2143,7 @@ void SectorZ_LevelComplete(Player* player) {
             gCsCamAtY = player->pos.y;
             gCsCamAtZ = player->pos.z;
 
-            if (player->form == FORM_ON_FOOT) {
+            if ((player->form == FORM_ON_FOOT) && (sKattEnabled)) {
                 switch (gCsFrameCount) {
                     case 1290:
                         if (gTeamShields[TEAM_ID_FALCO] > 0) {

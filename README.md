@@ -1,70 +1,56 @@
-# Turret Mode
-## About
-"Turret Mode" is a mod for the unofficial PC Port of Star Fox 64, "Starship." It restores an unfinished gamemode where the player controlled the Great Fox's guns in first-person view. While originally only meant for Area 6, this mod expands the gamemode to encompass every level, and adds new features. For more background info, see this [video.](https://www.youtube.com/watch?v=cmZl8i-uAng)
-
-## Issues
-If you have trouble installing, visit https://github.com/HarbourMasters/Starship for more complete instructions and how to install regular Starship. If you encounter any bugs while playing, please report them in the dedicated Starship forum topic "Turret Mode" in the Ship of Harkinian's Discord: https://discord.com/invite/shipofharkinian
+# On Foot Mode
+"On Foot Mode" is a mod for the unofficial PC Port of Star Fox 64, "Starship." It takes the on-foot/pilot mode from versus and makes it playable in every level, letting you run around with a bazooka. Originally the devs wanted to make a third ending where you fought Andross this way, and possibly intended to have other levels playable on foot too, but they settled for just making it an unlockable in versus mode. For more background info, see this [video.](https://www.youtube.com/watch?v=dQ7baJdOI8Q)
 
 # Instructions
-Currently Windows only. You will need to provide your own copy of the original "USA 1.1 Rev A" ROM.
-* Download the release version of Turret Mode [here.](https://github.com/El4rix/Starship/releases/tag/v1.2)
-* Download a nightly build of Starship [here.](https://nightly.link/HarbourMasters/Starship/workflows/main/main/starship-windows.zip) The December 2024 release (v1.0.0) will not work, but newer ones will.
-* Move "Turret.exe" and your ROM into your Starship folder.
-* Run "Turret.exe" and select your ROM to generate the .o2r file. (Generating the .o2r with "Starship.exe" also works, if you've already done that).
+Windows only. You will need to provide your own copy of the original "USA 1.1 Rev A" ROM.
+* Download the release version of On Foot Mode [here.](https://github.com/El4rix/Starship/releases/tag/v1.2)
+* Download and install Starship [here](https://github.com/HarbourMasters/Starship) if you haven't already.
+* Move "On Foot.exe" into your Starship folder.
 * Play!
 
 # Features
 ### Rapid Fire
-Hold A to rapidly fire the Great Fox's lasers. There is no lock-on attack. Collecting Laser items will increase your fire rate. Lasers are reset after each level. Laser items also restore some health.
+Hold A to rapidly fire. There is no lock-on attack. Lasers reset after each level. Laser items also restore some jetpack fuel.
 
-### Charge Attack
-Hold R to charge your bomb. Lines will point to nearby entities. Press B when the spark appears and the sound cue plays to detonate. Your Bombs will slowly refill if you have less than 4.
+### Jetpack
+Jump, then hold Z to fly!
 
-### Tractor Beam
-Holding R also uses the Tractor Beam. Vacuum enemies, teammates, and items towards you so you don't have to move, you lazy bastard. Targeting teammates will slowly heal them if they're close to you.
+### Dodging
+Jump and press left or right to roll and deflect enemy attacks.
 
-### Locking the View
-Hold Z to lock your view in the direction you're facing. If you're on-rails, you'll also brake.
+### Swap Characters
+Press D-Pad Left and Right to swap the teammate you're playing as.
 
-### On-Rails/Corridor Mode
-Use the C buttons or D-Pad to move around. Press B to recenter your view, hold B to reposition the Great Fox. Hold Z to brake. There is no way to boost.
-
-### 360/All-Range Mode 
-The Great Fox orbits the center of the map. Press C/D-Pad Up to decrease your orbit radius, and C/D-Pad Down to increase your orbit radius. Press C/D-Pad Left and Right to quickly turn your view. Press B to reorient your view to the center of the map.
-
-### Iron Wings
-The Great Fox's wings are impossible to break, and you won't lose your laser power ups or struggle to ascend, but I still wouldn't fly carelessly in a populated city.
+### Selfie Mode
+Press C Up to look at your character from the front.
 
 ### Expert Mode
-Enemy accuracy and damage are not increased in Expert Mode - only their numbers. More cannon fodder!
+Enemy damage is only slightly increased in Expert Mode, and obviously you don't have any wings to lose, so...
 
-### Nasty Surprises
-Certain enemies' behaviors have been changed to provide more of a challenge. Bosses also have more health.
+### Cutscene Edits
+i did my best lol
 
-### New Helper
-ROB's on the ship with you, so maybe a friend in the Cornerian Army can lend you a helping hand.
-
-### New Cutscenes
-I had to accomodate the Great Fox's big ol' ass somehow.
-
-### Hotswap
-Instantly switch between the Great Fox and the Arwing with a button combination (Z + R + C-Down).
+### Level Changes
+Many surprises await, including harder bosses, new scenery, and rearranged levels.
 
 # Controls
-| Button | Action | (360) |
+| Button | Action | Space Levels |
 | - | - | - |
-| A | Lasers |
-| B | Recenter |
-| C/D-Pad Left/Right | Move Left/Right | Quick Turn | 
-| C/D-Pad Up/Down | Move Up/Down | Move Inwards/Outwards |
-| R | Charge Bomb & Tractor Beam |
-| Z | Brake & Lock View |
-| Z + R + C-Down| Swap vehicle |
+| R | Start/Stop Running | - |
+| R (hold) | Run short distance | Brake + Descend |
+| Z | Jump | - |
+| Z (hold midair) | Jetpack | - |
+| Z + Left/Right| Roll | - |
+| D-Pad Left/Right | Swap Character | - |
+| C Up | Face Zoom | - |
+
+# Issues
+If you encounter any bugs while playing, please report them in the dedicated Starship forum topic "On Foot Mode" in the Ship of Harkinian's Discord (https://discord.com/invite/shipofharkinian) or just leave a comment on one of my videos.
+I had to make major changes to the way collisions work so you could walk on surfaces, so there's a lot of funky bugs. You have been warned!
 
 # Development
-If you want to manually compile or edit Turret Mode, please consult the [building instructions](https://github.com/HarbourMasters/Starship/blob/main/docs/BUILDING.md).
+If you want to manually compile or edit On Foot Mode, please consult the [building instructions](https://github.com/HarbourMasters/Starship/blob/main/docs/BUILDING.md).
 
 # Special Thanks:
 * [The Starship Team](https://github.com/HarbourMasters/Starship) : for making this awesome port.
 * [Sonic Dreamcaster](https://github.com/sonicdcer) : for showing me how to set everything up.
-* [petrie911](https://github.com/petrie911) : for decompiling and documenting the original turret mode left in the game.

@@ -4149,6 +4149,10 @@ void Corneria_LevelComplete1(Player* player) {
 
     switch (player->csState) {
         case 0:
+            if (player->form == FORM_ON_FOOT) {
+                player->baseSpeed = 30.0f;
+                gRunning = true;
+            }
             Audio_StopSfxByBankAndSource(1, player->sfxSource);
 
             sp54 = player->cam.eye.x - sCoGrangaWork[62];

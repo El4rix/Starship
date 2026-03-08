@@ -1090,8 +1090,10 @@ void Player_ApplyDamage(Player* player, s32 direction, s32 damage) {
         damage = 40;
     }
 
-    if ((gExpertMode) && (!gTurretModeEnabled)) {
-        player->damage = damage * 2;
+    if ((gExpertMode) && (player->form == FORM_ON_FOOT)) {
+        player->damage = damage * 1.5f;
+    } else if ((gExpertMode) && (!gTurretModeEnabled)) {
+        player->damage = damage * 2.0f;
     } else {
         player->damage = damage;
     }
@@ -5253,9 +5255,9 @@ void Player_OnFootUpdateSpeed(Player* player) {
         }
     }
 
-    if ((gInputPress->button & U_JPAD) && gFaceZoom && !(gInputHold->button & L_JPAD)&& !( gInputHold->button & R_JPAD)) {
+    if ((gInputPress->button & U_CBUTTONS) && gFaceZoom && !(gInputHold->button & L_CBUTTONS)&& !(gInputHold->button & R_CBUTTONS)) {
         gFaceZoom = false;
-    } else if ((gInputPress->button & U_JPAD) && !gFaceZoom && !(gInputHold->button & L_JPAD)&& !( gInputHold->button & R_JPAD)) {
+    } else if ((gInputPress->button & U_CBUTTONS) && !gFaceZoom && !(gInputHold->button & L_CBUTTONS)&& !( gInputHold->button & R_CBUTTONS)) {
         gFaceZoom = true;
     }
 
@@ -5490,7 +5492,7 @@ void Player_MoveOnFoot360(Player* player) {
     }
 
     player->rot_104.z = 0.0f;
-     player->rot_104.x = 0.0f;
+    player->rot_104.x = 0.0f;
 
     Math_SmoothStepToAngle(&player->xRot_0FC, player->rot_104.x, 0.15f, 15.0f, 0.005f);
     Math_SmoothStepToAngle(&player->zRot_0FC, player->rot_104.z, 0.15f, 15.0f, 0.005f);
@@ -6241,7 +6243,6 @@ void Player_MoveOnFootRails(Player* player) {
     player->pos.z += player->vel.z;
     
     player->yPath = player->yPathTarget;      // reset player's local floor
-
 }
 
 f32 D_800D3114[4] = { 10000.0f, -10000.0f, 10000.0f, -10000.0f };
@@ -6371,7 +6372,7 @@ void Player_Setup(Player* playerx) {
 
     if (gFootModeEnabled == true) {
         player->form = FORM_ON_FOOT; // Always turn On Foot Mode on
-        gPilotNum = 0;
+        gFaceZoom = 0;
         gRunning = true;
         if (gCurrentLevel == LEVEL_METEO) {
             player->hideShadow = false;
@@ -8971,8 +8972,8 @@ void Camera_UpdateOnFoot(Player* player, s32 arg1) {
 
     // adjust angle/zoom when looking up/down
     Math_SmoothStepToF(&player->cam.at.y, -(player->unk_154) * 7 + player->pos.y + 50, 0.1f, 100.0f, 0.001f);
-    player->cam.eye.z -= (player->cam.at.y - player->pos.y) / 3;
-    player->cam.eye.y -= (player->cam.at.y - player->pos.y) / 6;
+    player->cam.eye.z -= (fabsf(player->cam.at.y - player->pos.y)) / 3.0f;
+    player->cam.eye.y -= (player->cam.at.y - player->pos.y) / 6.0f;
 
     if (gFaceZoom) {
         Math_SmoothStepToF(&player->camDist, 80 + (player->baseSpeed * 2), 0.2f, 100.0f, 0.001f);
