@@ -6,11 +6,10 @@
 If you have trouble installing, visit https://github.com/HarbourMasters/Starship for more complete instructions and how to install regular Starship. If you encounter any bugs while playing, please report them in the dedicated Starship forum topic "Turret Mode" in the Ship of Harkinian's Discord: https://discord.com/invite/shipofharkinian
 
 # Instructions
-Currently Windows only. You will need to provide your own copy of the original "USA 1.1 Rev A" ROM.
-* Download the release version of Turret Mode [here.](https://github.com/El4rix/Starship/releases/tag/v1.3)
-* Download a nightly build of Starship [here.](https://nightly.link/HarbourMasters/Starship/workflows/main/main/starship-windows.zip) The December 2024 release (v1.0.0) will not work, but newer ones will.
-* Move "Turret.exe" and your ROM into your Starship folder.
-* Run "Turret.exe" and select your ROM to generate the .o2r file. (Generating the .o2r with "Starship.exe" also works, if you've already done that).
+Windows only. You will need to provide your own copy of the original "USA 1.1 Rev A" ROM.
+* Download and install Starship [here](https://github.com/HarbourMasters/Starship) if you haven't already.
+* Download the release version of Turret Mode [here.](https://github.com/El4rix/Starship/releases/tag/Turret_1.3)
+* Move "Turret.exe" into your Starship folder.
 * Play!
 
 # Features
