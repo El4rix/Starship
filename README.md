@@ -3,9 +3,9 @@
 
 # Instructions
 Windows only. You will need to provide your own copy of the original "USA 1.1 Rev A" ROM.
-* Download the release version of On Foot Mode [here.](https://github.com/El4rix/Starship/releases/tag/v1.2)
+* Download the release version of On Foot Mode [here.](https://github.com/El4rix/Starship/releases/tag/Star_Foot_1.0)
 * Download and install Starship [here](https://github.com/HarbourMasters/Starship) if you haven't already.
-* Move "On Foot.exe" into your Starship folder.
+* Move "Star_Foot.exe" into your Starship folder.
 * Play!
 
 # Features
@@ -13,7 +13,7 @@ Windows only. You will need to provide your own copy of the original "USA 1.1 Re
 Hold A to rapidly fire. There is no lock-on attack. Lasers reset after each level. Laser items also restore some jetpack fuel.
 
 ### Jetpack
-Jump, then hold Z to fly!
+Jump with Z, then hold Z to fly!
 
 ### Dodging
 Jump and press left or right to roll and deflect enemy attacks.
