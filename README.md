@@ -4,7 +4,7 @@
 # Instructions
 Windows only. You will need to provide your own copy of the original "USA 1.1 Rev A" ROM.
 * Download and install Starship [here](https://github.com/HarbourMasters/Starship) if you haven't already.
-* Download the release version of Star Foot [here.](https://github.com/El4rix/Starship/releases/tag/Star_Foot_1.0)
+* Download the release version of Star Foot [here.](https://github.com/El4rix/Starship/releases/tag/Star_Foot_1.1)
 * Move "Star_Foot.exe" into your Starship folder.
 * Play!
 
