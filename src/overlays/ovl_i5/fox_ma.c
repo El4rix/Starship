@@ -5137,7 +5137,7 @@ void Macbeth_Actor207_Update(Actor207* this) {
 
             Math_SmoothStepToF(&this->obj.rot.y, 0.0f, 0.1f, 20.0f, 0.01f);
 
-            if (this->obj.pos.z < -135200.0f) {
+            if ((this->obj.pos.z < -135200.0f) || ((gPlayer[0].form == FORM_ON_FOOT) && (gCsFrameCount > 21 * 30))) {
                 BonusText_Display(this->obj.pos.x, this->obj.pos.y + sp374, this->obj.pos.z, 50);
                 if (1) {}
                 gHitCount += 51;

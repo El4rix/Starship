@@ -2429,7 +2429,11 @@ void Corneria_CoCarrier_Update(CoCarrier* this) {
             gShowBossHealth = true;
         }
         if (gBossFrameCount >= 587) {
-            gBossHealthBar = (this->health / 601.0f) * 255.0f;
+            if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
+                gBossHealthBar = (this->health / 1000.0f) * 255.0f;
+            } else {
+                gBossHealthBar = (this->health / 601.0f) * 255.0f;
+            }
         }
     }
 }

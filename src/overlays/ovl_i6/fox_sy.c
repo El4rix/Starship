@@ -430,7 +430,9 @@ void SectorY_80198F5C(SyShogun* this) {
     Effect_Effect390_Spawn(this->obj.pos.x, this->obj.pos.y, this->obj.pos.z, this->vel.x, this->vel.y, this->vel.z,
                            0.1f, 10);
     this->health -= this->damage;
-    if (gTurretModeEnabled || gPlayer[0].form == FORM_ON_FOOT) {
+    if (gTurretModeEnabled) {
+        this->health += (this->damage * 0.75f);
+    } else if (gPlayer[0].form == FORM_ON_FOOT) {
         this->health += (this->damage * 0.75f);
     }
 
@@ -908,6 +910,10 @@ void SectorY_8019A898(SyShogun* this) {
 
 void SectorY_8019AA08(SyShogun* this) {
     if (SectorY_8019B5CC(this)) {
+        return;
+    }
+
+    if ((gPlayer[0].form == FORM_ON_FOOT) && (this->index != 0)) {
         return;
     }
 
@@ -1424,9 +1430,38 @@ void SectorY_SyShogun_Update(SyShogun* this) {
     Vec3f dest;
     s32 pad;
 
-    if ((gPlayer[0].form == FORM_ON_FOOT) && (gPlayer[0].state == PLAYERSTATE_ACTIVE) && ((this->obj.pos.x < -100) || (this->obj.pos.x > 100))) {
-        if (this->obj.pos.y < 400) {
-            this->obj.pos.y = 400;
+    if ((gPlayer[0].form == FORM_ON_FOOT) && (gPlayer[0].state == PLAYERSTATE_ACTIVE)) {
+        if (this->index == 0) {
+            if ((this->obj.pos.x < -100.0f) || (this->obj.pos.x > 100.0f)) {
+                if (this->obj.pos.y < 400.0f) {
+                    this->obj.pos.y = 400.0f;
+                }
+            }
+            if (this->obj.pos.x > 2300.0f) {
+                this->obj.pos.x = 2300.0f;
+            }
+            if (this->obj.pos.x < -100.0f) {
+                this->obj.pos.x = -100.0f;
+            }
+            if (this->obj.pos.z > 1200.0f) {
+                this->obj.pos.z = 1200.0f;
+            }
+        } else {
+            if (this->obj.pos.y < 400.0f) {
+                this->obj.pos.y = 400.0f;
+            }
+            if (this->obj.pos.x > 4000.0f) {
+                this->obj.pos.x = 4000.0f;
+            }
+            if (this->obj.pos.x < -100.0f) {
+                this->obj.pos.x = -100.0f;
+            }
+            if (this->obj.pos.z > 1200.0f) {
+                this->obj.pos.z = 1200.0f;
+            }
+            if (this->obj.pos.z < -3000.0f) {
+                this->obj.pos.z = -3000.0f;
+            }
         }
     }
 

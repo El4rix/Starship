@@ -2668,6 +2668,19 @@ void Player_FootCollisionCheck(Player* player) {        // On-Foot Collision
                                     }
                                 }
                             }
+                            if (scenery360->obj.id == OBJ_SCENERY_TR_BUILDING) {
+                                if ((fabsf(player->pos.x - scenery360->obj.pos.x) < 110.0f) && (fabsf(player->pos.z - scenery360->obj.pos.z) < 110.0f)) {
+                                    if ((fabsf(player->pos.x - scenery360->obj.pos.x) < 110.0f) && (player->pos.y > scenery360->obj.pos.y + 429.0f)) {
+                                        player->vel.x *= 0.5f;
+                                    }
+                                    if ((fabsf(player->pos.z - scenery360->obj.pos.z) < 110.0f) && (player->pos.y > scenery360->obj.pos.y + 429.0f)) {
+                                        player->vel.z *= 0.5f;
+                                    }
+                                    if ((player->pos.y <= scenery360->obj.pos.y + 529.0f) && (player->pos.y > scenery360->obj.pos.y + 429.0f)) {
+                                        player->yPath = scenery360->obj.pos.y + 529.0f;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -5307,16 +5320,16 @@ void Player_MoveOnFoot360(Player* player) {
                 player->yPath = 10;
             }
         }
-        if (player->yPath > 565) {
-            player->yPath = 565;
+        if (player->yPath > 565.0f) {
+            player->yPath = 565.0f;
         }
     } else if (gCurrentLevel == LEVEL_SECTOR_Y) {
         player->yPath = 200.0f;
-        if (player->pos.z < -1000) {
+        if (player->pos.z < -1000.0f) {
             player->pos.z = -1000.0f;
             player->vel.z = 0;
         }
-        if (player->pos.z > 1000) {
+        if (player->pos.z > 1000.0f) {
             player->pos.z = 1000.0f;
             player->vel.z = 0;
         }
@@ -5980,6 +5993,11 @@ void Player_MoveOnFootRails(Player* player) {
             Aquas_Effect366_Spawn(player->pos.x + RAND_FLOAT_CENTERED(1.0f),
                               player->pos.y + RAND_FLOAT_CENTERED(1.0f) + 30.0f,
                               player->trueZpos - 20.0f, 0.4f, 1);
+        }
+
+        if ((gBombCount[0] < 4) && (gGameFrameCount % 450 == 0)) { // Refill Bombs
+            gBombCount[0]++;
+            AUDIO_PLAY_SFX(NA_SE_BOMB_GET, gDefaultSfxSource, 4);
         }
     }
 
@@ -8302,7 +8320,7 @@ void Player_Update(Player* player) {
                 Vec3f sp78[30];
                 s32 sp44;
 
-                if (gCurrentLevel == LEVEL_CORNERIA) {
+                if ((gCurrentLevel == LEVEL_CORNERIA) || (gCurrentLevel == LEVEL_TRAINING)) {
                     Math_SmoothStepToF(&player->unk_170, 0.0f, 1.0f, 0.4f, 0.0f);
                     Math_SmoothStepToF(&player->unk_16C, 0.0f, 1.0f, 0.4f, 0.0f);
                     Audio_KillSfxById(NA_SE_TANK_GO_UP);

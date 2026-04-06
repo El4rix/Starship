@@ -618,7 +618,7 @@ void ActorAllRange_ChooseNewTarget(ActorAllRange* this) {
     }
 }
 
-void ActorAllRange_UpdateEnemyEvents(Actor* this) {
+void ActorAllRange_UpdateEnemyEvents(Actor* this) { // Did you save a teammate?
     ActorAllRange* enemy;
     s32 i;
 

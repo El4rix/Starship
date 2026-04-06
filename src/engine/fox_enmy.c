@@ -2791,6 +2791,7 @@ void Actor_Move(Actor* this) {
 
     if ((gPlayer[0].form == FORM_ON_FOOT) && (this->obj.pos.z < gPlayer[0].pos.z - 2000) && (gBossActive == false)
         && ((gCurrentLevel != LEVEL_SECTOR_Y) && (gCurrentLevel != LEVEL_SECTOR_X) 
+        && (this->eventType != EVID_MA_LASER_TURRET)
         && (gCurrentLevel != LEVEL_AREA_6) && (gCurrentLevel != LEVEL_ZONESS))) { // Limit retreat speed of enemies in on-foot
         if (this->vel.z < -30) {
             this->vel.z = -30;
