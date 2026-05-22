@@ -5268,8 +5268,13 @@ void Player_OnFootUpdateSpeed(Player* player) {
         }
     }
 
-    // C-Up activates sprint (blocked during cooldown); mirrors Arwing boostCooldown gating
-    if ((gInputPress->button & U_CBUTTONS) && (gSprintCooldown == 0)) {
+    // C-Up: restore original face-zoom toggle
+    if (gInputPress->button & U_CBUTTONS) {
+        gFaceZoom = !gFaceZoom;
+    }
+
+    // C-Left activates sprint (blocked during cooldown); mirrors Arwing boostCooldown gating
+    if ((gInputPress->button & L_CBUTTONS) && (gSprintCooldown == 0)) {
         if (!gSuperSprint) {
             gSuperSprint = true;
             gSprintTimer = 75;  // ~1.25 s at 60 fps
