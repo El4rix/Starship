@@ -5268,10 +5268,46 @@ void Player_OnFootUpdateSpeed(Player* player) {
         }
     }
 
-    if ((gInputPress->button & U_CBUTTONS) && gFaceZoom && !(gInputHold->button & L_CBUTTONS)&& !(gInputHold->button & R_CBUTTONS)) {
-        gFaceZoom = false;
-    } else if ((gInputPress->button & U_CBUTTONS) && !gFaceZoom && !(gInputHold->button & L_CBUTTONS)&& !( gInputHold->button & R_CBUTTONS)) {
-        gFaceZoom = true;
+    // C-Up activates sprint (blocked during cooldown); mirrors Arwing boostCooldown gating
+    if ((gInputPress->button & U_CBUTTONS) && (gSprintCooldown == 0)) {
+        if (!gSuperSprint) {
+            gSuperSprint = true;
+            gSprintTimer = 75;  // ~1.25 s at 60 fps
+            Player_PlaySfx(player->sfxSource, NA_SE_ARWING_BOOST, player->num);
+        } else {
+            // Manual cancel: go straight to cooldown (mirrors releasing R mid-boost)
+            gSuperSprint = false;
+            gSprintTimer = 0;
+            gSprintCooldown = 60;  // ~1 s cooldown
+        }
+    }
+    if (!gRunning && !gVersusMode) {
+        gSuperSprint = false;
+    }
+
+    // Tick sprint timer; expiry triggers cooldown (mirrors boostMeter hitting 90 â†’ boostCooldown)
+    if (gSuperSprint) {
+        if (gSprintTimer > 0) {
+            gSprintTimer--;
+        }
+        if (gSprintTimer == 0) {
+            gSuperSprint = false;
+            gSprintCooldown = 120;
+        }
+    } else if (gSprintCooldown > 0) {
+        gSprintCooldown--;
+    }
+
+    if (gSuperSprint && sp2C > 0.0f) {
+        sp2C += 30.0f;  // additive boost, mirrors Arwing's boostSpeed max of 30
+        player->contrailScale += 0.04f;
+        if (player->contrailScale > 0.6f) {
+            player->contrailScale = 0.6f;
+        }
+        Math_SmoothStepToF(&player->camDist, -200.0f, 0.1f, 30.0f, 0.0f);
+    } else {
+        Math_SmoothStepToF(&player->contrailScale, 0.0f, 0.1f, 0.05f, 0.0f);
+        Math_SmoothStepToF(&player->camDist, 0.0f, 0.1f, 30.0f, 0.0f);
     }
 
     Math_SmoothStepToF(&player->baseSpeed, sp2C, 1.0f, 1.0f, 0.00001f);
@@ -9036,7 +9072,7 @@ void Camera_SetStarfieldPos(f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 
     tempf = sqrtf(SQ(zEye - zAt) + SQ(xEye - xAt));
     pitch = -Math_Atan2F(yEye - yAt, tempf);
 
-    // Adjust yaw to stay within the range [-¦Ð/2, ¦Ð/2]
+    // Adjust yaw to stay within the range [-ï¿½ï¿½/2, ï¿½ï¿½/2]
     if (yaw >= M_PI / 2) {
         yaw -= M_PI;
     }

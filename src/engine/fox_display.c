@@ -1545,6 +1545,26 @@ void Display_ArwingWingTrail_Draw(Player* player) {
     }
 }
 
+static void Display_FootSprintTrail_Draw(Player* player) {
+    f32 sp54 = 0.0f;
+    if ((gGameFrameCount % 2) != 0) {
+        sp54 = 180.0f;
+    }
+    RCP_SetupDL_64();
+    gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 100);
+    FrameInterpolation_RecordOpenChild("FootSprintTrail", 0);
+    Matrix_Push(&gGfxMatrix);
+    Matrix_Translate(gGfxMatrix, 0.0f, 0.0f, -100.0f, MTXF_APPLY);
+    Matrix_Scale(gGfxMatrix, player->contrailScale, 1.0f, 50.0f, MTXF_APPLY);
+    Matrix_Translate(gGfxMatrix, 0.0f, 0.0f, -17.5f, MTXF_APPLY);
+    Matrix_RotateX(gGfxMatrix, M_PI / 2, MTXF_APPLY);
+    Matrix_RotateY(gGfxMatrix, M_DTOR * sp54, MTXF_APPLY);
+    Matrix_SetGfxMtx(&gMasterDisp);
+    gSPDisplayList(gMasterDisp++, aBallDL);
+    Matrix_Pop(&gGfxMatrix);
+    FrameInterpolation_RecordCloseChild();
+}
+
 void Display_ArwingWingTrail_Update(Player* player) {
     if (player->draw && (player->form == FORM_ARWING) && (gCurrentLevel != LEVEL_VENOM_ANDROSS) &&
         (gCurrentLevel != LEVEL_TRAINING) && (gLevelType == LEVELTYPE_PLANET)) {
@@ -1557,6 +1577,13 @@ void Display_ArwingWingTrail_Update(Player* player) {
         Matrix_Translate(gGfxMatrix, player->xShake, player->yBob, 0.0f, MTXF_APPLY);
         Matrix_SetGfxMtx(&gMasterDisp);
         Display_ArwingWingTrail_Draw(player);
+        Matrix_Pop(&gGfxMatrix);
+    } else if (player->draw && (player->form == FORM_ON_FOOT) && (player->contrailScale > 0.0f)) {
+        Matrix_Push(&gGfxMatrix);
+        Matrix_Translate(gGfxMatrix, player->pos.x, player->pos.y, player->trueZpos + player->zPath, MTXF_APPLY);
+        Matrix_RotateY(gGfxMatrix, (player->yRot_114 + player->rot.y + 180.0f) * M_DTOR, MTXF_APPLY);
+        Matrix_SetGfxMtx(&gMasterDisp);
+        Display_FootSprintTrail_Draw(player);
         Matrix_Pop(&gGfxMatrix);
     }
 }
