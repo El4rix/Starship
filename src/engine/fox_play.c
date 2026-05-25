@@ -5273,18 +5273,22 @@ void Player_OnFootUpdateSpeed(Player* player) {
         gFaceZoom = !gFaceZoom;
     }
 
-    // C-Left activates sprint (blocked during cooldown); mirrors Arwing boostCooldown gating
-    if ((gInputPress->button & L_CBUTTONS) && (gSprintCooldown == 0)) {
-        if (!gSuperSprint) {
-            gSuperSprint = true;
-            gSprintTimer = 75;  // ~1.25 s at 60 fps
-            Player_PlaySfx(player->sfxSource, NA_SE_ARWING_BOOST, player->num);
-        } else {
-            // Manual cancel: go straight to cooldown (mirrors releasing R mid-boost)
-            gSuperSprint = false;
-            gSprintTimer = 0;
-            gSprintCooldown = 60;  // ~1 s cooldown
+    // C-Left sprint: detect via right thumbstick X negative (controller) or L_CBUTTONS bitmask (keyboard/button).
+    // Right thumbstick left axis goes into right_stick_x (int8, range -127 to 127); threshold -40 = ~30% push.
+    {
+        bool cLeftHeld = (gInputHold->right_stick_x < -40) || ((gInputHold->button & L_CBUTTONS) != 0);
+        if (cLeftHeld && !gPrevCLeft && (gSprintCooldown == 0)) {
+            if (!gSuperSprint) {
+                gSuperSprint = true;
+                gSprintTimer = 75;
+                Player_PlaySfx(player->sfxSource, NA_SE_ARWING_BOOST, player->num);
+            } else {
+                gSuperSprint = false;
+                gSprintTimer = 0;
+                gSprintCooldown = 60;
+            }
         }
+        gPrevCLeft = cLeftHeld;
     }
     if (!gRunning && !gVersusMode) {
         gSuperSprint = false;

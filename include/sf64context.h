@@ -26,6 +26,7 @@ extern bool gFaceZoom;
 extern bool gSuperSprint;
 extern s32 gSprintTimer;
 extern s32 gSprintCooldown;
+extern bool gPrevCLeft;
 extern DrawMode gDrawMode;
 extern s32 gPlayerNum;
 extern s32 gPilotNum;

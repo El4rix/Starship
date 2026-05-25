@@ -24,6 +24,7 @@ bool gFaceZoom;
 bool gSuperSprint;
 s32 gSprintTimer;
 s32 gSprintCooldown;
+bool gPrevCLeft;
 DrawMode gDrawMode;
 s32 gPlayerNum;
 s32 gPilotNum;
